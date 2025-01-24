@@ -1,0 +1,51 @@
+[gd_scene load_steps=4 format=3 uid="uid://bm5cugnlmwqah"]
+
+[ext_resource type="Script" path="res://Scripts/BasicEntryItem.gd" id="1_1uaux"]
+[ext_resource type="PackedScene" uid="uid://cexj0b2hdd4k3" path="res://Scenes/CustomTextureButton.tscn" id="2_mxhp3"]
+[ext_resource type="PackedScene" uid="uid://bthj54bhnkv5v" path="res://Scenes/ToggleLineEdit.tscn" id="3_wekom"]
+
+[node name="BasicEntryItem" type="ColorRect"]
+custom_minimum_size = Vector2(216, 44)
+color = Color(0, 0, 0, 0.741176)
+script = ExtResource("1_1uaux")
+
+[node name="Container" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 3.0
+offset_top = -17.0
+offset_right = 213.0
+offset_bottom = 17.0
+grow_vertical = 2
+pivot_offset = Vector2(-3, 17)
+mouse_filter = 2
+theme_override_constants/separation = 15
+
+[node name="Button" parent="Container" instance=ExtResource("2_mxhp3")]
+layout_mode = 2
+size_flags_horizontal = 0
+
+[node name="ToggleLineEdit" parent="Container" node_paths=PackedStringArray("text_changed_signal_sender") instance=ExtResource("3_wekom")]
+visible = false
+layout_mode = 2
+font_size = 25
+text_changed_signal_sender = NodePath("../..")
+text_changed_signal_name = "title_changed"
+text_changed_signal_argument = "0"
+
+[node name="Title" type="Label" parent="Container"]
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_font_sizes/font_size = 25
+text = "Title"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Subtitle" type="Label" parent="Container"]
+layout_mode = 2
+size_flags_horizontal = 0
+text = "Subtitle"
+horizontal_alignment = 1
+vertical_alignment = 1

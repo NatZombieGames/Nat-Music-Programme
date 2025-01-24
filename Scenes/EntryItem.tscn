@@ -1,0 +1,74 @@
+[gd_scene load_steps=5 format=3 uid="uid://cmjfi4l6s5xcy"]
+
+[ext_resource type="Script" path="res://Scripts/EntryItem.gd" id="1_8fcor"]
+[ext_resource type="StyleBox" uid="uid://dydjfep1b7fhc" path="res://Assets/DefaultStylebox.tres" id="2_s1y6p"]
+[ext_resource type="Texture2D" uid="uid://bib3ce2ocxmme" path="res://Assets/Icons/Missing.svg" id="3_v6vnf"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_68gdd"]
+
+[node name="EntryItem" type="ColorRect"]
+custom_minimum_size = Vector2(261, 64)
+size_flags_horizontal = 2
+size_flags_vertical = 2
+color = Color(0, 0, 0, 0.741176)
+script = ExtResource("1_8fcor")
+
+[node name="Button" type="Button" parent="."]
+custom_minimum_size = Vector2(261, 64)
+layout_mode = 1
+offset_right = 251.0
+offset_bottom = 64.0
+mouse_default_cursor_shape = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_68gdd")
+
+[node name="Container" type="HBoxContainer" parent="Button"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -125.5
+offset_top = -27.0
+offset_right = 125.5
+offset_bottom = 27.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 15
+
+[node name="ImageContainer" type="PanelContainer" parent="Button/Container"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+mouse_filter = 2
+theme_override_styles/panel = ExtResource("2_s1y6p")
+
+[node name="Image" type="TextureRect" parent="Button/Container/ImageContainer"]
+show_behind_parent = true
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("3_v6vnf")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Title" type="Label" parent="Button/Container"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 25
+text = "Title"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Subtitle" type="Label" parent="Button/Container"]
+layout_mode = 2
+text = "Subtitle"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Void" type="Panel" parent="Button/Container"]
+self_modulate = Color(1, 1, 1, 0)
+layout_mode = 2
+mouse_filter = 2

@@ -1,0 +1,188 @@
+[gd_scene load_steps=7 format=3 uid="uid://di0ca61w28uio"]
+
+[ext_resource type="Script" path="res://Scripts/PlayingScreen.gd" id="1_7klv3"]
+[ext_resource type="StyleBox" uid="uid://dydjfep1b7fhc" path="res://Assets/DefaultStylebox.tres" id="2_i1rv6"]
+[ext_resource type="StyleBox" uid="uid://dkgym2u000nvk" path="res://Assets/CornerStylebox.tres" id="2_ruksw"]
+[ext_resource type="Texture2D" uid="uid://d0fqgyrdwlqvc" path="res://Assets/Icons/Fullscreen.svg" id="2_sf1x2"]
+[ext_resource type="Texture2D" uid="uid://bib3ce2ocxmme" path="res://Assets/Icons/Missing.svg" id="3_rmwdd"]
+[ext_resource type="StyleBox" uid="uid://bvsmn8sm7d00h" path="res://Assets/DarkBackground.tres" id="4_34oy1"]
+
+[node name="PlayingScreen" type="Control"]
+custom_minimum_size = Vector2(480, 270)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 480.0
+offset_bottom = 270.0
+size_flags_horizontal = 0
+size_flags_vertical = 0
+script = ExtResource("1_7klv3")
+
+[node name="Camera" type="Camera2D" parent="."]
+offset = Vector2(2, 1)
+anchor_mode = 0
+enabled = false
+zoom = Vector2(2.02, 2.02)
+editor_draw_limits = true
+
+[node name="ScreenContainer" type="AspectRatioContainer" parent="Camera"]
+custom_minimum_size = Vector2(480, 270)
+offset_right = 480.0
+offset_bottom = 270.0
+
+[node name="Background" type="ColorRect" parent="Camera/ScreenContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(480, 270)
+layout_mode = 2
+color = Color(0.197937, 0.197937, 0.197937, 1)
+
+[node name="Background" type="PanelContainer" parent="Camera/ScreenContainer/Background"]
+layout_mode = 2
+offset_right = 36.0
+offset_bottom = 40.0
+theme_override_styles/panel = ExtResource("2_ruksw")
+
+[node name="Container" type="HBoxContainer" parent="Camera/ScreenContainer/Background/Background"]
+layout_mode = 2
+
+[node name="ToggleFullscreen" type="TextureButton" parent="Camera/ScreenContainer/Background/Background/Container"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+mouse_default_cursor_shape = 2
+texture_normal = ExtResource("2_sf1x2")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="MasterContainer" type="HBoxContainer" parent="Camera/ScreenContainer"]
+custom_minimum_size = Vector2(480, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+alignment = 1
+
+[node name="ImageContainer" type="PanelContainer" parent="Camera/ScreenContainer/MasterContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_styles/panel = ExtResource("2_i1rv6")
+
+[node name="Image" type="TextureRect" parent="Camera/ScreenContainer/MasterContainer/ImageContainer"]
+unique_name_in_owner = true
+show_behind_parent = true
+custom_minimum_size = Vector2(150, 150)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+texture = ExtResource("3_rmwdd")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Void" type="Panel" parent="Camera/ScreenContainer/MasterContainer"]
+self_modulate = Color(1, 1, 1, 0)
+custom_minimum_size = Vector2(25, 0)
+layout_mode = 2
+
+[node name="InfoPanel" type="PanelContainer" parent="Camera/ScreenContainer/MasterContainer"]
+custom_minimum_size = Vector2(250, 200)
+layout_mode = 2
+theme_override_styles/panel = ExtResource("4_34oy1")
+
+[node name="InfoContainer" type="VBoxContainer" parent="Camera/ScreenContainer/MasterContainer/InfoPanel"]
+layout_mode = 2
+theme_override_constants/separation = 7
+alignment = 1
+
+[node name="Playlist" type="Label" parent="Camera/ScreenContainer/MasterContainer/InfoPanel/InfoContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Playlist"
+vertical_alignment = 1
+
+[node name="Title" type="Label" parent="Camera/ScreenContainer/MasterContainer/InfoPanel/InfoContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "Title"
+autowrap_mode = 3
+
+[node name="Album&Band" type="Label" parent="Camera/ScreenContainer/MasterContainer/InfoPanel/InfoContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "Album | Band"
+
+[node name="ProgressContainer" type="HBoxContainer" parent="Camera/ScreenContainer/MasterContainer/InfoPanel/InfoContainer"]
+custom_minimum_size = Vector2(0, 16)
+layout_mode = 2
+
+[node name="Percentage" type="Label" parent="Camera/ScreenContainer/MasterContainer/InfoPanel/InfoContainer/ProgressContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(42, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "0%"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ProgressBar" type="HSlider" parent="Camera/ScreenContainer/MasterContainer/InfoPanel/InfoContainer/ProgressContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+focus_mode = 0
+mouse_default_cursor_shape = 2
+scrollable = false
+
+[node name="ControlButtons" type="HBoxContainer" parent="Camera/ScreenContainer/MasterContainer/InfoPanel/InfoContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="ToggleLoop" type="TextureButton" parent="Camera/ScreenContainer/MasterContainer/InfoPanel/InfoContainer/ControlButtons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="Previous" type="TextureButton" parent="Camera/ScreenContainer/MasterContainer/InfoPanel/InfoContainer/ControlButtons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="TogglePlay" type="TextureButton" parent="Camera/ScreenContainer/MasterContainer/InfoPanel/InfoContainer/ControlButtons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="Next" type="TextureButton" parent="Camera/ScreenContainer/MasterContainer/InfoPanel/InfoContainer/ControlButtons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="VolumeIndicator" type="TextureRect" parent="Camera/ScreenContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="AudioPlayer" type="AudioStreamPlayer" parent="Camera/ScreenContainer"]
+unique_name_in_owner = true
+volume_db = -10.0
+autoplay = true

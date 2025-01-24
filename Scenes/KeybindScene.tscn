@@ -1,0 +1,24 @@
+[gd_scene load_steps=2 format=3 uid="uid://jwe3biaas3x7"]
+
+[ext_resource type="Script" path="res://Scripts/KeybindScene.gd" id="1_bxwcv"]
+
+[node name="KeybindScene" type="HBoxContainer"]
+theme_override_constants/separation = 10
+script = ExtResource("1_bxwcv")
+
+[node name="Title" type="Label" parent="."]
+layout_mode = 2
+text = "Placeholder"
+
+[node name="ButtonContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Button" type="Button" parent="ButtonContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Placeholder"
+
+[node name="Button2" type="Button" parent="ButtonContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Placeholder"

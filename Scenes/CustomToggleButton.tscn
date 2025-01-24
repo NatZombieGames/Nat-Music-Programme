@@ -1,0 +1,32 @@
+[gd_scene load_steps=4 format=3 uid="uid://cggfq5ldfu5yj"]
+
+[ext_resource type="StyleBox" uid="uid://dvt0bb3h5ar54" path="res://Assets/CustomTextureButtonNormal.tres" id="1_qoe8t"]
+[ext_resource type="Script" path="res://Scenes/CustomToggleButton.gd" id="2_awfon"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_yibx1"]
+
+[node name="CustomToggleButton" type="PanelContainer"]
+custom_minimum_size = Vector2(30, 30)
+theme_override_styles/panel = ExtResource("1_qoe8t")
+script = ExtResource("2_awfon")
+
+[node name="Container" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="Void" type="Panel" parent="Container"]
+self_modulate = Color(1, 1, 1, 0)
+layout_mode = 2
+
+[node name="Button" type="CheckBox" parent="Container"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+theme_override_font_sizes/font_size = 16
+theme_override_styles/focus = SubResource("StyleBoxEmpty_yibx1")
+text = "Placeholder"
+
+[node name="Void2" type="Panel" parent="Container"]
+self_modulate = Color(1, 1, 1, 0)
+layout_mode = 2

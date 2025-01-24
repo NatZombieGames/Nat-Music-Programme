@@ -1,0 +1,122 @@
+extends Control
+
+@export var active_song_list : Array = []
+@export var active_song_list_id : String = ""
+@export var active_song_id : String = ""
+var change_callable : Callable = (func(dir : int, loop : bool) -> void: active_song_id = [GeneralManager.arr_get(active_song_list, wrapi(active_song_list.find(active_song_id)+(1*dir), 0, len(active_song_list)), active_song_id), active_song_id][int(loop)]; load_song(); %TogglePlay.texture_normal = GeneralManager.get_icon_texture("Play"); return)
+var play_callable : Callable = (func() -> void: %AudioPlayer.stream_paused = !%AudioPlayer.stream_paused;  %TogglePlay.texture_normal = [GeneralManager.get_icon_texture("Play"), GeneralManager.get_icon_texture("Pause")][int(%AudioPlayer.stream_paused)]; return)
+var fullscreen_callable : Callable = (func() -> void: var state : bool = get_node("/root/MainScreen/Camera").enabled; get_node("/root/MainScreen/Camera").enabled = !state; self.get_child(0).enabled = state; %ToggleFullscreen.texture_normal = GeneralManager.get_icon_texture(["Close", ""][int(!state)] + "Fullscreen"); return)
+var dragging_progress_bar : bool = false
+var loop_enabled : bool = false
+var volume_indicator_tween : Tween = create_tween()
+
+func _ready() -> void:
+	#
+	%TogglePlay.texture_normal = GeneralManager.get_icon_texture("Play")
+	%TogglePlay.pressed.connect(play_callable)
+	%Previous.pressed.connect(change_callable.bind(-1, false))
+	%Previous.texture_normal = GeneralManager.get_icon_texture("Previous")
+	%Next.pressed.connect(change_callable.bind(1, false))
+	%Next.texture_normal = GeneralManager.get_icon_texture("Next")
+	%AudioPlayer.finished.connect(change_callable.bind(1, loop_enabled))
+	%ProgressBar.drag_ended.connect(func(value_changed : bool) -> void: if value_changed: %AudioPlayer.play(%ProgressBar.value); %AudioPlayer.stream_paused = %TogglePlay.texture_normal.resource_name == "Pause"; dragging_progress_bar = false; return)
+	%ProgressBar.drag_started.connect(func() -> void: dragging_progress_bar = true; return)
+	%ProgressBar.set("theme_override_icons/grabber", GeneralManager.get_icon_texture("EmptyCircle"))
+	%ProgressBar.set("theme_override_icons/grabber_highlight", GeneralManager.get_icon_texture("FilledCircle"))
+	for item : String in ["grabber", "grabber_highlight"]:
+		%ProgressBar.get("theme_override_icons/" + item).set_size_override(Vector2i(14, 14))
+	%ToggleLoop.texture_normal = GeneralManager.get_icon_texture("LoopDisabled")
+	%ToggleLoop.pressed.connect(func() -> void: loop_enabled = !loop_enabled; %ToggleLoop.texture_normal = GeneralManager.get_icon_texture("Loop" + ["Disabled", "Enabled"][int(loop_enabled)]); return)
+	%ToggleFullscreen.texture_normal = GeneralManager.get_icon_texture("Fullscreen")
+	%ToggleFullscreen.pressed.connect(fullscreen_callable)
+	#
+	if MasterDirectoryManager.finished_loading_data == false:
+		await MasterDirectoryManager.finished_loading_data_signal
+	for item : String in MasterDirectoryManager.user_data_dict["active_song_data"].keys():
+		self.set(item, MasterDirectoryManager.user_data_dict["active_song_data"][item])
+	%AudioPlayer.volume_db = MasterDirectoryManager.user_data_dict["volume"]
+	load_song(active_song_id)
+	return
+
+func _process(_delta : float) -> void:
+	if %AudioPlayer.stream != null:
+		if not dragging_progress_bar:
+			%ProgressBar.value = %AudioPlayer.get_playback_position()
+		%Percentage.text = str(int((%ProgressBar.value / %ProgressBar.max_value) * 100)) + "%"
+	return
+
+func _input(_event : InputEvent) -> void:
+	if Input.is_action_just_pressed("VolumeDown") or Input.is_action_just_pressed("VolumeUp"):
+		if Input.is_action_just_pressed("VolumeUp"):
+			%AudioPlayer.volume_db += 1
+			%VolumeIndicator.texture = GeneralManager.get_icon_texture("VolumeUp")
+		else:
+			%AudioPlayer.volume_db -= 1
+			%VolumeIndicator.texture = GeneralManager.get_icon_texture("VolumeDown")
+		MasterDirectoryManager.user_data_dict["volume"] = %AudioPlayer.volume_db
+		volume_indicator_tween.kill()
+		volume_indicator_tween = create_tween()
+		volume_indicator_tween.tween_property(%VolumeIndicator, "self_modulate", Color(1, 1, 1, 0), 1.0).from(Color(1, 1, 1, 1))
+	elif Input.is_action_just_pressed("Previous") or Input.is_action_just_pressed("Next"):
+		if Input.is_action_just_pressed("Previous"):
+			change_callable.call(-1, false)
+		else:
+			change_callable.call(1, false)
+	elif Input.is_action_just_pressed("Rewind") or Input.is_action_just_pressed("GoForward"):
+		if Input.is_action_just_pressed("Rewind"):
+			%AudioPlayer.play(%AudioPlayer.get_playback_position() - 1)
+		else:
+			%AudioPlayer.play(%AudioPlayer.get_playback_position() + 1)
+	elif Input.is_action_just_pressed("TogglePause"):
+		play_callable.call()
+	elif Input.is_action_just_pressed("ToggleLargePlayer"):
+		fullscreen_callable.call()
+	return
+
+func load_song_list(list_id : String = active_song_list_id) -> int:
+	print("Load Song List ID: '" + list_id + "', begins with '" + list_id.left(1) + "'")
+	if GeneralManager.get_id_type(list_id) == MasterDirectoryManager.use_type.UNKNOWN:
+		print("Invalid Song List ID")
+		return ERR_INVALID_PARAMETER
+	active_song_list_id = list_id
+	active_song_list = []
+	match GeneralManager.get_id_type(list_id):
+		MasterDirectoryManager.use_type.ARTIST:
+			for item : String in GeneralManager.get_data(list_id, "albums"):
+				active_song_list.append_array(GeneralManager.get_data(item, "songs"))
+		MasterDirectoryManager.use_type.SONG:
+			active_song_list = [list_id]
+		_:
+			active_song_list = GeneralManager.get_data(list_id, "songs")
+	if len(active_song_list) > 0:
+		load_song(active_song_list[0])
+	print("Load Song List Ran Succesfully")
+	return OK
+
+func load_song(song_id : String = active_song_id) -> int:
+	print("\n\nLoad Song ID: '" + song_id + "', begins with '" + song_id.left(1) + "'")
+	if GeneralManager.get_id_type(song_id) != MasterDirectoryManager.use_type.SONG or not MasterDirectoryManager.song_id_dict.has(song_id):
+		print("Invalid Song ID, wanted it to begin with 2, it begins with: '" + song_id.left(1) + "'")
+		return ERR_INVALID_PARAMETER
+	print("Song ID is valid.")
+	active_song_id = song_id
+	var song_data : Dictionary = GeneralManager.get_data(song_id)
+	print("song data: " + str(song_data))
+	%AudioPlayer.stream = GeneralManager.load_audio_file(song_data["song_file_path"])
+	print("\n\nAudioplayer stream after load: " + str(%AudioPlayer.stream) + "\n\n")
+	%Title.text = song_data["name"]
+	%"Album&Band".text = GeneralManager.limit(GeneralManager.get_data(song_data["album"], "name"), 10) + " | " + GeneralManager.limit(GeneralManager.get_data(GeneralManager.get_data(song_data["album"], "artist"), "name"), 10)
+	var list_name : String = GeneralManager.get_data(active_song_list_id, "name")
+	%Playlist.text = ["All Of: ", "Album: ", "Listening To: ", "Playlist: "][int(active_song_list_id[0])] + GeneralManager.limit(list_name, 9) + " | " + str(str(active_song_list.find(song_id)+1) + "/" + str(len(active_song_list)))
+	%ProgressBar.max_value = %AudioPlayer.stream.get_length()
+	%Image.texture = ImageTexture.create_from_image(GeneralManager.get_image_from_cache(GeneralManager.get_data(song_data["album"], "image_file_path")))
+	print("Image texture after load: " + str(%Image.texture))
+	var image_average : Color = GeneralManager.get_image_average(GeneralManager.get_image_from_cache(GeneralManager.get_data(song_data["album"], "image_file_path")))
+	%Background.color = image_average
+	var stylebox : StyleBoxFlat = %Image.get_parent().get("theme_override_styles/panel").duplicate()
+	stylebox.border_color = Color(image_average.r/1.5, image_average.g/1.5, image_average.b/1.5)
+	%Image.get_parent().set("theme_override_styles/panel/border_color", stylebox)
+	%TogglePlay.texture_normal = GeneralManager.get_icon_texture("Play")
+	%AudioPlayer.play()
+	print("Load Song Ran Succesfully")
+	return OK

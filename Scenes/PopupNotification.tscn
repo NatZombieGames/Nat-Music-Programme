@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3 uid="uid://ptvbuuv4wlff"]
+
+[ext_resource type="StyleBox" uid="uid://bvsmn8sm7d00h" path="res://Assets/DarkBackground.tres" id="1_xw6od"]
+[ext_resource type="Script" path="res://Scripts/PopupNotification.gd" id="2_pucgy"]
+
+[node name="PopupNotification" type="PanelContainer"]
+custom_minimum_size = Vector2(240, 25)
+mouse_filter = 2
+theme_override_styles/panel = ExtResource("1_xw6od")
+script = ExtResource("2_pucgy")
+
+[node name="Title" type="Label" parent="."]
+layout_mode = 2
+text = " Task Failed Succesfully "
+horizontal_alignment = 1
+vertical_alignment = 1
