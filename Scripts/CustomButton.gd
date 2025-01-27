@@ -1,7 +1,7 @@
 extends PanelContainer
 
-@onready var normal_stylebox : StyleBoxFlat = preload("res://Assets/CustomTextureButtonNormal.tres")
-@onready var pressed_stylebox : StyleBoxFlat = preload("res://Assets/CustomTextureButtonPressed.tres")
+@onready var normal_stylebox : StyleBoxFlat = preload("res://Assets/CustomButtonNormal.tres")
+@onready var pressed_stylebox : StyleBoxFlat = preload("res://Assets/CustomButtonPressed.tres")
 @export var button_custom_minimum_size : Vector2i = Vector2i(24, 24)
 @export var button_text : String = ""
 @export var button_font_size : int = 16
@@ -36,5 +36,5 @@ func update(data : Dictionary = {"button_custom_minimum_size": button_custom_min
 	return
 
 func set_panel() -> void:
-	self.set("theme_override_styles/panel", [normal_stylebox, pressed_stylebox][int(pressed)])
+	#self.set("theme_override_styles/panel", [normal_stylebox, pressed_stylebox][int(pressed)])
 	return

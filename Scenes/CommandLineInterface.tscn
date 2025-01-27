@@ -1,0 +1,48 @@
+[gd_scene load_steps=4 format=3 uid="uid://bmc50mv2rgkwt"]
+
+[ext_resource type="StyleBox" uid="uid://dj6ianfhju64w" path="res://Assets/CLI_Stylebox.tres" id="1_kqyvi"]
+[ext_resource type="Script" path="res://Scripts/CommandLineInterface.gd" id="2_khwqj"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_udip1"]
+
+[node name="CommandLineInterface" type="PanelContainer"]
+custom_minimum_size = Vector2(0, 500)
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -22.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_styles/panel = ExtResource("1_kqyvi")
+script = ExtResource("2_khwqj")
+
+[node name="Container" type="VBoxContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+alignment = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Container"]
+layout_mode = 2
+size_flags_vertical = 3
+follow_focus = true
+
+[node name="OutputContainer" type="VBoxContainer" parent="Container/ScrollContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+alignment = 2
+
+[node name="InputField" type="LineEdit" parent="Container"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_udip1")
+placeholder_text = " run 'help' for help using the command line."
+expand_to_text_length = true
+virtual_keyboard_enabled = false
+clear_button_enabled = true
+caret_blink = true
+caret_blink_interval = 0.5

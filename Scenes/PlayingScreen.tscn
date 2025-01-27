@@ -18,10 +18,10 @@ size_flags_vertical = 0
 script = ExtResource("1_7klv3")
 
 [node name="Camera" type="Camera2D" parent="."]
-offset = Vector2(2, 1)
+offset = Vector2(2, 2)
 anchor_mode = 0
 enabled = false
-zoom = Vector2(2.02, 2.02)
+zoom = Vector2(2.035, 2.03)
 editor_draw_limits = true
 
 [node name="ScreenContainer" type="AspectRatioContainer" parent="Camera"]
@@ -182,7 +182,7 @@ mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
 
-[node name="AudioPlayer" type="AudioStreamPlayer" parent="Camera/ScreenContainer"]
+[node name="AudioPlayer" type="AudioStreamPlayer" parent="."]
 unique_name_in_owner = true
 volume_db = -10.0
 autoplay = true

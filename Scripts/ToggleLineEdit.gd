@@ -11,12 +11,12 @@ extends PanelContainer
 func _ready() -> void:
 	%TextureButton.texture_normal = GeneralManager.get_icon_texture("Edit")
 	%TextureButton.texture_pressed = GeneralManager.get_icon_texture("Save")
-	%TextureButton.toggled.connect(func(state : bool): editing_mode = state; update_editing_mode(); if emit_text_changed_signal: text_changed_signal_sender.call(text_changed_signal_name, %LineEdit.text, text_changed_signal_argument))
+	%TextureButton.toggled.connect(func(state : bool) -> void: editing_mode = state; update_editing_mode(); if emit_text_changed_signal: text_changed_signal_sender.call(text_changed_signal_name, %LineEdit.text, text_changed_signal_argument); return)
 	update()
 	return
 
 func update(data : Dictionary = {"text": text, "font_size": font_size, "editing_mode": editing_mode, "emit_text_changed_signal": emit_text_changed_signal, "text_changed_signal_sender": text_changed_signal_sender, "text_changed_signal_name": text_changed_signal_name, "text_changed_signal_argument": text_changed_signal_argument}) -> void:
-	for item in data.keys():
+	for item : String in data.keys():
 		self.set(item, data[item])
 	%Label.add_theme_font_size_override("font_size", font_size)
 	%LineEdit.add_theme_font_size_override("font_size", font_size)

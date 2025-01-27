@@ -16,7 +16,7 @@ func _ready() -> void:
 	return
 
 func update(data : Dictionary = {"title": title, "subtitle": subtitle, "id": id, "button_enabled": button_enabled, "editable_title": editable_title, "signal_sender": signal_sender, "button_min_size": button_min_size, "button_icon_name": button_icon_name, "pressed_signal_name": pressed_signal_name, "title_changed_signal_name": title_changed_signal_name}) -> void:
-	for item in data.keys():
+	for item : String in data.keys():
 		self.set(item, data[item])
 	$Container/ToggleLineEdit.visible = editable_title
 	$Container/Title.visible = !editable_title

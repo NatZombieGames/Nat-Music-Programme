@@ -1,7 +1,7 @@
 extends PanelContainer
 
-@onready var normal_stylebox : StyleBoxFlat = preload("res://Assets/CustomTextureButtonNormal.tres")
-@onready var pressed_stylebox : StyleBoxFlat = preload("res://Assets/CustomTextureButtonPressed.tres")
+@onready var normal_stylebox : StyleBoxFlat = preload("res://Assets/CustomButtonNormal.tres")
+@onready var pressed_stylebox : StyleBoxFlat = preload("res://Assets/CustomButtonPressed.tres")
 @export var button_custom_minimum_size : Vector2i = Vector2i(24, 24)
 @export var texture_icon_name : String = "Missing"
 @export var pressed_texture_icon_name : String = "Missing"

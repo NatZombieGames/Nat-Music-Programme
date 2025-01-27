@@ -7,8 +7,9 @@ extends HBoxContainer
 @export var pressed_signal_name : String = "keybind_scene_button_pressed"
 @export var pressed_arguments : Array = []
 
-func _ready():
+func _ready() -> void:
 	update()
+	return
 
 func update(data : Dictionary = {"title": title, "button_1_text": button_1_text, "button_2_text": button_2_text, "pressed_sender": pressed_sender, "pressed_signal_name": pressed_signal_name, "pressed_arguments": pressed_arguments}) -> void:
 	for item : String in data.keys():

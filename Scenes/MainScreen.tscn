@@ -1,4 +1,4 @@
-[gd_scene load_steps=26 format=3 uid="uid://43inlmvkfr28"]
+[gd_scene load_steps=27 format=3 uid="uid://43inlmvkfr28"]
 
 [ext_resource type="PackedScene" uid="uid://di0ca61w28uio" path="res://Scenes/PlayingScreen.tscn" id="1_kfe6r"]
 [ext_resource type="Script" path="res://Scripts/MainScreen.gd" id="1_paqbq"]
@@ -23,6 +23,7 @@
 [ext_resource type="Texture2D" uid="uid://cwhbev52mhjs8" path="res://Assets/Icons/Upload.svg" id="18_465rc"]
 [ext_resource type="StyleBox" uid="uid://chijk7dtw7my" path="res://Assets/DefaultStyleboxFilled.tres" id="18_put2v"]
 [ext_resource type="PackedScene" uid="uid://cggfq5ldfu5yj" path="res://Scenes/CustomToggleButton.tscn" id="19_g648t"]
+[ext_resource type="PackedScene" uid="uid://bmc50mv2rgkwt" path="res://Scenes/CommandLineInterface.tscn" id="24_khgiu"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8wxhm"]
 content_margin_left = 8.0
@@ -115,13 +116,25 @@ vertical_alignment = 1
 [node name="Version" type="Label" parent="Camera/AspectRatioContainer/GreaterContainer/Hatbar/Container"]
 custom_minimum_size = Vector2(0, 125)
 layout_mode = 2
-text = "V1.0"
+text = "Version"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Void2" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/Hatbar/Container"]
 self_modulate = Color(1, 1, 1, 0)
 custom_minimum_size = Vector2(10, 0)
+layout_mode = 2
+
+[node name="BuildType" type="Label" parent="Camera/AspectRatioContainer/GreaterContainer/Hatbar/Container"]
+custom_minimum_size = Vector2(0, 125)
+layout_mode = 2
+text = "Build Undetermined"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Void3" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/Hatbar/Container"]
+self_modulate = Color(1, 1, 1, 0)
+custom_minimum_size = Vector2(5, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 
@@ -135,7 +148,7 @@ button_group = ExtResource("4_2jogn")
 pressed_signal_sender = NodePath("../../../../../..")
 pressed_signal_name = "set_main_screen_page"
 
-[node name="Void3" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/Hatbar/Container"]
+[node name="Void4" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/Hatbar/Container"]
 self_modulate = Color(1, 1, 1, 0)
 custom_minimum_size = Vector2(5, 0)
 layout_mode = 2
@@ -150,7 +163,7 @@ pressed_signal_sender = NodePath("../../../../../..")
 pressed_signal_name = "set_main_screen_page"
 argument = "1"
 
-[node name="Void4" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/Hatbar/Container"]
+[node name="Void5" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/Hatbar/Container"]
 self_modulate = Color(1, 1, 1, 0)
 custom_minimum_size = Vector2(5, 0)
 layout_mode = 2
@@ -165,7 +178,7 @@ pressed_signal_sender = NodePath("../../../../../..")
 pressed_signal_name = "set_main_screen_page"
 argument = "2"
 
-[node name="Void5" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/Hatbar/Container"]
+[node name="Void6" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/Hatbar/Container"]
 self_modulate = Color(1, 1, 1, 0)
 custom_minimum_size = Vector2(5, 0)
 layout_mode = 2
@@ -180,9 +193,9 @@ pressed_signal_sender = NodePath("../../../../../..")
 pressed_signal_name = "set_main_screen_page"
 argument = "3"
 
-[node name="Void6" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/Hatbar/Container"]
+[node name="Void7" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/Hatbar/Container"]
 self_modulate = Color(1, 1, 1, 0)
-custom_minimum_size = Vector2(5, 0)
+custom_minimum_size = Vector2(10, 0)
 layout_mode = 2
 
 [node name="ProfileButton" parent="Camera/AspectRatioContainer/GreaterContainer/Hatbar/Container" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("3_qykjb")]
@@ -195,7 +208,7 @@ pressed_signal_sender = NodePath("../../../../../..")
 pressed_signal_name = "set_main_screen_page"
 argument = "4"
 
-[node name="Void7" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/Hatbar/Container"]
+[node name="Void8" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/Hatbar/Container"]
 self_modulate = Color(1, 1, 1, 0)
 custom_minimum_size = Vector2(10, 0)
 layout_mode = 2
@@ -207,7 +220,7 @@ texture_icon_name = "Exit"
 pressed_signal_sender = NodePath("../../../../../..")
 pressed_signal_name = "exit"
 
-[node name="Void8" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/Hatbar/Container"]
+[node name="Void9" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/Hatbar/Container"]
 self_modulate = Color(1, 1, 1, 0)
 custom_minimum_size = Vector2(10, 0)
 layout_mode = 2
@@ -921,28 +934,6 @@ layout_mode = 2
 size_flags_vertical = 3
 color = Color(0.158472, 0.158472, 0.158472, 1)
 
-[node name="SelectList" type="PanelContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile"]
-visible = false
-custom_minimum_size = Vector2(350, 200)
-layout_direction = 2
-layout_mode = 1
-offset_left = 895.0
-offset_top = 224.0
-offset_right = 1245.0
-offset_bottom = 424.0
-theme_override_styles/panel = ExtResource("9_ejiiw")
-
-[node name="ScrollContainer" type="ScrollContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/SelectList"]
-custom_minimum_size = Vector2(350, 200)
-layout_mode = 2
-follow_focus = true
-
-[node name="Container" type="VBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/SelectList/ScrollContainer"]
-custom_minimum_size = Vector2(100, 0)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 2
-
 [node name="Container" type="HBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile"]
 layout_mode = 1
 anchors_preset = 15
@@ -1002,7 +993,7 @@ text = "Disturbed"
 font_size = 35
 text_changed_signal_sender = NodePath("../../../../../../../../../../../..")
 text_changed_signal_name = "library_details_info_altered"
-text_changed_signal_argument = "title"
+text_changed_signal_argument = "name"
 
 [node name="Subtitle" type="Label" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/HeaderContainer/Container"]
 layout_mode = 2
@@ -1174,6 +1165,29 @@ grow_vertical = 2
 self_modulate = Color(1, 1, 1, 0)
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
+
+[node name="SelectList" type="PanelContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile"]
+visible = false
+custom_minimum_size = Vector2(350, 200)
+layout_direction = 2
+layout_mode = 1
+offset_left = 895.0
+offset_top = 224.0
+offset_right = 1245.0
+offset_bottom = 424.0
+mouse_filter = 1
+theme_override_styles/panel = ExtResource("9_ejiiw")
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/SelectList"]
+custom_minimum_size = Vector2(350, 200)
+layout_mode = 2
+follow_focus = true
+
+[node name="Container" type="VBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/SelectList/ScrollContainer"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 2
 
 [node name="Profile" type="Control" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer"]
 layout_mode = 1
@@ -1534,12 +1548,15 @@ layout_mode = 2
 bbcode_enabled = true
 text = "[center][b]Keybinds[/b]
 Below are buttons to change the keybinds used by the programme, alongside the action they correspond to.
-To change a keybind; press the button relating to the action followed by hitting the button you want to change it to when the popup appears on screen.[/center]"
+To change a keybind; press the button relating to the action followed by hitting the button combination you want to change it to when the popup appears on screen.
+
+[i]!WARNING![/i] Certain key combinations may not work depending on your operating system and any other apps running on your device.[/center]"
 fit_content = true
 scroll_active = false
 
 [node name="Keybinds" type="VBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Keybinds/Container/Panel1/Container"]
 layout_mode = 2
+alignment = 1
 
 [node name="PlayerContainer" type="PanelContainer" parent="Camera/AspectRatioContainer"]
 layout_mode = 2
@@ -1620,6 +1637,37 @@ pressed_signal_sender = NodePath("../../../../../../..")
 pressed_signal_name = "popup_response_pressed"
 argument = "1"
 
+[node name="KeybindScreen" type="ColorRect" parent="Camera/AspectRatioContainer"]
+visible = false
+layout_mode = 2
+color = Color(0, 0, 0, 0.498039)
+
+[node name="Text" type="Label" parent="Camera/AspectRatioContainer/KeybindScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -11.0
+offset_right = 20.0
+offset_bottom = 11.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 35
+text = "Press Any Key/Mouse Button To Change The Keybind, Or Press 'Delete/Del' To Cancel."
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CommandLineInterface" parent="Camera/AspectRatioContainer" instance=ExtResource("24_khgiu")]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(1920, 500)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 8
+
 [node name="LoadingScreen" type="ColorRect" parent="Camera/AspectRatioContainer"]
 unique_name_in_owner = true
 visible = false
@@ -1660,7 +1708,7 @@ dialog_hide_on_ok = true
 mode_overrides_title = false
 file_mode = 0
 access = 2
-filters = PackedStringArray("*.png", "*.jpg", "*.jpeg")
+filters = PackedStringArray("*.jpg", "*.jpeg", "*.ktx", "*.png", "*.svg", "*.tga", "*.webp")
 use_native_dialog = true
 
 [node name="SelectSongDialog" type="FileDialog" parent="Camera/AspectRatioContainer"]
@@ -1676,7 +1724,7 @@ dialog_hide_on_ok = true
 mode_overrides_title = false
 file_mode = 0
 access = 2
-filters = PackedStringArray("*.mp3", "*.wav")
+filters = PackedStringArray("*.mp3", "*.wav", "*.oog")
 use_native_dialog = true
 
 [node name="SelectSongDirectoryDialog" type="FileDialog" parent="Camera/AspectRatioContainer"]

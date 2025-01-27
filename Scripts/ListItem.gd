@@ -34,5 +34,5 @@ func action_button_pressed(index : String) -> void:
 		action_button_sender.call(action_button_signal_names[int(index)], action_button_arguments[int(index)])
 	var button_img : ImageTexture = %Container/ActionsContainer.get_child(int(index)).get_child(0).texture_normal
 	if button_img.resource_name in ["Favourite", "Favourited"]:
-		%Container/ActionsContainer.get_child(int(index)).update({"texture_icon_name": GeneralManager.get_other_item(["Favourite", "Favourited"], button_img.resource_name)})
+		%Container/ActionsContainer.get_child(int(index)).update({"texture_icon_name": GeneralManager.get_other_list_item(["Favourite", "Favourited"], button_img.resource_name)})
 	return
