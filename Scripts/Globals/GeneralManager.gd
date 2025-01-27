@@ -91,8 +91,8 @@ func get_id_type(id : String) -> MasterDirectoryManager.use_type:
 	return MasterDirectoryManager.use_type.UNKNOWN
 
 func disconnect_all_connections(node_signal : Signal) -> void:
-	for item : Dictionary in node_signal.get_connections():
-		node_signal.disconnect(item["callable"])
+	for connection : Dictionary in node_signal.get_connections():
+		node_signal.disconnect(connection["callable"])
 	return
 
 func arr_get(arr : Array[Variant], index : int, default : Variant) -> Variant:
@@ -107,8 +107,10 @@ func limit(string : String, size : int, limiter : String = "...") -> String:
 
 func get_input_event(keycode : int) -> InputEvent:
 	if keycode in key_keycodes:
+		@warning_ignore("int_as_enum_without_cast")
 		return (func() -> InputEventKey: var key : InputEventKey = InputEventKey.new(); key.keycode = keycode; return key).call()
 	elif keycode in mouse_keycodes:
+		@warning_ignore("int_as_enum_without_cast")
 		return (func() -> InputEventMouseButton: var key : InputEventMouseButton = InputEventMouseButton.new(); key.button_index = keycode; return key).call()
 	return null
 

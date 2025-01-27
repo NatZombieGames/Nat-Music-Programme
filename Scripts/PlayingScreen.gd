@@ -38,6 +38,7 @@ func _ready() -> void:
 	for item : String in MasterDirectoryManager.user_data_dict["active_song_data"].keys():
 		self.set(item, MasterDirectoryManager.user_data_dict["active_song_data"][item])
 	%AudioPlayer.volume_db = MasterDirectoryManager.user_data_dict["volume"]
+	shuffle = MasterDirectoryManager.user_data_dict["shuffle"]
 	if active_song_id != "":
 		load_song(active_song_id)
 	return

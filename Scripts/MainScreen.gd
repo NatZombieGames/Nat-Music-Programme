@@ -64,6 +64,7 @@ func _ready() -> void:
 	await create_tween().tween_property(%LoadingScreen, "modulate", Color(1, 1, 1, 0), 0.25).from(Color(1, 1, 1, 1)).finished
 	%LoadingScreen.visible = false
 	GeneralManager.set_mouse_busy_state.call(false)
+	print(get_tree().current_scene)
 	return
 
 func _input(event : InputEvent) -> void:
@@ -117,15 +118,15 @@ func _input(event : InputEvent) -> void:
 func update_keybinds_screen() -> void:
 	while len(%MainContainer/Profile/Container/Body/Keybinds/Container/Panel1/Container/Keybinds.get_children()) < len(MasterDirectoryManager.keybinds):
 		%MainContainer/Profile/Container/Body/Keybinds/Container/Panel1/Container/Keybinds.add_child(keybind_scene.instantiate())
-	for item : StringName in MasterDirectoryManager.keybinds.keys():
-		var events : Array = MasterDirectoryManager.user_data_dict["keybinds"][item]
-		print(item + " action events: " + str(events))
-		var data : Dictionary = {"title": "[i]" + item + "[/i]", "button_1_text": "None", "button_2_text": "None", "pressed_sender": self, "pressed_signal_name": "keybind_button_pressed", "pressed_arguments": [MasterDirectoryManager.keybinds.keys().find(item)]}
+	for keybind : StringName in MasterDirectoryManager.keybinds.keys():
+		var events : Array = MasterDirectoryManager.user_data_dict["keybinds"][keybind]
+		print(keybind + " action events: " + str(events))
+		var data : Dictionary = {"title": "[i]" + keybind + "[/i]", "button_1_text": "None", "button_2_text": "None", "pressed_sender": self, "pressed_signal_name": "keybind_button_pressed", "pressed_arguments": [MasterDirectoryManager.keybinds.keys().find(keybind)]}
 		for i : int in range(0, mini(len(events), 2)):
 			if typeof(events[i]) == TYPE_DICTIONARY:
 				print("events[" + str(i) + "]: " + str(events[i]))
 				data["button_" + str(i+1) + "_text"] = GeneralManager.customevent_to_string(events[i])
-		%MainContainer/Profile/Container/Body/Keybinds/Container/Panel1/Container/Keybinds.get_child(MasterDirectoryManager.keybinds.keys().find(item)).update(data)
+		%MainContainer/Profile/Container/Body/Keybinds/Container/Panel1/Container/Keybinds.get_child(MasterDirectoryManager.keybinds.keys().find(keybind)).update(data)
 		print("---")
 	return
 
@@ -207,10 +208,12 @@ func profile_selector_selected(id : String) -> void:
 func profile_clear_pressed() -> void:
 	match GeneralManager.get_id_type(library_details_item_id):
 		MasterDirectoryManager.use_type.ALBUM:
-			MasterDirectoryManager.artist_id_dict[MasterDirectoryManager.album_id_dict[library_details_item_id]["artist"]]["albums"].erase(library_details_item_id)
+			if MasterDirectoryManager.album_id_dict[library_details_item_id]["artist"] != "":
+				MasterDirectoryManager.artist_id_dict[MasterDirectoryManager.album_id_dict[library_details_item_id]["artist"]]["albums"].erase(library_details_item_id)
 			MasterDirectoryManager.album_id_dict[library_details_item_id]["artist"] = ""
 		MasterDirectoryManager.use_type.SONG:
-			MasterDirectoryManager.album_id_dict[MasterDirectoryManager.song_id_dict[library_details_item_id]["album"]]["songs"].erase(library_details_item_id)
+			if MasterDirectoryManager.song_id_dict[library_details_item_id]["album"] != "":
+				MasterDirectoryManager.album_id_dict[MasterDirectoryManager.song_id_dict[library_details_item_id]["album"]]["songs"].erase(library_details_item_id)
 			MasterDirectoryManager.song_id_dict[library_details_item_id]["album"] = ""
 	%MainContainer/Library/Container/Profile/Container/Container/ParentContainer/Container/RefreshBtn.emit_signal("pressed")
 	return
@@ -274,7 +277,7 @@ func set_song_upload_style(style : String) -> void:
 	populate_song_upload_list()
 	return
 
-func populate_library_screen(page : int) -> void:
+func populate_library_screen(page : int) -> int:
 	print("\n- populate library start with a page of " + str(page))
 	GeneralManager.set_mouse_busy_state.call(true)
 	#
@@ -305,7 +308,7 @@ func populate_library_screen(page : int) -> void:
 			node.update(to_update)
 	#
 	GeneralManager.set_mouse_busy_state.call(false)
-	return
+	return OK
 
 func library_details_info_altered(new_value : String, property_name : String) -> void:
 	var item_dict_name : String = ["artist", "album", "song"][int(library_details_item_id[0])] + "_id_dict"
@@ -353,64 +356,56 @@ func populate_song_upload_list() -> void:
 		#await get_tree().process_frame
 	return
 
-func open_context_menu(id : String) -> void:
+func open_context_menu(id : String) -> int:
 	print("open context menu called with id of: " + id)
 	GeneralManager.set_mouse_busy_state.call(true)
 	library_details_item_id = id
 	%MainContainer/Library/Container/ScrollContainer.visible = false
 	var id_type : MasterDirectoryManager.use_type = GeneralManager.get_id_type(id)
+	if GeneralManager.get_id_type(id) == MasterDirectoryManager.use_type.UNKNOWN:
+		return ERR_INVALID_PARAMETER
 	#
 	if id_type == MasterDirectoryManager.use_type.SONG:
 		%MainContainer/Library/Container/Profile/Container/Container/HeaderContainer/ImageContainer/Image.texture = ImageTexture.create_from_image(GeneralManager.get_image_from_cache(MasterDirectoryManager.get_object_data.call(MasterDirectoryManager.get_object_data.call(id)["album"])["image_file_path"]))
-	elif id_type != MasterDirectoryManager.use_type.UNKNOWN:
-		%MainContainer/Library/Container/Profile/Container/Container/HeaderContainer/ImageContainer/Image.texture = ImageTexture.create_from_image(GeneralManager.get_image_from_cache(MasterDirectoryManager.get_object_data.call(id)["image_file_path"]))
 	else:
-		%MainContainer/Library/Container/Profile/Container/Container/HeaderContainer/ImageContainer/Image.texture = GeneralManager.get_icon_texture("Missing")
+		%MainContainer/Library/Container/Profile/Container/Container/HeaderContainer/ImageContainer/Image.texture = ImageTexture.create_from_image(GeneralManager.get_image_from_cache(MasterDirectoryManager.get_object_data.call(id)["image_file_path"]))
 	%MainContainer/Library/Container/Profile/Container/Container/HeaderContainer/Container/Title.update({"editing_mode": true, "text": MasterDirectoryManager.get_object_data.call(id)["name"]})
 	%MainContainer/Library/Container/Profile/Container/Container/HeaderContainer/Container/Title.update({"editing_mode": false})
 	%MainContainer/Library/Container/Profile/Container/Container/HeaderContainer/Container/Subtitle.text = id
-	if id_type != MasterDirectoryManager.use_type.UNKNOWN:
-		for item : Node in %MainContainer/Library/Container/Profile/Container/Container/Body.get_children():
-			item.visible = item.name.to_lower() == MasterDirectoryManager.use_type.keys().map(func(key : String) -> String: return key.to_lower())[GeneralManager.get_id_type(id)]
-		var page_body : Node = %MainContainer/Library/Container/Profile/Container/Container/Body
-		var page_parent : Node = %MainContainer/Library/Container/Profile/Container/Container/ParentContainer
+	%MainContainer/Library/Container/Profile/Container/Container/Body.get_children().map(func(node : Node) -> Node: node.visible = node.name.to_lower() == MasterDirectoryManager.get_data_types.call()[GeneralManager.get_id_type(id)]; return)
+	#for item : Node in %MainContainer/Library/Container/Profile/Container/Container/Body.get_children():
+	#	item.visible = item.name.to_lower() == MasterDirectoryManager.get_data_types.call()[GeneralManager.get_id_type(id)]
+	var page_body : Node = %MainContainer/Library/Container/Profile/Container/Container/Body
+	var page_parent : Node = %MainContainer/Library/Container/Profile/Container/Container/ParentContainer
+	page_parent.visible = !(id_type == MasterDirectoryManager.use_type.ARTIST)
+	page_body.visible = !(id_type == MasterDirectoryManager.use_type.SONG)
+	if id_type in [MasterDirectoryManager.use_type.ARTIST, MasterDirectoryManager.use_type.ALBUM]:
+		page_body = page_body.get_children().filter(func(node : Node) -> bool: return node.visible)[0].find_child("DataList", false).get_child(0).get_child(0)
 		match id_type:
 			MasterDirectoryManager.use_type.ARTIST:
-				page_parent.visible = false
-				page_body.visible = true
+				populate_data_list_context_menu(page_body, MasterDirectoryManager.use_type.ALBUM, 
+				MasterDirectoryManager.get_artist_discography_data(id))
+			MasterDirectoryManager.use_type.ALBUM:
+				populate_data_list_context_menu(page_body, MasterDirectoryManager.use_type.SONG, 
+				MasterDirectoryManager.get_album_tracklist_data(id))
+	if id_type in [MasterDirectoryManager.use_type.ALBUM, MasterDirectoryManager.use_type.SONG]:
+		var data : Dictionary = {"image": null, "title": null, "subtitle": null}
+		match id_type:
+			MasterDirectoryManager.use_type.ALBUM:
+				data["image"] = ImageTexture.create_from_image(GeneralManager.get_image_from_cache(MasterDirectoryManager.get_object_data.call(MasterDirectoryManager.get_object_data.call(id)["artist"])["image_file_path"]))
+				data["title"] = MasterDirectoryManager.artist_id_dict[MasterDirectoryManager.album_id_dict[id]["artist"]]["name"]
+				data["subtitle"] = MasterDirectoryManager.album_id_dict[id]["artist"]
 			MasterDirectoryManager.use_type.SONG:
-				page_parent.visible = true
-				page_body.visible = false
-			_:
-				page_parent.visible = true
-				page_body.visible = true
-		if id_type in [MasterDirectoryManager.use_type.ARTIST, MasterDirectoryManager.use_type.ALBUM]:
-			page_body = page_body.get_children().filter(func(item : Node) -> bool: return item.visible)[0].find_child("DataList", false).get_child(0).get_child(0)
-			match id_type:
-				MasterDirectoryManager.use_type.ARTIST:
-					populate_data_list_context_menu(page_body, MasterDirectoryManager.use_type.ALBUM, 
-					MasterDirectoryManager.get_artist_discography_data(id))
-				MasterDirectoryManager.use_type.ALBUM:
-					populate_data_list_context_menu(page_body, MasterDirectoryManager.use_type.SONG, 
-					MasterDirectoryManager.get_album_tracklist_data(id))
-		if id_type in [MasterDirectoryManager.use_type.ALBUM, MasterDirectoryManager.use_type.SONG]:
-			var data : Dictionary = {"image": null, "title": null, "subtitle": null}
-			match id_type:
-				MasterDirectoryManager.use_type.ALBUM:
-					data["image"] = ImageTexture.create_from_image(GeneralManager.get_image_from_cache(MasterDirectoryManager.get_object_data.call(MasterDirectoryManager.get_object_data.call(id)["artist"])["image_file_path"]))
-					data["title"] = MasterDirectoryManager.artist_id_dict[MasterDirectoryManager.album_id_dict[id]["artist"]]["name"]
-					data["subtitle"] = MasterDirectoryManager.album_id_dict[id]["artist"]
-				MasterDirectoryManager.use_type.SONG:
-					data["image"] = ImageTexture.create_from_image(GeneralManager.get_image_from_cache(MasterDirectoryManager.get_object_data.call(MasterDirectoryManager.get_object_data.call(id)["album"])["image_file_path"]))
-					data["title"] = MasterDirectoryManager.album_id_dict[MasterDirectoryManager.song_id_dict[id]["album"]]["name"]
-					data["subtitle"] = MasterDirectoryManager.song_id_dict[id]["album"]
-			%MainContainer/Library/Container/Profile/Container/Container/ParentContainer/Container/ImageContainer/Image.texture = data["image"]
-			%MainContainer/Library/Container/Profile/Container/Container/ParentContainer/Container/Title.text = data["title"]
-			%MainContainer/Library/Container/Profile/Container/Container/ParentContainer/Container/Subtitle.text = data["subtitle"]
+				data["image"] = ImageTexture.create_from_image(GeneralManager.get_image_from_cache(MasterDirectoryManager.get_object_data.call(MasterDirectoryManager.get_object_data.call(id)["album"])["image_file_path"]))
+				data["title"] = MasterDirectoryManager.album_id_dict[MasterDirectoryManager.song_id_dict[id]["album"]]["name"]
+				data["subtitle"] = MasterDirectoryManager.song_id_dict[id]["album"]
+		%MainContainer/Library/Container/Profile/Container/Container/ParentContainer/Container/ImageContainer/Image.texture = data["image"]
+		%MainContainer/Library/Container/Profile/Container/Container/ParentContainer/Container/Title.text = data["title"]
+		%MainContainer/Library/Container/Profile/Container/Container/ParentContainer/Container/Subtitle.text = data["subtitle"]
 	#
 	%MainContainer/Library/Container/Profile.visible = true
 	GeneralManager.set_mouse_busy_state.call(false)
-	return
+	return OK
 
 func context_action_button_pressed(args : Array) -> void:
 	print("context action button pressed args: " + str(args))

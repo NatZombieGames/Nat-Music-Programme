@@ -18,22 +18,18 @@ func _ready() -> void:
 func update(data : Dictionary = {"text": text, "font_size": font_size, "editing_mode": editing_mode, "emit_text_changed_signal": emit_text_changed_signal, "text_changed_signal_sender": text_changed_signal_sender, "text_changed_signal_name": text_changed_signal_name, "text_changed_signal_argument": text_changed_signal_argument}) -> void:
 	for item : String in data.keys():
 		self.set(item, data[item])
-	%Label.add_theme_font_size_override("font_size", font_size)
+	%LineEdit.text = text
 	%LineEdit.add_theme_font_size_override("font_size", font_size)
 	%TextureButton.set_pressed_no_signal(editing_mode)
 	update_editing_mode()
 	return
 
 func update_editing_mode() -> void:
-	#print("updating with a mode of " + str(editing_mode) + ", text is " + text + " and line edit text is " + %LineEdit.text)
-	%Label.visible = !editing_mode
-	%LineEdit.visible = editing_mode
-	if editing_mode == false:
-		text = %LineEdit.text
+	%LineEdit.editable = editing_mode
+	%LineEdit.selecting_enabled = editing_mode
+	%LineEdit.flat = !editing_mode
+	if editing_mode == true:
+		%LineEdit.grab_focus()
 	else:
-		%LineEdit.select_all()
-	%LineEdit.text = text
-	%LineEdit.placeholder_text = text
-	%Label.text = text
-	#print("after updating with a mode of " + str(editing_mode) + ", text is " + text + " and line edit text is " + %LineEdit.text)
+		%LineEdit.placeholder_text = %LineEdit.text
 	return

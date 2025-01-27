@@ -7,20 +7,21 @@ extends Node
 @export var user_data_dict : Dictionary = {}
 @export var finished_loading_data : bool = false
 @export var finished_saving_data : bool = false
-@export var get_data_types : Callable = (func() -> Array: return use_type.keys().map(func(item : String) -> String: return item.to_lower()))
+@export var get_data_types : Callable = (func() -> Array: return use_type.keys().map(func(key : String) -> String: return key.to_lower()))
 @export var get_object_data : Callable = (func(id : String) -> Dictionary: return self.get(get_data_types.call()[int(id[0])] + "_id_dict")[id])
 var data_location : String = ""
 #   const after ready
+@warning_ignore("unused_signal")
 signal finished_loading_data_signal
 signal finished_saving_data_signal
 const default_user_data : Dictionary = {
-	"volume": -10, "player_fullscreen": false, "command_on_startup": "", "window_position": Vector2.ZERO, "window_mode": DisplayServer.WINDOW_MODE_MAXIMIZED, "window_screen": 0, "save_on_quit": true, "continue_playing": true, "active_song_data": {"active_song_list": [], "active_song_list_id": "", "active_song_id": ""}, "keybinds": {}}
+	"volume": -10, "player_fullscreen": false, "auto_clear": false, "shuffle": false, "command_on_startup": "", "window_position": Vector2.ZERO, "window_mode": DisplayServer.WINDOW_MODE_MAXIMIZED, "window_screen": 0, "save_on_quit": true, "continue_playing": true, "active_song_data": {"active_song_list": [], "active_song_list_id": "", "active_song_id": ""}, "keybinds": {}}
 const id_chars : PackedStringArray = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", 
 "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H", 
 "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "0", "1", "2", 
 "3", "4", "5", "6", "7", "8", "9", "!", '"', "£", "$", "%", "^", "&", "*", "(", ")", "-", "_", "=", "+", 
 "{", "}", ":", ";", "'", "@", "~", "#", ",", "<", ".", ">", "/", "?", "|", "`", "¬", "¥", "¢"]
-const settable_settings : Dictionary = {"volume": [-10], "player_fulscreen": [false, true], "command_on_startup": [""], "window_mode": ["2 = Maximized", "0 = Windowed", "1 = Minimized", "3 = Fullscreen", "4 = Exclusive Fullscreen"], "window_screen": [0], "save_on_quit": [true, false], "continue_playing": [true, false]}
+const settable_settings : Dictionary = {"volume": [-10], "player_fulscreen": [false, true], "auto_clear": [false, true], "shuffle": [false, true], "command_on_startup": [""], "window_mode": ["2 = Maximized", "0 = Windowed", "1 = Minimized", "3 = Fullscreen", "4 = Exclusive Fullscreen"], "window_screen": [0], "save_on_quit": [true, false], "continue_playing": [true, false]}
 var keybinds : Dictionary = {} # const after ready is finished
 enum use_type {ARTIST, ALBUM, SONG, PLAYLIST, UNKNOWN}
 
@@ -43,9 +44,9 @@ func _notification(notif : int) -> void:
 			await self.finished_saving_data_signal
 	return
 
-func create_entry(type : use_type, data : Dictionary = get_data_template(type)) -> void:
+func create_entry(type : use_type, data : Dictionary = get_data_template(type)) -> int:
 	[artist_id_dict, album_id_dict, song_id_dict, playlist_id_dict][type][generate_id(type)] = data
-	return
+	return OK
 
 func get_data_template(type : use_type) -> Dictionary:
 	return [{"name": "", "albums": [], "image_file_path": "", "favourite": false, "metadata": []}, {"name": "", "artist": "", "songs": [], "image_file_path": "", "favourite": false, "metadata": []}, {"name": "", "album": "", "song_file_path": "", "favourite": false, "metadata": []}, {"name": "", "songs": [], "image_file_path": "", "favourite": false, "metadata": []}][type]
@@ -57,7 +58,7 @@ func generate_id(type : use_type) -> String:
 		result = str(type)
 		for i : int in range(0, 16):
 			result += id_chars[randi_range(0, len(id_chars)-1)]
-		generating = result in MasterDirectoryManager.get(["artist", "album", "song", "playlist"][type] + "_id_dict").keys()
+		generating = result in self.get(["artist", "album", "song", "playlist"][type] + "_id_dict").keys()
 	print("Newly Generated " + str(use_type.keys()[type]).to_lower().capitalize() + " ID: " + str(result))
 	return result
 
@@ -71,6 +72,8 @@ func save_data(save_location : String = "NMP_Data.dat") -> int:
 	user_data_dict["window_position"] = DisplayServer.window_get_position()
 	user_data_dict["window_screen"] = DisplayServer.window_get_current_screen()
 	user_data_dict["player_fullscreen"] = not get_node("/root/MainScreen/Camera").enabled
+	user_data_dict["shuffle"] = get_node(^"/root/MainScreen").playing_screen.shuffle
+	user_data_dict["auto_clear"] = get_node(^"/root/MainScreen/Camera/AspectRatioContainer/CommandLineInterface").auto_clear
 	for item : String in get_data_types.call():
 		data.set_value("data", item + "_id_dict", self.get(item + "_id_dict"))
 	if user_data_dict["continue_playing"]:
@@ -129,6 +132,10 @@ func set_user_setting(setting : StringName, value : Variant) -> int:
 				DisplayServer.window_set_mode(value)
 			"window_screen":
 				DisplayServer.window_set_current_screen(value)
+			"shuffle":
+				get_node(^"/root/MainScreen").playing_screen.shuffle = value
+			"auto_clear":
+				get_node(^"/root/MainScreen/Camera/AspectRatioContainer/CommandLineInterface").auto_clear = value
 		return OK
 	return ERR_INVALID_PARAMETER
 
@@ -136,12 +143,12 @@ func get_user_settings() -> Dictionary:
 	return settable_settings
 
 func apply_control_settings() -> void:
-	#print("user keybinds before application: " + str(MasterDirectoryManager.user_data_dict["keybinds"]))
+	#print("user keybinds before application: " + str(user_data_dict["keybinds"]))
 	for keybind : String in keybinds:
 		#print("InputMap for action " + keybind + " before applying settings: " + str(InputMap.action_get_events(keybind)))
 		InputMap.action_erase_events(keybind)
-		#print("custom events for keybind " + keybind + ": " + str(MasterDirectoryManager.user_data_dict["keybinds"][keybind]))
-		for custom_event : Dictionary in MasterDirectoryManager.user_data_dict["keybinds"][keybind].filter(func(array_item : Variant) -> bool: return not typeof(array_item) == TYPE_STRING):
+		#print("custom events for keybind " + keybind + ": " + str(user_data_dict["keybinds"][keybind]))
+		for custom_event : Dictionary in user_data_dict["keybinds"][keybind].filter(func(array_item : Variant) -> bool: return not typeof(array_item) == TYPE_STRING):
 			InputMap.action_add_event(keybind, GeneralManager.parse_customevent_to_inputevent(custom_event))
 		print("InputMap for action " + keybind + " after applying settings:\n" + str(InputMap.action_get_events(keybind)).replace(", InputEventKey: ", ",\nInputEventKey: "))
 		print("- - -")

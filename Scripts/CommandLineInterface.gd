@@ -11,7 +11,7 @@ var check_call_arg_type : Callable = (func(arg : String) -> Variant: var msg : S
 const commands : PackedStringArray = ["echo", "call"]
 const special_commands : PackedStringArray = ["help", "clear", "auto_clear", "info", "error_codes", "read", "close", "exit", "hard_reload"]
 const debug_commands : PackedStringArray = ["prnt_id_dict"]
-const callables : Dictionary = {"MasterDirectoryManager": ["get_user_settings", "set_user_setting"], "CommandLineInterface": ["print_to_output", "run_command"], "MainScreen": ["play", "set_favourite"], "PlayingScreen": ["reset_playing_screen", "set_player_setting", "get_player_settings"]}
+const callables : Dictionary = {"MasterDirectoryManager": ["get_user_settings", "set_user_setting", "save_data"], "CommandLineInterface": ["print_to_output", "run_command"], "MainScreen": ["play", "set_favourite"], "PlayingScreen": ["reset_playing_screen", "set_player_setting", "get_player_settings"]}
 const boolean_strings : PackedStringArray = ["1", "true", "enabled", "yes", "on"]
 var callables_commands : Array[String] = []
 #   const after ready
@@ -22,6 +22,9 @@ func _ready() -> void:
 	#
 	%InputField.text_submitted.connect(func(text : String) -> void: run_command(text); return)
 	#
+	if MasterDirectoryManager.finished_loading_data == false:
+		await MasterDirectoryManager.finished_loading_data_signal
+	auto_clear = MasterDirectoryManager.user_data_dict["auto_clear"]
 	return
 
 func run_command(command : String) -> int:
