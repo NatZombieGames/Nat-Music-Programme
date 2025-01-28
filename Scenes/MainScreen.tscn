@@ -1,4 +1,4 @@
-[gd_scene load_steps=27 format=3 uid="uid://43inlmvkfr28"]
+[gd_scene load_steps=28 format=3 uid="uid://43inlmvkfr28"]
 
 [ext_resource type="PackedScene" uid="uid://di0ca61w28uio" path="res://Scenes/PlayingScreen.tscn" id="1_kfe6r"]
 [ext_resource type="Script" path="res://Scripts/MainScreen.gd" id="1_paqbq"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://cexj0b2hdd4k3" path="res://Scenes/CustomTextureButton.tscn" id="3_qykjb"]
 [ext_resource type="Texture2D" uid="uid://b2uspxgiu1mmg" path="res://Assets/SoftwareLogoCircle_1.png" id="3_wdxbg"]
 [ext_resource type="ButtonGroup" uid="uid://bvmrourklaaxt" path="res://Assets/MainScreenButtonGroup.tres" id="4_2jogn"]
+[ext_resource type="ButtonGroup" uid="uid://dh7lail6ic7nk" path="res://Assets/PlaylistPageButtonGroup.tres" id="5_4gojb"]
 [ext_resource type="PackedScene" uid="uid://c52uwqaj3b62h" path="res://Scenes/CustomButton.tscn" id="5_5wduh"]
 [ext_resource type="ButtonGroup" uid="uid://cux5rtipss0f1" path="res://Assets/NewButtonGroup.tres" id="6_wg16v"]
 [ext_resource type="Texture2D" uid="uid://bib3ce2ocxmme" path="res://Assets/Icons/Missing.svg" id="8_3oq6m"]
@@ -247,7 +248,6 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="Playlists" type="Control" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer"]
-visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -255,6 +255,102 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+
+[node name="Container" type="VBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Playlists"]
+custom_minimum_size = Vector2(1922, 942)
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+theme_override_constants/separation = -1
+
+[node name="Header" type="ColorRect" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Playlists/Container"]
+custom_minimum_size = Vector2(0, 75)
+layout_mode = 2
+color = Color(0.117647, 0.117647, 0.117647, 1)
+
+[node name="TabContainer" type="HBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Playlists/Container/Header"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Title" type="Label" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Playlists/Container/Header/TabContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = " Playlists"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Page" type="Label" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Playlists/Container/Header/TabContainer"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_font_sizes/font_size = 25
+text = " Manage"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Void0" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Playlists/Container/Header/TabContainer"]
+self_modulate = Color(1, 1, 1, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ManageButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Playlists/Container/Header/TabContainer" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("3_qykjb")]
+layout_mode = 2
+button_custom_minimum_size = Vector2i(45, 45)
+texture_icon_name = "Playlist"
+toggle = true
+pressed = true
+button_group = ExtResource("5_4gojb")
+pressed_signal_sender = NodePath("../../../../../../../../..")
+pressed_signal_name = "set_playlist_screen_page"
+
+[node name="Void1" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Playlists/Container/Header/TabContainer"]
+self_modulate = Color(1, 1, 1, 0)
+custom_minimum_size = Vector2(5, 0)
+layout_mode = 2
+
+[node name="CreateButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Playlists/Container/Header/TabContainer" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("3_qykjb")]
+layout_mode = 2
+button_custom_minimum_size = Vector2i(45, 45)
+texture_icon_name = "Songs"
+toggle = true
+button_group = ExtResource("5_4gojb")
+pressed_signal_sender = NodePath("../../../../../../../../..")
+pressed_signal_name = "set_playlist_screen_page"
+argument = "1"
+
+[node name="Void2" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Playlists/Container/Header/TabContainer"]
+self_modulate = Color(1, 1, 1, 0)
+custom_minimum_size = Vector2(5, 0)
+layout_mode = 2
+
+[node name="Separator" type="ColorRect" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Playlists/Container"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+color = Color(0.235294, 0.235294, 0.235294, 1)
+
+[node name="Body" type="Control" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Playlists/Container"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Manage" type="ScrollContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Playlists/Container/Body"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Create" type="Control" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Playlists/Container/Body"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="New" type="Control" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer"]
 visible = false
@@ -863,6 +959,14 @@ text = " Library"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="Page" type="Label" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Header/TabContainer"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_font_sizes/font_size = 25
+text = " Artists"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="Void0" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Header/TabContainer"]
 self_modulate = Color(1, 1, 1, 0)
 layout_mode = 2
@@ -1112,16 +1216,33 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="DataList" type="PanelContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Artist"]
-custom_minimum_size = Vector2(750, 0)
+custom_minimum_size = Vector2(750, 350)
 layout_mode = 2
 size_flags_horizontal = 0
 theme_override_styles/panel = ExtResource("9_ejiiw")
 
-[node name="ScrollContainer" type="ScrollContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Artist/DataList"]
+[node name="Container" type="VBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Artist/DataList"]
+layout_mode = 2
+
+[node name="InfoContainer" type="HBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Artist/DataList/Container"]
+layout_mode = 2
+
+[node name="ItemQuantity" type="Label" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Artist/DataList/Container/InfoContainer"]
+layout_mode = 2
+text = " Items: 0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Separator" type="ColorRect" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Artist/DataList/Container"]
+custom_minimum_size = Vector2(0, 5)
+layout_mode = 2
+color = Color(0.137255, 0.137255, 0.137255, 1)
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Artist/DataList/Container"]
 custom_minimum_size = Vector2(0, 300)
 layout_mode = 2
 
-[node name="Container" type="VBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Artist/DataList/ScrollContainer"]
+[node name="Container" type="VBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Artist/DataList/Container/ScrollContainer"]
 custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -1137,16 +1258,33 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="DataList" type="PanelContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Album"]
-custom_minimum_size = Vector2(750, 0)
+custom_minimum_size = Vector2(750, 350)
 layout_mode = 2
 size_flags_horizontal = 0
 theme_override_styles/panel = ExtResource("9_ejiiw")
 
-[node name="ScrollContainer" type="ScrollContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Album/DataList"]
+[node name="Container" type="VBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Album/DataList"]
+layout_mode = 2
+
+[node name="InfoContainer" type="HBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Album/DataList/Container"]
+layout_mode = 2
+
+[node name="ItemQuantity" type="Label" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Album/DataList/Container/InfoContainer"]
+layout_mode = 2
+text = " Items: 0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Separator" type="ColorRect" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Album/DataList/Container"]
+custom_minimum_size = Vector2(0, 5)
+layout_mode = 2
+color = Color(0.137255, 0.137255, 0.137255, 1)
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Album/DataList/Container"]
 custom_minimum_size = Vector2(0, 300)
 layout_mode = 2
 
-[node name="Container" type="VBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Album/DataList/ScrollContainer"]
+[node name="Container" type="VBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Album/DataList/Container/ScrollContainer"]
 custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -1190,6 +1328,7 @@ size_flags_horizontal = 3
 size_flags_vertical = 2
 
 [node name="Profile" type="Control" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer"]
+visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -1224,6 +1363,14 @@ grow_vertical = 2
 layout_mode = 2
 theme_override_font_sizes/font_size = 30
 text = " Profile"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Page" type="Label" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Header/TabContainer"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_font_sizes/font_size = 25
+text = " Data"
 horizontal_alignment = 1
 vertical_alignment = 1
 

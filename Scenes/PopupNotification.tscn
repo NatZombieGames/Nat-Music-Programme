@@ -9,8 +9,11 @@ mouse_filter = 2
 theme_override_styles/panel = ExtResource("1_xw6od")
 script = ExtResource("2_pucgy")
 
-[node name="Title" type="Label" parent="."]
+[node name="Title" type="RichTextLabel" parent="."]
 layout_mode = 2
+bbcode_enabled = true
 text = " Task Failed Succesfully "
-horizontal_alignment = 1
-vertical_alignment = 1
+fit_content = true
+scroll_active = false
+autowrap_mode = 0
+shortcut_keys_enabled = false

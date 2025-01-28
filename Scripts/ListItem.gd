@@ -3,6 +3,8 @@ extends PanelContainer
 @onready var action_button : PackedScene = preload("res://Scenes/CustomTextureButton.tscn")
 @export var title : String = "Placeholder"
 @export var subtitle : String = "Placeholder"
+@export var copy_subtitle_button : bool = true
+@export var copy_subtitle_text : String = "[i] ID '[u]" + subtitle + "[/u]' Was Copied To Clipboard. [/i]"
 @export var image : ImageTexture
 @export var action_button_sender : Node
 @export var action_buttons : int = 0
@@ -15,12 +17,15 @@ func _ready() -> void:
 	update()
 	return
 
-func update(data : Dictionary = {"title": title, "subtitle": subtitle, "image": image, "action_button_sender": action_button_sender, "action_buttons": action_buttons, "action_button_images": action_button_images, "action_button_signal_names": action_button_signal_names, "action_button_arguments": action_button_arguments}) -> void:
+func update(data : Dictionary = {"title": title, "subtitle": subtitle, "copy_subtitle_button": copy_subtitle_button, "copy_subtitle_text": copy_subtitle_text, "image": image, "action_button_sender": action_button_sender, "action_buttons": action_buttons, "action_button_images": action_button_images, "action_button_signal_names": action_button_signal_names, "action_button_arguments": action_button_arguments}) -> void:
 	for item : String in data.keys():
 		self.set(item, data[item])
 	%Container/InfoContainer/Title.text = title
 	%Container/InfoContainer/Subtitle.text = subtitle
 	%Image.texture = image
+	%Button.disabled = !copy_subtitle_button
+	GeneralManager.disconnect_all_connections(%Button.pressed)
+	%Button.pressed.connect(func() -> void: DisplayServer.clipboard_set(subtitle); print("copy subtitle text is: " + copy_subtitle_text); get_node(^"/root/MainScreen").call(&"create_popup_notif", copy_subtitle_text); return)
 	for i : int in range(0, action_buttons):
 		if len(%Container/ActionsContainer.get_children()) < i+1:
 			%Container/ActionsContainer.add_child(action_button.instantiate())

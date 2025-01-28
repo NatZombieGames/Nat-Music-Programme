@@ -88,6 +88,7 @@ func save_data(save_location : String = "NMP_Data.dat") -> int:
 	if data.encode_to_text() != FileAccess.open(save_location, FileAccess.READ).get_as_text():
 		data.save(save_location)
 	GeneralManager.set_mouse_busy_state.call(false)
+	GeneralManager.cli_print_callable.call("[i]Saved Data Succesfully To '[u]" + save_location.get_file() + "[/u]' In '[u]" + save_location.get_base_dir() + "[/u]'.[/i]")
 	finished_saving_data = true
 	self.emit_signal("finished_saving_data_signal")
 	print("!! Saved Data Succesfully To '" + save_location + "' !!\n")
@@ -101,6 +102,7 @@ func load_data() -> void:
 		user_data_dict = default_user_data
 		finished_loading_data = true
 		self.emit_signal("finished_loading_data_signal")
+		GeneralManager.cli_print_callable.call("[i]No Data File Found During Load, Running With Default Data.[/i]")
 		return
 	var data : ConfigFile = ConfigFile.new()
 	data.load(data_location)
@@ -113,6 +115,7 @@ func load_data() -> void:
 		if not item in user_data_dict["keybinds"].keys():
 			user_data_dict["keybinds"][item] = keybinds[item]
 	apply_control_settings()
+	GeneralManager.cli_print_callable.call("[i]Loaded Data Succesfully From '[u]" + data_location + "[/u]'.[/i]")
 	print("!! Data Succesfully Loaded From '" + data_location + "' !!\n")
 	finished_loading_data = true
 	self.emit_signal("finished_loading_data_signal")

@@ -35,6 +35,7 @@ gdscript/warnings/inferred_declaration=2
 
 window/size/viewport_width=960
 window/size/viewport_height=540
+window/size/mode=3
 window/stretch/mode="canvas_items"
 
 [editor]

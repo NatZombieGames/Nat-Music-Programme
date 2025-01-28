@@ -7,8 +7,14 @@ extends PanelContainer
 @onready var master_directory_manager : Node = MasterDirectoryManager
 @export var active : bool = false
 @export var auto_clear : bool = false
-var check_call_arg_type : Callable = (func(arg : String) -> Variant: var msg : String = arg.right(arg.find("/") * -1); return arg.replace(msg, ""))
-const commands : PackedStringArray = ["echo", "call"]
+var check_call_arg_type : Callable = (func(arg : String) -> String: var msg : String = arg.right(arg.find("/") * -1); return arg.replace(msg, ""))
+var set_arg_type_callable : Callable = (
+	func(arg : String) -> Variant: 
+		if check_call_arg_type.call(arg) in ["int", "bool"]: 
+			return {"int": int(arg.right(-5)), "bool": arg.right(-5) in boolean_strings}[check_call_arg_type.call(arg)]; 
+		return arg)
+const commands : PackedStringArray = ["echo", "call", "set"]
+const command_minimum_args : PackedInt32Array = [1, 1, 2]
 const special_commands : PackedStringArray = ["help", "clear", "auto_clear", "info", "error_codes", "read", "close", "exit", "hard_reload"]
 const debug_commands : PackedStringArray = ["prnt_id_dict"]
 const callables : Dictionary = {"MasterDirectoryManager": ["get_user_settings", "set_user_setting", "save_data"], "CommandLineInterface": ["print_to_output", "run_command"], "MainScreen": ["play", "set_favourite"], "PlayingScreen": ["reset_playing_screen", "set_player_setting", "get_player_settings"]}
@@ -184,16 +190,31 @@ func run_command(command : String) -> int:
 							return ERR_INVALID_PARAMETER
 	elif command_chunks[0].to_lower() in commands:
 		print("command is a normal command")
+		if not len(command_chunks) > command_minimum_args[commands.find(command_chunks[0].to_lower())]:
+			print_to_output("[i]ERROR: Tried to run '[u]" + command_chunks[0] + "[/u]' with too little arguments. You gave " + str(len(command_chunks)) + " arguments and " + str(command_minimum_args[commands.find(command_chunks[0].to_lower())]) + " were needed, please try again.[/i]")
+			return ERR_INVALID_PARAMETER
 		match command_chunks[0].to_lower():
 			"echo":
 				match command_chunks[1].to_lower():
 					"call":
-						print("trying to echo the call of '" + command_chunks[2] + "' with the args: " + str([command.right((11 + len(command_chunks[2])) * -1)]))
-						print_to_output(str(_run(command_chunks[2], (func(arr : PackedStringArray) -> PackedStringArray: arr.remove_at(0); arr.remove_at(0); arr.remove_at(0); return arr).call(command_chunks))))
+						if len(command_chunks) > 2:
+							print("trying to echo the call of '" + command_chunks[2] + "' with the args: " + str([command.right((11 + len(command_chunks[2])) * -1)]))
+							print_to_output(str(_run(command_chunks[2], (func(arr : PackedStringArray) -> PackedStringArray: arr.remove_at(0); arr.remove_at(0); arr.remove_at(0); return arr).call(command_chunks))))
+						else:
+							print_to_output("[i]ERROR: Tried to run 'call' inside 'echo' with no argument(s), please try again.[/i]")
 					_:
 						print_to_output(command.right(-5))
 			"call":
 				_run(command_chunks[1], (func(arr : PackedStringArray) -> PackedStringArray: arr.remove_at(0); arr.remove_at(0); return arr).call(command_chunks))
+			"set":
+				if GeneralManager.get_id_type(command_chunks[1]) != MasterDirectoryManager.use_type.UNKNOWN:
+					var data : Variant = MasterDirectoryManager.get(MasterDirectoryManager.get_data_types.call()[int(command_chunks[1][1])] + &"_id_dict")[command_chunks[1]][command_chunks[2]]
+					if typeof(data) == typeof(set_arg_type_callable.call(command_chunks[3])):
+						data = set_arg_type_callable.call(command_chunks[3])
+					else:
+						print_to_output("[i]ERROR: Invalid type for 'set', tried to set '[u]" + data + "[/u]' of type '[u]" + type_string(typeof(data)) + "[/u]' to '[u]" + command_chunks[3] + "[/u]', which is of type '[u]" + type_string(typeof(command_chunks[3])) + "[/u]', please check the command and try again.[/i]")
+				else:
+					print_to_output("[i]ERROR: ID given for 'set' is invalid, please try again.[/i]")
 	else:
 		print_to_output("[i][u]ERROR: Command '" + command_chunks[0] + "' was not able to be understood; please check your command and try again.[/u][/i]")
 		return ERR_INVALID_PARAMETER
@@ -207,15 +228,10 @@ func print_to_output(text : String) -> int:
 func _run(command : String, args : Array) -> Variant:
 	print("running _run with a command of '" + command + "' with args of " + str(args))
 	if not command in callables_commands:
+		print_to_output("[i]ERROR: Command '[u]" + command + "[/u]' Is not a valid command, please check it and try again.[/i]")
 		print("command not in callables values, callables values are: " + str(callables_commands))
 		return ERR_INVALID_PARAMETER
-	for i : int in range(0, len(args)):
-		var type : String = check_call_arg_type.call(args[i])
-		match type:
-			"int":
-				args[i] = int(args[i].right(-4))
-			"bool":
-				args[i] = args[i].right(-5) in boolean_strings
+	args.map(func(item : String) -> Variant: return set_arg_type_callable.call(item))
 	print_to_output("[i]Attempting to run the command '[u]" + command + "[/u]' with the arguments of: '[u]" + str(args) + "[/u]'[/i]")
 	print("trying to call '" + command + "' with the new args of " + str(args) + " on node: " + _find_callable_key(command).to_snake_case())
 	if len(args.filter(func(item : Variant) -> bool: return str(item) != "")) > 0:
