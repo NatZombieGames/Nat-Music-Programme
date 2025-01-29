@@ -86,7 +86,7 @@ func load_audio_file(path : String) -> AudioStream:
 
 func get_id_type(id : String) -> MasterDirectoryManager.use_type:
 	print("Get id is running with an id of; " + id + ", which is " + str(len(id)) + " long and starts with " + id.left(1) + " and " + ["isnt", "is"][int(int(id.left(1)) > -1 and int(id.left(1)) < len(MasterDirectoryManager.get_data_types.call())-1)] + " inside the use type enum")
-	if (len(id) > 1) and (int(id.left(1)) > -1) and (int(id.left(1)) < len(MasterDirectoryManager.get_data_types.call())-1):
+	if (len(id) == 17) and (int(id.left(1)) > -1) and (int(id.left(1)) < len(MasterDirectoryManager.get_data_types.call())-1):
 		return MasterDirectoryManager.use_type.get(MasterDirectoryManager.use_type.keys()[int(id.left(1))])
 	return MasterDirectoryManager.use_type.UNKNOWN
 

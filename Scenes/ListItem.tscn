@@ -15,21 +15,25 @@ self_modulate = Color(1, 1, 1, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 button_mask = 2
+shortcut_feedback = false
+shortcut_in_tooltip = false
 
-[node name="Container" type="HBoxContainer" parent="."]
+[node name="GreaterContainer" type="HBoxContainer" parent="."]
 layout_mode = 2
+mouse_filter = 2
 theme_override_constants/separation = 10
 
-[node name="Void0" type="Panel" parent="Container"]
+[node name="Void0" type="Panel" parent="GreaterContainer"]
 self_modulate = Color(1, 1, 1, 0)
 custom_minimum_size = Vector2(5, 0)
 layout_mode = 2
+mouse_filter = 1
 
-[node name="ImageContainer" type="PanelContainer" parent="Container"]
+[node name="ImageContainer" type="PanelContainer" parent="GreaterContainer"]
 layout_mode = 2
 theme_override_styles/panel = ExtResource("2_6y7dr")
 
-[node name="Image" type="TextureRect" parent="Container/ImageContainer"]
+[node name="Image" type="TextureRect" parent="GreaterContainer/ImageContainer"]
 unique_name_in_owner = true
 show_behind_parent = true
 custom_minimum_size = Vector2(55, 55)
@@ -38,25 +42,25 @@ texture = ExtResource("3_78lpw")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Container" type="VBoxContainer" parent="Container"]
+[node name="Container" type="VBoxContainer" parent="GreaterContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="ActionsContainer" type="HBoxContainer" parent="Container/Container"]
+[node name="ActionsContainer" type="HBoxContainer" parent="GreaterContainer/Container"]
 custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
 
-[node name="InfoContainer" type="HBoxContainer" parent="Container/Container"]
+[node name="InfoContainer" type="HBoxContainer" parent="GreaterContainer/Container"]
 layout_mode = 2
 
-[node name="Title" type="Label" parent="Container/Container/InfoContainer"]
+[node name="Title" type="Label" parent="GreaterContainer/Container/InfoContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "Placeholder"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Subtitle" type="Label" parent="Container/Container/InfoContainer"]
+[node name="Subtitle" type="Label" parent="GreaterContainer/Container/InfoContainer"]
 layout_mode = 2
 size_flags_vertical = 1
 theme_override_font_sizes/font_size = 12
@@ -64,7 +68,8 @@ text = "Placeholder"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Void1" type="Panel" parent="Container"]
+[node name="Void1" type="Panel" parent="GreaterContainer"]
 self_modulate = Color(1, 1, 1, 0)
 custom_minimum_size = Vector2(5, 0)
 layout_mode = 2
+mouse_filter = 1

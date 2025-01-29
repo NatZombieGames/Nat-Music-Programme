@@ -13,6 +13,7 @@ var library_page : int = 0
 var library_details_item_id : String
 var custom_inputmap_actions : PackedStringArray = InputMap.get_actions().filter(func(item : String) -> bool: return not item.left(3) == "ui_")
 var active_keybind_switching_data : Array = []
+var new_playlist_data : Dictionary = (func() -> Dictionary: return MasterDirectoryManager.get_data_template(MasterDirectoryManager.use_type.PLAYLIST)).call()
 signal popup_responded
 const user_setting_keys : PackedStringArray = ["save_on_quit", "continue_playing"]
 
@@ -50,14 +51,17 @@ func _ready() -> void:
 	populate_library_screen(0)
 	set_profile_screen_page("0")
 	set_playlist_screen_page("0")
-	%Hatbar/Container/BuildType.text = GeneralManager.build
+	%Hatbar/Container/BuildType.text = GeneralManager.build + " Build."
 	%Hatbar/Container/Version.text = GeneralManager.version
 	for item : String in user_setting_keys:
-		%MainContainer/Profile/Container/Body/Settings/Container/Panel2/Container/Buttons.get_child(user_setting_keys.find(item)).update({"pressed": MasterDirectoryManager.user_data_dict[item]})
+		%MainContainer/Profile/Container/Body/Settings/Container/SettingsPanel/Container/Buttons.get_child(user_setting_keys.find(item)).update({"pressed": MasterDirectoryManager.user_data_dict[item]})
+	for i : int in range(0, len(MasterDirectoryManager.user_data_dict["player_widgets"])):
+		%MainContainer/Profile/Container/Body/Settings/Container/WidgetPanel/Container/Buttons.get_child(i).update({"pressed": MasterDirectoryManager.user_data_dict["player_widgets"][i]})
 	update_keybinds_screen()
-	DisplayServer.window_set_mode(MasterDirectoryManager.user_data_dict["window_mode"])
 	DisplayServer.window_set_position(MasterDirectoryManager.user_data_dict["window_position"])
+	DisplayServer.window_set_mode(MasterDirectoryManager.user_data_dict["window_mode"])
 	DisplayServer.window_set_current_screen(wrapi(MasterDirectoryManager.user_data_dict["window_screen"], 0, DisplayServer.get_screen_count()))
+	DisplayServer.window_set_size(MasterDirectoryManager.user_data_dict["window_size"])
 	if MasterDirectoryManager.user_data_dict["player_fullscreen"] == true:
 		%PlayingScreen.fullscreen_callable.call()
 	#
@@ -70,8 +74,6 @@ func _ready() -> void:
 func _input(event : InputEvent) -> void:
 	#if event.get_class() != "InputEventMouseMotion" and event.is_echo() == false and event.is_pressed() == true:
 	#	print(event)
-	if Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
-		print(get_viewport().gui_get_hovered_control().get_path())
 	if GeneralManager.is_valid_keybind.call(event) and $Camera/AspectRatioContainer/KeybindScreen.visible == true:
 		if GeneralManager.get_event_code(event) != KEY_DELETE:
 			#print("\n\nkeybind: " + str(MasterDirectoryManager.keybinds.keys()[active_keybind_switching_data[1]]) + "\nreplacing customevent " + str(MasterDirectoryManager.user_data_dict["keybinds"][MasterDirectoryManager.keybinds.keys()[active_keybind_switching_data[1]]][active_keybind_switching_data[0]]) + "\nwith new custom event of " + str(GeneralManager.parse_inputevent_to_customevent(event)) + "\nkeybinds before change: " + str(MasterDirectoryManager.user_data_dict["keybinds"][MasterDirectoryManager.keybinds.keys()[active_keybind_switching_data[1]]]) + ", changing index " + str(active_keybind_switching_data[0]) + "\n\n")
@@ -218,6 +220,20 @@ func profile_clear_pressed() -> void:
 				MasterDirectoryManager.album_id_dict[MasterDirectoryManager.song_id_dict[library_details_item_id]["album"]]["songs"].erase(library_details_item_id)
 			MasterDirectoryManager.song_id_dict[library_details_item_id]["album"] = ""
 	%MainContainer/Library/Container/Profile/Container/Container/ParentContainer/Container/RefreshBtn.emit_signal("pressed")
+	return
+
+func playlist_add_button_pressed(index : String) -> void:
+	match int(index):
+		0:
+			pass
+		1:
+			pass
+		2:
+			pass
+		3:
+			pass
+		4:
+			pass
 	return
 
 func populate_data_list(location : Node, type : MasterDirectoryManager.use_type, pressed_name : String = "entryitem_pressed", pressed_sender : Node = self) -> void:
@@ -490,7 +506,7 @@ func delete(id : String, create_confirmation_popup : bool = true) -> void:
 	return
 
 func cache_managment_button_pressed(button : String) -> void:
-	if await create_popup("Are You Sure You Wish To " + %MainContainer/Profile/Container/Body/Settings/Container/Panel1/Container/Buttons.get_child(int(button)).button_text + "?") == 1:
+	if await create_popup("Are You Sure You Wish To " + %MainContainer/Profile/Container/Body/Settings/Container/CachePanel/Container/Buttons.get_child(int(button)).button_text + "?") == 1:
 		return
 	match int(button):
 		0:
@@ -541,6 +557,11 @@ func data_managment_button_pressed(button : String) -> void:
 
 func user_setting_changed(number : String, state : bool) -> int:
 	MasterDirectoryManager.user_data_dict[user_setting_keys[int(number)]] = state
+	return OK
+
+func player_widget_changed(number : String, state : bool) -> int:
+	MasterDirectoryManager.user_data_dict["player_widgets"][int(number)] = state
+	playing_screen.call("set_widgets")
 	return OK
 
 func set_main_screen_page(page : String) -> void:

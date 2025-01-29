@@ -6,7 +6,7 @@ extends Control
 @export var shuffle : bool = false
 var change_callable : Callable = (func(dir : int, loop : bool) -> void: active_song_id = [GeneralManager.arr_get(active_song_list, wrapi(active_song_list.find(active_song_id)+(1*dir), 0, len(active_song_list)), active_song_id), active_song_id][int(loop)]; load_song(); %TogglePlay.texture_normal = GeneralManager.get_icon_texture("Play"); return)
 var play_callable : Callable = (func() -> void: %AudioPlayer.stream_paused = !%AudioPlayer.stream_paused;  %TogglePlay.texture_normal = [GeneralManager.get_icon_texture("Play"), GeneralManager.get_icon_texture("Pause")][int(%AudioPlayer.stream_paused)]; return)
-var fullscreen_callable : Callable = (func() -> void: var state : bool = get_node("/root/MainScreen/Camera").enabled; get_node("/root/MainScreen/Camera").enabled = !state; self.get_child(0).enabled = state; %ToggleFullscreen.texture_normal = GeneralManager.get_icon_texture(["Close", ""][int(!state)] + "Fullscreen"); return)
+var fullscreen_callable : Callable = (func() -> void: var state : bool = get_node(^"/root/MainScreen/Camera").enabled; get_node(^"/root/MainScreen/Camera").enabled = !state; self.get_child(0).enabled = state; %ToggleFullscreen.texture_normal = GeneralManager.get_icon_texture(["Close", ""][int(!state)] + "Fullscreen"); return)
 var dragging_progress_bar : bool = false
 var loop_enabled : bool = false
 var volume_indicator_tween : Tween = create_tween()
@@ -15,23 +15,26 @@ const settable_settings : Dictionary = {"shuffle": [false, true]}
 
 func _ready() -> void:
 	#
-	%TogglePlay.texture_normal = GeneralManager.get_icon_texture("Play")
+	%TogglePlay.texture_normal = GeneralManager.get_icon_texture(&"Play")
 	%TogglePlay.pressed.connect(play_callable)
 	%Previous.pressed.connect(change_callable.bind(-1, false))
-	%Previous.texture_normal = GeneralManager.get_icon_texture("Previous")
+	%Previous.texture_normal = GeneralManager.get_icon_texture(&"Previous")
 	%Next.pressed.connect(change_callable.bind(1, false))
-	%Next.texture_normal = GeneralManager.get_icon_texture("Next")
+	%Next.texture_normal = GeneralManager.get_icon_texture(&"Next")
 	%AudioPlayer.finished.connect(change_callable.bind(1, loop_enabled))
 	%ProgressBar.drag_ended.connect(func(value_changed : bool) -> void: if value_changed: %AudioPlayer.play(%ProgressBar.value); %AudioPlayer.stream_paused = %TogglePlay.texture_normal.resource_name == "Pause"; dragging_progress_bar = false; return)
 	%ProgressBar.drag_started.connect(func() -> void: dragging_progress_bar = true; return)
-	%ProgressBar.set("theme_override_icons/grabber", GeneralManager.get_icon_texture("EmptyCircle"))
-	%ProgressBar.set("theme_override_icons/grabber_highlight", GeneralManager.get_icon_texture("FilledCircle"))
-	for item : String in ["grabber", "grabber_highlight"]:
-		%ProgressBar.get("theme_override_icons/" + item).set_size_override(Vector2i(14, 14))
-	%ToggleLoop.texture_normal = GeneralManager.get_icon_texture("LoopDisabled")
-	%ToggleLoop.pressed.connect(func() -> void: loop_enabled = !loop_enabled; %ToggleLoop.texture_normal = GeneralManager.get_icon_texture("Loop" + ["Disabled", "Enabled"][int(loop_enabled)]); return)
-	%ToggleFullscreen.texture_normal = GeneralManager.get_icon_texture("Fullscreen")
+	%ProgressBar.set(&"theme_override_icons/grabber", GeneralManager.get_icon_texture(&"EmptyCircle"))
+	%ProgressBar.set(&"theme_override_icons/grabber_highlight", GeneralManager.get_icon_texture(&"FilledCircle"))
+	for item : String in [&"grabber", &"grabber_highlight"]:
+		%ProgressBar.get(&"theme_override_icons/" + item).set_size_override(Vector2i(14, 14))
+	%ToggleLoop.texture_normal = GeneralManager.get_icon_texture(&"LoopDisabled")
+	%ToggleLoop.pressed.connect(func() -> void: loop_enabled = !loop_enabled; %ToggleLoop.texture_normal = GeneralManager.get_icon_texture(&"Loop" + [&"Disabled", &"Enabled"][int(loop_enabled)]); return)
+	%ToggleFullscreen.texture_normal = GeneralManager.get_icon_texture(&"Fullscreen")
 	%ToggleFullscreen.pressed.connect(fullscreen_callable)
+	%MuteWidget.texture_normal = GeneralManager.get_icon_texture(&"VolumeDisabled")
+	%MuteWidget.texture_pressed = GeneralManager.get_icon_texture(&"VolumeUp")
+	%MuteWidget.toggled.connect(func(state : bool) -> void: %AudioPlayer.bus = [&"Muted", &"Master"][int(state)]; return)
 	#
 	if MasterDirectoryManager.finished_loading_data == false:
 		await MasterDirectoryManager.finished_loading_data_signal
@@ -39,6 +42,7 @@ func _ready() -> void:
 		self.set(item, MasterDirectoryManager.user_data_dict["active_song_data"][item])
 	%AudioPlayer.volume_db = MasterDirectoryManager.user_data_dict["volume"]
 	shuffle = MasterDirectoryManager.user_data_dict["shuffle"]
+	set_widgets()
 	if active_song_id != "":
 		load_song(active_song_id)
 	return
@@ -48,6 +52,8 @@ func _process(_delta : float) -> void:
 		if not dragging_progress_bar:
 			%ProgressBar.value = %AudioPlayer.get_playback_position()
 		%Percentage.text = str(int((%ProgressBar.value / %ProgressBar.max_value) * 100)) + "%"
+	if %TimeWidget.visible:
+		%TimeWidget.text = Time.get_time_string_from_system().left(-3)
 	return
 
 func _input(_event : InputEvent) -> void:
@@ -146,7 +152,7 @@ func load_song(song_id : String = active_song_id) -> int:
 	print("Load Song Ran Succesfully")
 	return OK
 
-func set_player_setting(setting : StringName, value : Variant) -> int:
+func set_player_settings(setting : StringName, value : Variant) -> int:
 	if setting in settable_settings.keys():
 		GeneralManager.cli_print_callable.call("[i]Player Settings: Set [u]" + setting + "[/u] from [u]" + str(self.get(setting)) + "[/u] > [u]" + str(value) + "[/u].[/i]")
 		self.set(setting, value)
@@ -173,3 +179,9 @@ func reset_playing_screen() -> void:
 
 func is_pressed(action : StringName) -> bool:
 	return Input.is_action_just_pressed(action, true)
+
+func set_widgets() -> void:
+	var widgets : Array[Node] = %Background/TopBar/Container.get_children().slice(1, -1)
+	widgets.map(func(node : Node) -> Node: node.visible = MasterDirectoryManager.user_data_dict["player_widgets"][widgets.find(node)]; return node)
+	%Background/TopBar/Container/Void.visible = true in MasterDirectoryManager.user_data_dict["player_widgets"]
+	return

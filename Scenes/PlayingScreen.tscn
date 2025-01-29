@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://di0ca61w28uio"]
+[gd_scene load_steps=9 format=3 uid="uid://di0ca61w28uio"]
 
 [ext_resource type="Script" path="res://Scripts/PlayingScreen.gd" id="1_7klv3"]
 [ext_resource type="StyleBox" uid="uid://dydjfep1b7fhc" path="res://Assets/DefaultStylebox.tres" id="2_i1rv6"]
@@ -6,6 +6,8 @@
 [ext_resource type="Texture2D" uid="uid://d0fqgyrdwlqvc" path="res://Assets/Icons/Fullscreen.svg" id="2_sf1x2"]
 [ext_resource type="Texture2D" uid="uid://bib3ce2ocxmme" path="res://Assets/Icons/Missing.svg" id="3_rmwdd"]
 [ext_resource type="StyleBox" uid="uid://bvsmn8sm7d00h" path="res://Assets/DarkBackground.tres" id="4_34oy1"]
+[ext_resource type="Texture2D" uid="uid://cal4jupkype3e" path="res://Assets/Icons/VolumeDisabled.svg" id="4_v4ack"]
+[ext_resource type="Texture2D" uid="uid://d1mkxnwgk6m7y" path="res://Assets/Icons/VolumeUp.svg" id="5_ey3hu"]
 
 [node name="PlayingScreen" type="Control"]
 custom_minimum_size = Vector2(480, 270)
@@ -35,16 +37,16 @@ custom_minimum_size = Vector2(480, 270)
 layout_mode = 2
 color = Color(0.197937, 0.197937, 0.197937, 1)
 
-[node name="Background" type="PanelContainer" parent="Camera/ScreenContainer/Background"]
+[node name="TopBar" type="PanelContainer" parent="Camera/ScreenContainer/Background"]
 layout_mode = 2
 offset_right = 36.0
 offset_bottom = 40.0
 theme_override_styles/panel = ExtResource("2_ruksw")
 
-[node name="Container" type="HBoxContainer" parent="Camera/ScreenContainer/Background/Background"]
+[node name="Container" type="HBoxContainer" parent="Camera/ScreenContainer/Background/TopBar"]
 layout_mode = 2
 
-[node name="ToggleFullscreen" type="TextureButton" parent="Camera/ScreenContainer/Background/Background/Container"]
+[node name="ToggleFullscreen" type="TextureButton" parent="Camera/ScreenContainer/Background/TopBar/Container"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
@@ -54,6 +56,35 @@ mouse_default_cursor_shape = 2
 texture_normal = ExtResource("2_sf1x2")
 ignore_texture_size = true
 stretch_mode = 5
+
+[node name="MuteWidget" type="TextureButton" parent="Camera/ScreenContainer/Background/TopBar/Container"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+mouse_default_cursor_shape = 2
+toggle_mode = true
+button_pressed = true
+texture_normal = ExtResource("5_ey3hu")
+texture_pressed = ExtResource("4_v4ack")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="TimeWidget" type="Label" parent="Camera/ScreenContainer/Background/TopBar/Container"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_vertical = 1
+text = "19:84"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Void" type="Panel" parent="Camera/ScreenContainer/Background/TopBar/Container"]
+self_modulate = Color(1, 1, 1, 0)
+custom_minimum_size = Vector2(2, 0)
+layout_mode = 2
 
 [node name="MasterContainer" type="HBoxContainer" parent="Camera/ScreenContainer"]
 custom_minimum_size = Vector2(480, 0)

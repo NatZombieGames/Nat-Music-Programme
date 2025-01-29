@@ -1,0 +1,15 @@
+[gd_resource type="AudioBusLayout" load_steps=2 format=3 uid="uid://bqq1y5b7jldcr"]
+
+[sub_resource type="AudioEffectAmplify" id="AudioEffectAmplify_hs185"]
+resource_name = "Amplify"
+volume_db = -80.0
+
+[resource]
+bus/1/name = &"Muted"
+bus/1/solo = false
+bus/1/mute = false
+bus/1/bypass_fx = false
+bus/1/volume_db = 0.0
+bus/1/send = &"Master"
+bus/1/effect/0/effect = SubResource("AudioEffectAmplify_hs185")
+bus/1/effect/0/enabled = true
