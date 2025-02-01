@@ -15,7 +15,7 @@ var data_location : String = ""
 signal finished_loading_data_signal
 signal finished_saving_data_signal
 const default_user_data : Dictionary = {
-	"volume": -10, "player_fullscreen": false, "player_widgets": [false, false], "auto_clear": false, "shuffle": false, "command_on_startup": "", "window_position": Vector2.ZERO, "window_mode": DisplayServer.WINDOW_MODE_MAXIMIZED, "window_screen": 0, "window_size": Vector2(960, 540), "save_on_quit": true, "continue_playing": true, "active_song_data": {"active_song_list": [], "active_song_list_id": "", "active_song_id": ""}, "keybinds": {}}
+	"volume": -10, "player_fullscreen": false, "special_icon_scale": 2, "player_widgets": [false, false], "auto_clear": false, "shuffle": false, "command_on_startup": "", "window_position": Vector2.ZERO, "window_mode": DisplayServer.WINDOW_MODE_MAXIMIZED, "window_screen": 0, "window_size": Vector2(960, 540), "save_on_quit": true, "continue_playing": true, "active_song_data": {"active_song_list": [], "active_song_list_id": "", "active_song_id": ""}, "keybinds": {}}
 const id_chars : PackedStringArray = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", 
 "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H", 
 "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "0", "1", "2", 
@@ -24,7 +24,7 @@ const id_chars : PackedStringArray = ["a", "b", "c", "d", "e", "f", "g", "h", "i
 "¯", "±", "²", "³", "´", "˄", "˅", "ˆ", "ϕ", "ʭ", "ϖ", "ϣ", "Ϣ", "Ж", "Џ", "λ", "ϐ", "Ͼ", "Ͽ", "Ͻ", "•", 
 "·", "¶"]
 var keybinds : Dictionary = {} # const after ready is finished
-var settable_settings : PackedStringArray = ["volume", "player_fullscreen", "player_widgets", "auto_clear", "shuffle", "command_on_startup", "window_position", "window_mode", "window_screen", "window_size", "save_on_quit", "continue_playing"]
+var settable_settings : PackedStringArray = ["volume", "player_fullscreen", "special_icon_scale", "player_widgets", "auto_clear", "shuffle", "command_on_startup", "window_position", "window_mode", "window_screen", "window_size", "save_on_quit", "continue_playing"]
 enum use_type {ARTIST, ALBUM, SONG, PLAYLIST, UNKNOWN}
 
 func _ready() -> void:

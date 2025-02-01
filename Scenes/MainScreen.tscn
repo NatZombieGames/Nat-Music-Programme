@@ -248,7 +248,6 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="Playlists" type="Control" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer"]
-visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -423,8 +422,8 @@ pressed_signal_name = "playlist_add_button_pressed"
 layout_mode = 2
 font_size = 35
 text_changed_signal_sender = NodePath("../../../../../../../../../../../../..")
-text_changed_signal_name = "library_details_info_altered"
-text_changed_signal_argument = "name"
+text_changed_signal_name = "playlist_add_button_pressed"
+text_changed_signal_argument = "1"
 
 [node name="CreateButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Playlists/Container/Body/Create/Container/Container/HeaderContainer/Container" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("5_5wduh")]
 layout_mode = 2
@@ -432,7 +431,7 @@ size_flags_horizontal = 0
 button_text = "Create Playlist"
 pressed_signal_sender = NodePath("../../../../../../../../../../../../..")
 pressed_signal_name = "playlist_add_button_pressed"
-argument = "1"
+argument = "2"
 
 [node name="DataList" type="PanelContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Playlists/Container/Body/Create/Container/Container"]
 custom_minimum_size = Vector2(750, 350)
@@ -462,7 +461,7 @@ layout_mode = 2
 texture_icon_name = "ArtistList"
 pressed_signal_sender = NodePath("../../../../../../../../../../../../../..")
 pressed_signal_name = "playlist_add_button_pressed"
-argument = "2"
+argument = "3"
 
 [node name="Void2" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Playlists/Container/Body/Create/Container/Container/DataList/Container/InfoContainer"]
 self_modulate = Color(1, 1, 1, 0)
@@ -474,7 +473,7 @@ layout_mode = 2
 texture_icon_name = "Album"
 pressed_signal_sender = NodePath("../../../../../../../../../../../../../..")
 pressed_signal_name = "playlist_add_button_pressed"
-argument = "3"
+argument = "4"
 
 [node name="Void3" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Playlists/Container/Body/Create/Container/Container/DataList/Container/InfoContainer"]
 self_modulate = Color(1, 1, 1, 0)
@@ -486,7 +485,7 @@ layout_mode = 2
 texture_icon_name = "Songs"
 pressed_signal_sender = NodePath("../../../../../../../../../../../../../..")
 pressed_signal_name = "playlist_add_button_pressed"
-argument = "4"
+argument = "5"
 
 [node name="Void4" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Playlists/Container/Body/Create/Container/Container/DataList/Container/InfoContainer"]
 self_modulate = Color(1, 1, 1, 0)
@@ -512,6 +511,29 @@ theme_override_constants/separation = 20
 self_modulate = Color(1, 1, 1, 0)
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
+
+[node name="SelectList" type="PanelContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Playlists/Container/Body/Create"]
+visible = false
+custom_minimum_size = Vector2(350, 225)
+layout_direction = 2
+layout_mode = 0
+offset_left = 900.0
+offset_top = 223.0
+offset_right = 1250.0
+offset_bottom = 423.0
+mouse_filter = 1
+theme_override_styles/panel = ExtResource("9_ejiiw")
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Playlists/Container/Body/Create/SelectList"]
+custom_minimum_size = Vector2(350, 225)
+layout_mode = 2
+follow_focus = true
+
+[node name="Container" type="VBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Playlists/Container/Body/Create/SelectList/ScrollContainer"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 2
 
 [node name="New" type="Control" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer"]
 visible = false
@@ -619,6 +641,7 @@ layout_mode = 2
 size_flags_vertical = 3
 
 [node name="Artist" type="Control" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/New/Container/Container/Body"]
+visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -726,7 +749,6 @@ ignore_texture_size = true
 stretch_mode = 5
 
 [node name="Album" type="Control" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/New/Container/Container/Body"]
-visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -1489,6 +1511,7 @@ size_flags_horizontal = 3
 size_flags_vertical = 2
 
 [node name="Profile" type="Control" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer"]
+visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -2019,6 +2042,54 @@ button_font_size = 32
 pressed_signal_sender = NodePath("../../../../../../..")
 pressed_signal_name = "popup_response_pressed"
 argument = "1"
+
+[node name="SoftLoadingScreen" type="ColorRect" parent="Camera/AspectRatioContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+color = Color(0, 0, 0, 0)
+
+[node name="ShadedArea" type="ColorRect" parent="Camera/AspectRatioContainer/SoftLoadingScreen"]
+custom_minimum_size = Vector2(620, 70)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.247059)
+
+[node name="Container" type="VBoxContainer" parent="Camera/AspectRatioContainer/SoftLoadingScreen/ShadedArea"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -306.0
+offset_top = -32.0
+offset_right = 306.0
+offset_bottom = 32.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="Text" type="Label" parent="Camera/AspectRatioContainer/SoftLoadingScreen/ShadedArea/Container"]
+layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 0
+theme_override_constants/shadow_outline_size = 15
+theme_override_font_sizes/font_size = 30
+text = "Something Is Loading, Please Wait."
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="LoadingScreen" type="ColorRect" parent="Camera/AspectRatioContainer"]
 unique_name_in_owner = true

@@ -25,7 +25,7 @@ const commands : PackedStringArray = ["echo", "call", "set", "get"]
 const command_minimum_args : PackedInt32Array = [1, 1, 2, 1]
 const set_and_get_types : PackedStringArray = ["user_settings", "player_settings"]
 const special_commands : PackedStringArray = ["help", "clear", "auto_clear", "info", "error_codes", "read", "close", "exit", "hard_reload"]
-const debug_commands : PackedStringArray = ["prnt_id_dict"]
+const debug_commands : PackedStringArray = ["print_id_dict"]
 const callables : Dictionary = {"MasterDirectoryManager": ["save_data", "set_user_settings"], "CommandLineInterface": ["print_to_output", "run_command"], "MainScreen": ["play", "set_favourite"], "PlayingScreen": ["reset_playing_screen", "set_player_settings"]}
 const boolean_strings : PackedStringArray = ["1", "true", "enabled", "yes", "on"]
 var callables_commands : Array[String] = []
@@ -181,10 +181,10 @@ func run_command(command : String, bypass_active : bool = false) -> int:
 				get_tree().quit()
 			"hard_reload":
 				get_tree().reload_current_scene()
-	elif command_chunks[0].to_lower() == "debug" and len(command_chunks) > 1 and command_chunks[1] in debug_commands and GeneralManager.build == "Debug":
+	elif ((command_chunks[0].to_lower() == "debug") and (len(command_chunks) > 1) and (command_chunks[1] in debug_commands) and (GeneralManager.is_in_debug.call() == true)):
 		print("command is a debug command")
 		match command_chunks[1]:
-			"prnt_id_dict", "print_id_dict":
+			"print_id_dict":
 				if len(command_chunks) < 3:
 					print_to_output("[i][u]ERROR: No argument given, please give an argument.[/u][/i]")
 					return ERR_INVALID_PARAMETER
@@ -248,7 +248,7 @@ func run_command(command : String, bypass_active : bool = false) -> int:
 				else:
 					print_to_output("[i][b]" + command_chunks[1].capitalize() + ":[/b]\n " + str(data) + "[/i]")
 	else:
-		print_to_output("[i][u]ERROR: Command '" + command_chunks[0] + "' is not understandable; please check your command and try again.[/u][/i]")
+		print_to_output("[i][u]ERROR: Command '" + command + "' is not understandable; please check your command and try again.[/u][/i]")
 		return ERR_INVALID_PARAMETER
 	return OK
 

@@ -4,23 +4,31 @@ extends Control
 @export var active_song_list_id : String = ""
 @export var active_song_id : String = ""
 @export var shuffle : bool = false
-var change_callable : Callable = (func(dir : int, loop : bool) -> void: active_song_id = [GeneralManager.arr_get(active_song_list, wrapi(active_song_list.find(active_song_id)+(1*dir), 0, len(active_song_list)), active_song_id), active_song_id][int(loop)]; load_song(); %TogglePlay.texture_normal = GeneralManager.get_icon_texture("Play"); return)
-var play_callable : Callable = (func() -> void: %AudioPlayer.stream_paused = !%AudioPlayer.stream_paused;  %TogglePlay.texture_normal = [GeneralManager.get_icon_texture("Play"), GeneralManager.get_icon_texture("Pause")][int(%AudioPlayer.stream_paused)]; return)
-var fullscreen_callable : Callable = (func() -> void: var state : bool = get_node(^"/root/MainScreen/Camera").enabled; get_node(^"/root/MainScreen/Camera").enabled = !state; self.get_child(0).enabled = state; %ToggleFullscreen.texture_normal = GeneralManager.get_icon_texture(["Close", ""][int(!state)] + "Fullscreen"); return)
+var change_callable : Callable = (func(dir : int, loop : bool) -> void: active_song_id = [GeneralManager.arr_get(active_song_list, wrapi(active_song_list.find(active_song_id)+(1*dir), 0, len(active_song_list)), active_song_id), active_song_id][int(loop)]; load_song(); %TogglePlay.button_pressed = false; return)
+var play_callable : Callable = (func() -> void: %AudioPlayer.stream_paused = !%AudioPlayer.stream_paused; return)
+var fullscreen_callable : Callable = (func() -> void: var state : bool = get_node(^"/root/MainScreen/Camera").enabled; get_node(^"/root/MainScreen/Camera").enabled = !state; self.get_child(0).enabled = state; %ToggleFullscreen.button_pressed = state; return)
 var dragging_progress_bar : bool = false
 var loop_enabled : bool = false
 var volume_indicator_tween : Tween = create_tween()
+var volume_indicator_textures : Array[ImageTexture] = []
+#const after ready
 const special_ids : PackedStringArray = ["@all", "@everyone"]
 const settable_settings : Dictionary = {"shuffle": [false, true]}
 
 func _ready() -> void:
+	if MasterDirectoryManager.finished_loading_data == false:
+		await MasterDirectoryManager.finished_loading_data_signal
 	#
-	%TogglePlay.texture_normal = GeneralManager.get_icon_texture(&"Play")
+	reset_playing_screen()
+	for item : String in MasterDirectoryManager.user_data_dict["active_song_data"].keys():
+		self.set(item, MasterDirectoryManager.user_data_dict["active_song_data"][item])
+	%TogglePlay.texture_normal = GeneralManager.load_svg_to_img("res://Assets/Icons/Play.svg", MasterDirectoryManager.user_data_dict["special_icon_scale"])
+	%TogglePlay.texture_pressed = GeneralManager.load_svg_to_img("res://Assets/Icons/Pause.svg", MasterDirectoryManager.user_data_dict["special_icon_scale"])
 	%TogglePlay.pressed.connect(play_callable)
+	%Previous.texture_normal = GeneralManager.load_svg_to_img("res://Assets/Icons/Previous.svg", MasterDirectoryManager.user_data_dict["special_icon_scale"])
 	%Previous.pressed.connect(change_callable.bind(-1, false))
-	%Previous.texture_normal = GeneralManager.get_icon_texture(&"Previous")
+	%Next.texture_normal = GeneralManager.load_svg_to_img("res://Assets/Icons/Next.svg", MasterDirectoryManager.user_data_dict["special_icon_scale"])
 	%Next.pressed.connect(change_callable.bind(1, false))
-	%Next.texture_normal = GeneralManager.get_icon_texture(&"Next")
 	%AudioPlayer.finished.connect(change_callable.bind(1, loop_enabled))
 	%ProgressBar.drag_ended.connect(func(value_changed : bool) -> void: if value_changed: %AudioPlayer.play(%ProgressBar.value); %AudioPlayer.stream_paused = %TogglePlay.texture_normal.resource_name == "Pause"; dragging_progress_bar = false; return)
 	%ProgressBar.drag_started.connect(func() -> void: dragging_progress_bar = true; return)
@@ -28,20 +36,21 @@ func _ready() -> void:
 	%ProgressBar.set(&"theme_override_icons/grabber_highlight", GeneralManager.get_icon_texture(&"FilledCircle"))
 	for item : String in [&"grabber", &"grabber_highlight"]:
 		%ProgressBar.get(&"theme_override_icons/" + item).set_size_override(Vector2i(14, 14))
-	%ToggleLoop.texture_normal = GeneralManager.get_icon_texture(&"LoopDisabled")
-	%ToggleLoop.pressed.connect(func() -> void: loop_enabled = !loop_enabled; %ToggleLoop.texture_normal = GeneralManager.get_icon_texture(&"Loop" + [&"Disabled", &"Enabled"][int(loop_enabled)]); return)
-	%ToggleFullscreen.texture_normal = GeneralManager.get_icon_texture(&"Fullscreen")
+	%ToggleLoop.texture_normal = GeneralManager.load_svg_to_img("res://Assets/Icons/LoopDisabled.svg", MasterDirectoryManager.user_data_dict["special_icon_scale"])
+	%ToggleLoop.texture_pressed = GeneralManager.load_svg_to_img("res://Assets/Icons/LoopEnabled.svg", MasterDirectoryManager.user_data_dict["special_icon_scale"])
+	%ToggleLoop.pressed.connect(func() -> void: loop_enabled = !loop_enabled; return)
+	%ToggleFullscreen.texture_normal = GeneralManager.load_svg_to_img("res://Assets/Icons/Fullscreen.svg", MasterDirectoryManager.user_data_dict["special_icon_scale"])
+	%ToggleFullscreen.texture_pressed = GeneralManager.load_svg_to_img("res://Assets/Icons/CloseFullscreen.svg", MasterDirectoryManager.user_data_dict["special_icon_scale"])
 	%ToggleFullscreen.pressed.connect(fullscreen_callable)
-	%MuteWidget.texture_normal = GeneralManager.get_icon_texture(&"VolumeDisabled")
-	%MuteWidget.texture_pressed = GeneralManager.get_icon_texture(&"VolumeUp")
+	%MuteWidget.texture_normal = GeneralManager.load_svg_to_img("res://Assets/Icons/VolumeDisabled.svg", MasterDirectoryManager.user_data_dict["special_icon_scale"])
+	%MuteWidget.texture_pressed = GeneralManager.load_svg_to_img("res://Assets/Icons/VolumeUp.svg", MasterDirectoryManager.user_data_dict["special_icon_scale"])
 	%MuteWidget.toggled.connect(func(state : bool) -> void: %AudioPlayer.bus = [&"Muted", &"Master"][int(state)]; return)
-	#
-	if MasterDirectoryManager.finished_loading_data == false:
-		await MasterDirectoryManager.finished_loading_data_signal
-	for item : String in MasterDirectoryManager.user_data_dict["active_song_data"].keys():
-		self.set(item, MasterDirectoryManager.user_data_dict["active_song_data"][item])
+	volume_indicator_textures.append(GeneralManager.load_svg_to_img("res://Assets/Icons/VolumeUp.svg", MasterDirectoryManager.user_data_dict["special_icon_scale"] * 2))
+	volume_indicator_textures.append(GeneralManager.load_svg_to_img("res://Assets/Icons/VolumeDown.svg", MasterDirectoryManager.user_data_dict["special_icon_scale"] * 2))
+	volume_indicator_textures.make_read_only()
 	%AudioPlayer.volume_db = MasterDirectoryManager.user_data_dict["volume"]
 	shuffle = MasterDirectoryManager.user_data_dict["shuffle"]
+	#
 	set_widgets()
 	if active_song_id != "":
 		load_song(active_song_id)
@@ -60,10 +69,10 @@ func _input(_event : InputEvent) -> void:
 	if is_pressed("VolumeDown") or is_pressed("VolumeUp"):
 		if is_pressed("VolumeUp"):
 			%AudioPlayer.volume_db += 1
-			%VolumeIndicator.texture = GeneralManager.get_icon_texture("VolumeUp")
+			%VolumeIndicator.texture = volume_indicator_textures[0]
 		else:
 			%AudioPlayer.volume_db -= 1
-			%VolumeIndicator.texture = GeneralManager.get_icon_texture("VolumeDown")
+			%VolumeIndicator.texture = volume_indicator_textures[1]
 		MasterDirectoryManager.user_data_dict["volume"] = %AudioPlayer.volume_db
 		volume_indicator_tween.kill()
 		volume_indicator_tween = create_tween()
@@ -99,8 +108,8 @@ func load_song_list(list_id : String = active_song_list_id) -> int:
 				for song : String in MasterDirectoryManager.song_id_dict.keys():
 					active_song_list.append(song)
 	else:
-		if (GeneralManager.get_id_type(list_id) == MasterDirectoryManager.use_type.UNKNOWN) or (typeof(GeneralManager.get_data(list_id)) == TYPE_STRING):
-			print("Invalid Song List ID")
+		if (GeneralManager.get_id_type(list_id) == MasterDirectoryManager.use_type.UNKNOWN) or GeneralManager.get_data(list_id) in ["", "Unknown"]:
+			print("Invalid Song List ID, type is " + str(GeneralManager.get_id_type(list_id)) + ", data is invalid: " + str(GeneralManager.get_data(list_id) in ["", "Unknown"]))
 			GeneralManager.cli_print_callable.call("[i][b]ERROR:[/b] Attempted to load song list with an ID of [u]" + list_id + "[/u], which isn't valid. Please check it and try again.[/i]")
 			reset_playing_screen()
 			return ERR_INVALID_PARAMETER
@@ -112,6 +121,8 @@ func load_song_list(list_id : String = active_song_list_id) -> int:
 				active_song_list = GeneralManager.get_data(list_id, "songs")
 			MasterDirectoryManager.use_type.SONG:
 				active_song_list = [list_id]
+			MasterDirectoryManager.use_type.PLAYLIST:
+				active_song_list = MasterDirectoryManager.playlist_id_dict[list_id]["songs"]
 	active_song_list.filter(func(item : String) -> bool: return MasterDirectoryManager.song_id_dict.keys().has(item))
 	if shuffle == true:
 		active_song_list.shuffle()
@@ -171,7 +182,7 @@ func reset_playing_screen() -> void:
 	%"Album&Band".text = "Album | Band"
 	%Percentage.text = "0%"
 	%ProgressBar.value = 0
-	%Image.texture = GeneralManager.get_icon_texture()
+	%Image.texture = GeneralManager.load_svg_to_img("res://Assets/Icons/Missing.svg", 5)
 	%Background.color = Color8(50, 50, 50)
 	%AudioPlayer.stop()
 	%AudioPlayer.stream = null

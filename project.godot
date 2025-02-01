@@ -20,6 +20,10 @@ boot_splash/show_image=false
 config/icon="res://Assets/SoftwareLogoCircle_1.png"
 config/windows_native_icon="res://Assets/SoftwareLogoCircle_1.ico"
 
+[audio]
+
+buses/default_bus_layout="res://Assets/AudioBusLayout.tres"
+
 [autoload]
 
 MasterDirectoryManager="*res://Scripts/Globals/MasterDirectoryManager.gd"

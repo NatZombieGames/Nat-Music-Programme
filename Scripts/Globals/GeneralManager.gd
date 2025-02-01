@@ -86,7 +86,7 @@ func load_audio_file(path : String) -> AudioStream:
 
 func get_id_type(id : String) -> MasterDirectoryManager.use_type:
 	print("Get id is running with an id of; " + id + ", which is " + str(len(id)) + " long and starts with " + id.left(1) + " and " + ["isnt", "is"][int(int(id.left(1)) > -1 and int(id.left(1)) < len(MasterDirectoryManager.get_data_types.call())-1)] + " inside the use type enum")
-	if (len(id) == 17) and (int(id.left(1)) > -1) and (int(id.left(1)) < len(MasterDirectoryManager.get_data_types.call())-1):
+	if (len(id) == 17) and (int(id.left(1)) > -1) and (int(id.left(1)) < len(MasterDirectoryManager.get_data_types.call())):
 		return MasterDirectoryManager.use_type.get(MasterDirectoryManager.use_type.keys()[int(id.left(1))])
 	return MasterDirectoryManager.use_type.UNKNOWN
 
@@ -170,3 +170,18 @@ func customevent_to_string(event : Dictionary) -> String:
 				to_return = "Null"
 		return to_return
 	return "Null"
+
+func load_svg_to_img(svg_path : String, scale : float = 1.0) -> ImageTexture:
+	#Code inspired from https://forum.godotengine.org/t/how-to-leverage-the-scalability-of-svg-in-godot/82292
+	#But made for single-use instead.
+	var bitmap : Image = Image.new()
+	bitmap.load_svg_from_buffer(FileAccess.get_file_as_bytes(svg_path), scale)
+	return ImageTexture.create_from_image(bitmap)
+
+func get_unique_array(arr : Array[Variant]) -> Array[Variant]:
+	var to_return : Array[Variant]
+	arr.map(func(item : Variant) -> Variant: 
+		if not item in to_return:
+			to_return.append(item)
+		return)
+	return to_return
