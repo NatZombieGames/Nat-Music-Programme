@@ -13,6 +13,8 @@ extends PanelContainer
 @export var argument : String = "0"
 
 func _ready() -> void:
+	if not GeneralManager.finished_loading_icons:
+		await GeneralManager.finished_loading_icons_signal
 	update()
 	return
 

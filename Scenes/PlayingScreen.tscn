@@ -182,6 +182,7 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 mouse_default_cursor_shape = 2
+toggle_mode = true
 ignore_texture_size = true
 stretch_mode = 5
 
@@ -207,6 +208,15 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 mouse_default_cursor_shape = 2
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="ToggleFavourite" type="TextureButton" parent="Camera/ScreenContainer/MasterContainer/InfoPanel/InfoContainer/ControlButtons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+toggle_mode = true
 ignore_texture_size = true
 stretch_mode = 5
 

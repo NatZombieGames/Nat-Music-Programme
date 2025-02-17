@@ -9,9 +9,17 @@ extends PanelContainer
 @export var text_changed_signal_argument : String = ""
 
 func _ready() -> void:
+	%LineEdit.text_submitted.connect(func(_text : String = "") -> void: update_editing_mode(!editing_mode); return)
+	if not GeneralManager.finished_loading_icons:
+		await GeneralManager.finished_loading_icons_signal
 	%TextureButton.texture_normal = GeneralManager.get_icon_texture("Edit")
 	%TextureButton.texture_pressed = GeneralManager.get_icon_texture("Save")
-	%TextureButton.toggled.connect(func(state : bool) -> void: editing_mode = state; update_editing_mode(); if emit_text_changed_signal: text_changed_signal_sender.call(text_changed_signal_name, %LineEdit.text, text_changed_signal_argument); return)
+	%TextureButton.toggled.connect(
+		func(state : bool) -> void: 
+			update_editing_mode(state); 
+			if emit_text_changed_signal: 
+				text_changed_signal_sender.call(text_changed_signal_name, %LineEdit.text, text_changed_signal_argument); 
+			return)
 	update()
 	return
 
@@ -24,7 +32,8 @@ func update(data : Dictionary = {"text": text, "font_size": font_size, "editing_
 	update_editing_mode()
 	return
 
-func update_editing_mode() -> void:
+func update_editing_mode(state : bool = editing_mode) -> void:
+	editing_mode = state
 	%LineEdit.editable = editing_mode
 	%LineEdit.selecting_enabled = editing_mode
 	%LineEdit.flat = !editing_mode

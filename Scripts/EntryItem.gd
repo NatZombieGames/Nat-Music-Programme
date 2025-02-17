@@ -14,6 +14,8 @@ extends ColorRect
 @export var pressed_signal_argument : String
 
 func _ready() -> void:
+	if not GeneralManager.finished_loading_icons:
+		await GeneralManager.finished_loading_icons_signal
 	image = GeneralManager.get_icon_texture("Missing")
 	update()
 	return

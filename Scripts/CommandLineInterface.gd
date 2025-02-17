@@ -1,32 +1,54 @@
 extends PanelContainer
 
-@onready var output_scene : PackedScene = load(^"res://Scenes/CliOutputLabel.tscn")
-@onready var main_screen : Control = get_node(^"/root/MainScreen")
-@onready var playing_screen : Control = get_node(^"/root/MainScreen/Camera/AspectRatioContainer/PlayerContainer/PlayingScreen")
+const output_scene : PackedScene = preload("res://Scenes/CliOutputLabel.tscn")
+@onready var main_screen : Control = get_node("/root/MainScreen")
+@onready var playing_screen : Control = get_node("/root/MainScreen/Camera/AspectRatioContainer/PlayerContainer/PlayingScreen")
 @onready var command_line_interface : PanelContainer = self
 @onready var master_directory_manager : Node = MasterDirectoryManager
+@onready var general_manager : Node = GeneralManager
 @export var active : bool = false
-@export var auto_clear : bool = false
-var check_call_arg_type : Callable = (func(arg : String) -> String: var msg : String = arg.right(arg.find("/") * -1); return arg.replace(msg, ""))
+@export var auto_clear : bool = false:
+	set(value):
+		auto_clear = value
+		if value == true:
+			%OutputContainer.get_children().map(func(node : Node) -> Node: node.queue_free(); return node)
+	get:
+		return auto_clear
+@export var clear_input : bool = false:
+	set(value):
+		clear_input = value
+		if value == true:
+			%InputField.text = ""
+	get:
+		return clear_input
+var check_call_arg_type : Callable = (func(arg : String) -> String: var msg : String = arg.right(arg.find("/") * -1); print("check arg type found " + arg + " is type " + arg.replace(msg, "")); return arg.replace(msg, ""))
 var set_arg_type_callable : Callable = (
 	func(arg : String) -> Variant: 
-		if check_call_arg_type.call(arg) in ["int", "bool"," vec2", "arr"]:
-			match check_call_arg_type.call(arg):
-				"int":
-					return int(arg.right(-4))
-				"bool":
-					return arg.right(-5) in boolean_strings
-				"vec2":
-					return Vector2(int(arg.right(-5).split(",", false)[0]), int(arg.right(-5).split(",", false)[1]))
-				"arr":
-					return Array(arg.right(-4).split(",", false)).map(set_arg_type_callable)
-		return arg)
+		match check_call_arg_type.call(arg):
+			"int":
+				print("set arg is returning int")
+				return int(arg.right(-4))
+			"bool":
+				print("set arg is returning bool")
+				return bool(arg.right(-5).to_lower() in boolean_strings)
+			"vec2":
+				print("set arg is returning vec")
+				return Vector2(int(arg.right(-5).split(",", false)[0]), int(arg.right(-5).split(",", false)[1]))
+			"arr":
+				print("set arg is returning arr")
+				return Array(arg.right(-4).split(",", false)).map(set_arg_type_callable)
+			_:
+				print("set arg type defaulted on " + arg + " since type was " + check_call_arg_type.call(arg))
+				return arg
+		)
+var command_history : PackedStringArray = (func() -> PackedStringArray: var arr : PackedStringArray = []; return arr).call()
+var command_history_placement : int = 0
 const commands : PackedStringArray = ["echo", "call", "set", "get"]
 const command_minimum_args : PackedInt32Array = [1, 1, 2, 1]
-const set_and_get_types : PackedStringArray = ["user_settings", "player_settings"]
-const special_commands : PackedStringArray = ["help", "clear", "auto_clear", "info", "error_codes", "read", "close", "exit", "hard_reload"]
+const set_and_get_types : PackedStringArray = ["user_settings", "player_settings", "general_settings"]
+const special_commands : PackedStringArray = ["help", "clear", "info", "error_codes", "read", "close", "exit", "hard_reload"]
 const debug_commands : PackedStringArray = ["print_id_dict"]
-const callables : Dictionary = {"MasterDirectoryManager": ["save_data", "set_user_settings"], "CommandLineInterface": ["print_to_output", "run_command"], "MainScreen": ["play", "set_favourite"], "PlayingScreen": ["reset_playing_screen", "set_player_settings"]}
+const callables : Dictionary = {"MasterDirectoryManager": ["save_data", "set_user_settings", "get_user_settings"], "GeneralManager": ["set_general_settings", "get_general_settings"], "CommandLineInterface": ["print_to_output", "run_command"], "MainScreen": ["play", "set_favourite"], "PlayingScreen": ["reset_playing_screen", "set_player_settings", "get_player_settings", "set_pause", "set_mute"]}
 const boolean_strings : PackedStringArray = ["1", "true", "enabled", "yes", "on"]
 var callables_commands : Array[String] = []
 #   const after ready
@@ -39,12 +61,24 @@ func _ready() -> void:
 	#
 	if MasterDirectoryManager.finished_loading_data == false:
 		await MasterDirectoryManager.finished_loading_data_signal
+	await get_tree().process_frame
+	auto_clear = MasterDirectoryManager.user_data_dict["auto_clear"]
+	clear_input = MasterDirectoryManager.user_data_dict["clear_input"]
 	if MasterDirectoryManager.user_data_dict["command_on_startup"] != "":
 		run_command(MasterDirectoryManager.user_data_dict["command_on_startup"], true)
-	auto_clear = MasterDirectoryManager.user_data_dict["auto_clear"]
-	#var test : String = "arr/int/15,bool/true,hello"
-	#print(set_arg_type_callable.call(test))
-	#print(type_string(typeof(set_arg_type_callable.call(test))))
+	return
+
+func _input(_event: InputEvent) -> void:
+	if Input.is_action_just_pressed("CommandHistoryUp", true) or Input.is_action_just_pressed("CommandHistoryDown", true):
+		if command_history_placement == 0 and GeneralManager.arr_get(command_history, 0, "") != %InputField.text:
+			command_history.insert(0, %InputField.text)
+			if len(command_history) > 11:
+				command_history.resize(11)
+		if Input.is_action_just_pressed("CommandHistoryUp", true):
+			command_history_placement = wrapi(command_history_placement + 1, 0, len(command_history))
+		else:
+			command_history_placement = wrapi(command_history_placement - 1, 0, len(command_history))
+		%InputField.text = command_history[command_history_placement]
 	return
 
 func run_command(command : String, bypass_active : bool = false) -> int:
@@ -52,6 +86,12 @@ func run_command(command : String, bypass_active : bool = false) -> int:
 		return ERR_CANT_RESOLVE
 	if auto_clear:
 		%OutputContainer.get_children().map(func(node : Node) -> Node: node.queue_free(); return node)
+	if clear_input:
+		%InputField.text = ""
+	if bypass_active == false and GeneralManager.arr_get(command_history, 0, "") != command:
+		command_history.insert(0, command)
+		if len(command_history) > 11:
+				command_history.resize(11)
 	var command_chunks : PackedStringArray = command.split("-", false)
 	print("command chunks during run command from the command '" + command + "':\n" + str(command_chunks))
 	if command_chunks[0].to_lower() in special_commands:
@@ -128,15 +168,15 @@ func run_command(command : String, bypass_active : bool = false) -> int:
 					   - This will return an Integer (whole number) depending on the argument, for example a value of 'int/15' would return the number 15.}}").replace("\t", ""))
 			"clear":
 				%OutputContainer.get_children().map(func(node : Node) -> Node: node.queue_free(); return node)
-			"auto_clear":
-				if len(command_chunks) > 1:
-					if check_call_arg_type.call(command_chunks[1]) != "bool":
-						print_to_output("[i]ERROR: Invalid argument, please use a Boolean value.[/i]")
-						return ERR_INVALID_PARAMETER
-					auto_clear = command_chunks[1].right(-5) in boolean_strings
-					print_to_output("[i]Auto-Clear is now [u]" + ["Disabled", "Enabled"][int(auto_clear)] + "[/u].[/i]")
-				else:
-					print_to_output("[i]Auto-Clear is currently set to; [u]" + str(auto_clear).capitalize() + "[/u].[/i]")
+			#"auto_clear":
+			#	if len(command_chunks) > 1:
+			#		if check_call_arg_type.call(command_chunks[1]) != "bool":
+			#			print_to_output("[i]ERROR: Invalid argument, please use a Boolean value.[/i]")
+			#			return ERR_INVALID_PARAMETER
+			#		auto_clear = command_chunks[1].right(-5) in boolean_strings
+			#		print_to_output("[i]Auto-Clear is now [u]" + ["Disabled", "Enabled"][int(auto_clear)] + "[/u].[/i]")
+			#	else:
+			#		print_to_output("[i]Auto-Clear is currently set to; [u]" + str(auto_clear).capitalize() + "[/u].[/i]")
 			"info":
 				print_to_output(
 					("[b]NMP Info:[/b]
@@ -144,8 +184,9 @@ func run_command(command : String, bypass_active : bool = false) -> int:
 					-Build: [i]" + GeneralManager.build + "[/i]
 					-Location: [i]" + OS.get_executable_path() + "[/i]
 					- [color=orange]-[/color]Data Location: [i]" + MasterDirectoryManager.data_location + "[/i]
-					-License: [i]" + FileAccess.open("res://LICENSE.txt", FileAccess.READ).get_as_text().get_slice("\n", 2) + "[/i]
-					-Source Location: [url=www.google.com]Github[/url]").replace("\t", "").replace("\n-", "\n[color=green]-[/color]"))
+					-License: [i]" + FileAccess.open("res://license.txt", FileAccess.READ).get_as_text().get_slice("\n", 2) + "[/i]
+					-Source Location: [url=www.google.com][i]Github[/i][/url]
+					-RNG Seed: [i]" + str(GeneralManager.rng_seed) + "[/i]").replace("\t", "").replace("\n-", "\n[color=green]-[/color]"))
 			"error_codes":
 				if len(command_chunks) < 2:
 					print_to_output("[i][u]ERROR: No error code given to see context about.[/u][/i]")
@@ -161,13 +202,18 @@ func run_command(command : String, bypass_active : bool = false) -> int:
 				if GeneralManager.get_id_type(command_chunks[1]) == MasterDirectoryManager.use_type.UNKNOWN:
 					print_to_output("[i][u]ERROR: Unable to read data for the ID of: " + command_chunks[1] + ", as it is not a valid ID.[/u][/i]")
 					return ERR_INVALID_PARAMETER
-				if command_chunks[1] in MasterDirectoryManager.get(MasterDirectoryManager.get_data_types.call()[int(command_chunks[1][0])] + &"_id_dict").keys():
+				if not command_chunks[1] in MasterDirectoryManager.get(MasterDirectoryManager.get_data_types.call()[int(command_chunks[1][0])] + "_id_dict").keys():
 					print_to_output("[i][u]ERROR: Unable to read for the ID of: " + command_chunks[1] + ", as it is not an existing ID, please check it and try again.[/u][/i]")
 					return ERR_INVALID_PARAMETER
 				var data : Dictionary = MasterDirectoryManager.get_object_data.call(command_chunks[1])
-				var to_print : String = "[b]ID [u]" + command_chunks[1] + "[/u] Data:[/b]"
+				var to_print : String = "[b]ID [u]" + command_chunks[1] + "[/u] Data:[/b] [i](Displayed data names are capitalized, real name are lowercase and use _ instead of spaces.)[/i]"
 				for item : String in (func() -> PackedStringArray: var keys : Array = data.keys(); keys.sort_custom(func(x : String, y : String) -> bool: return x < y); return keys).call():
-					to_print += "\n-" + item + ": [i]" + str(data[item]) + "[/i]"
+					var to_add : String = str(data[item])
+					if typeof(data[item]) == TYPE_ARRAY:
+						to_add = ""
+						for item2 : Variant in data[item]:
+							to_add += "\n-- " + str(data[item].find(item2)) + ": " + item2
+					to_print += "\n- " + item.capitalize() + ": [i]" + to_add + "[/i]"
 				print_to_output(to_print)
 			"close":
 				active = false
@@ -180,8 +226,9 @@ func run_command(command : String, bypass_active : bool = false) -> int:
 						await MasterDirectoryManager.finished_saving_data_signal
 				get_tree().quit()
 			"hard_reload":
-				get_tree().reload_current_scene()
-	elif ((command_chunks[0].to_lower() == "debug") and (len(command_chunks) > 1) and (command_chunks[1] in debug_commands) and (GeneralManager.is_in_debug.call() == true)):
+				OS.set_restart_on_exit(true)
+				get_tree().quit()
+	elif ((command_chunks[0].to_lower() == "debug") and (len(command_chunks) > 1) and (command_chunks[1] in debug_commands) and (GeneralManager.is_in_debug == true)):
 		print("command is a debug command")
 		match command_chunks[1]:
 			"print_id_dict":
@@ -222,9 +269,9 @@ func run_command(command : String, bypass_active : bool = false) -> int:
 				_run(command_chunks[1], (func(arr : PackedStringArray) -> PackedStringArray: arr.remove_at(0); arr.remove_at(0); return arr).call(command_chunks))
 			"set":
 				if command_chunks[1] in set_and_get_types and len(command_chunks) > 3:
-					_run(&"set_" + command_chunks[1], [command_chunks[2], set_arg_type_callable.call(command.right((3 + len(command_chunks[0]) + len(command_chunks[1]) + len(command_chunks[2])) * -1))])
+					_run("set_" + command_chunks[1], [command_chunks[2], set_arg_type_callable.call(command.right((3 + len(command_chunks[0]) + len(command_chunks[1]) + len(command_chunks[2])) * -1))])
 				elif GeneralManager.get_id_type(command_chunks[1]) != MasterDirectoryManager.use_type.UNKNOWN:
-					var data : Variant = MasterDirectoryManager.get(MasterDirectoryManager.get_data_types.call()[int(command_chunks[1][1])] + &"_id_dict")[command_chunks[1]]
+					var data : Variant = MasterDirectoryManager.get(MasterDirectoryManager.get_data_types.call()[int(command_chunks[1][1])] + "_id_dict")[command_chunks[1]]
 					if typeof(data[command_chunks[2]]) != typeof(set_arg_type_callable.call(command_chunks[3])):
 						print_to_output("[i]ERROR: Invalid type for 'set', tried to set '[u]" + command_chunks[2] + "[/u]' of type '[u]" + type_string(typeof(data[command_chunks[2]])) + "[/u]' to '[u]" + str(set_arg_type_callable.call(command_chunks[3])) + "[/u]', which is of type '[u]" + type_string(typeof(set_arg_type_callable.call(command_chunks[3]))) + "[/u]', please check the command and try again.[/i]")
 						return ERR_INVALID_PARAMETER
@@ -242,7 +289,9 @@ func run_command(command : String, bypass_active : bool = false) -> int:
 					"user_settings":
 						data = MasterDirectoryManager.get_user_settings()
 					"player_settings":
-						data = get_node(^"/root/MainScreen").playing_screen.call("get_player_settings")
+						data = get_node("/root/MainScreen").playing_screen.call("get_player_settings")
+					"general_settings":
+						data = GeneralManager.get_general_settings()
 				if len(command_chunks) > 2 and command_chunks[2] in ["keys", "values"]:
 					print_to_output("[i][b]" + command_chunks[1].capitalize() + " " + command_chunks[2].capitalize() + ":[/b]\n " + str({"keys": data.keys(), "values": data.values()}[command_chunks[2]]) + "[/i]")
 				else:
@@ -257,15 +306,18 @@ func print_to_output(text : String) -> int:
 	%OutputContainer.get_child(-1).text = text
 	return OK
 
-func _run(command : String, args : Array) -> Variant:
+func _run(command : String, args : Array[Variant]) -> Variant:
 	print("running _run with a command of '" + command + "' with args of " + str(args))
 	if not command in callables_commands:
 		print_to_output("[i]ERROR: Command '[u]" + command + "[/u]' Is not a valid command, please check it and try again.[/i]")
 		print("command not in callables values, callables values are: " + str(callables_commands))
 		return ERR_INVALID_PARAMETER
-	args.map(func(item : String) -> Variant: return set_arg_type_callable.call(item))
+	for i : int in range(0, len(args)):
+		if typeof(args[i]) == TYPE_STRING:
+			args[i] = set_arg_type_callable.call(args[i])
+	#args.map(func(item : String) -> Variant: return set_arg_type_callable.call(item))
 	print_to_output("[i]Attempting to run the command '[u]" + command + "[/u]' with the arguments of: '[u]" + str(args) + "[/u]'[/i]")
-	print("trying to call '" + command + "' with the new args of " + str(args) + " on node: " + _find_callable_key(command).to_snake_case())
+	print("- - trying to call '" + command + "' with the new args of " + str(args) + " on node: " + _find_callable_key(command).to_snake_case())
 	if len(args.filter(func(item : Variant) -> bool: return str(item) != "")) > 0:
 		return self.get(_find_callable_key(command).to_snake_case()).callv(command, args)
 	return self.get(_find_callable_key(command).to_snake_case()).call(command)

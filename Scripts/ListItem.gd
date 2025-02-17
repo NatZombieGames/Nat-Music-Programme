@@ -1,6 +1,6 @@
 extends PanelContainer
 
-@onready var action_button : PackedScene = preload("res://Scenes/CustomTextureButton.tscn")
+const action_button : PackedScene = preload("res://Scenes/CustomTextureButton.tscn")
 @export var title : String = "Placeholder"
 @export var subtitle : String = "Placeholder"
 @export var copy_subtitle_button : bool = true
@@ -25,9 +25,9 @@ func update(data : Dictionary = {"title": title, "subtitle": subtitle, "copy_sub
 	%Image.texture = image
 	%Button.disabled = !copy_subtitle_button
 	GeneralManager.disconnect_all_connections(%Button.pressed)
-	%Button.pressed.connect(func() -> void: DisplayServer.clipboard_set(subtitle); print("copy subtitle text is: " + copy_subtitle_text); get_node(^"/root/MainScreen").call(&"create_popup_notif", copy_subtitle_text); return)
+	%Button.pressed.connect(func() -> void: DisplayServer.clipboard_set(subtitle); get_node("/root/MainScreen").call("create_popup_notif", copy_subtitle_text); return)
 	for i : int in range(0, action_buttons):
-		if len(%Container/ActionsContainer.get_children()) < i+1:
+		if len(%Container/ActionsContainer.get_children()) < (i + 1):
 			%Container/ActionsContainer.add_child(action_button.instantiate())
 		%Container/ActionsContainer.get_child(i).update({"texture_icon_name": action_button_images[i], "pressed_signal_sender": self, "pressed_signal_name": "action_button_pressed", "argument": str(i)})
 	return
