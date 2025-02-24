@@ -17,7 +17,7 @@ var new_entry_data : Dictionary
 var new_entry_flag : int = 0
 var new_page : int = 0
 signal popup_responded
-const user_setting_keys : PackedStringArray = ["save_on_quit", "continue_playing"]
+const user_setting_keys : PackedStringArray = ["save_on_quit", "continue_playing", "continue_playing_exact"]
 
 func _ready() -> void:
 	%LoadingScreen.visible = true
@@ -28,6 +28,7 @@ func _ready() -> void:
 	playing_screen = %PlayingScreen
 	cli = %CommandLineInterface
 	MasterDirectoryManager.load_data()
+	OS.set_restart_on_exit(false)
 	await get_tree().process_frame
 	if MasterDirectoryManager.finished_loading_data == false:
 		await MasterDirectoryManager.finished_loading_data_signal
@@ -58,13 +59,13 @@ func _ready() -> void:
 	DisplayServer.window_set_size(MasterDirectoryManager.user_data_dict["window_size"])
 	get_tree().get_root().set("position", MasterDirectoryManager.user_data_dict["window_position"])
 	DisplayServer.window_set_mode(MasterDirectoryManager.user_data_dict["window_mode"])
-	if MasterDirectoryManager.user_data_dict["player_fullscreen"] == true:
-		%PlayingScreen.fullscreen_callable.call()
+	%PlayingScreen.fullscreen = MasterDirectoryManager.user_data_dict["player_fullscreen"]
 	#
 	await get_tree().process_frame
 	await create_tween().tween_property(%LoadingScreen, "modulate", Color(1, 1, 1, 0), 0.25).from(Color(1, 1, 1, 1)).finished
 	%LoadingScreen.visible = false
 	GeneralManager.set_mouse_busy_state.call(false)
+	print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! main finished ready")
 	return
 
 func _input(event : InputEvent) -> void:
@@ -88,6 +89,8 @@ func _input(event : InputEvent) -> void:
 			elif DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN and MasterDirectoryManager.user_data_dict["window_mode"] == DisplayServer.WINDOW_MODE_FULLSCREEN:
 				MasterDirectoryManager.user_data_dict["window_mode"] = DisplayServer.WINDOW_MODE_WINDOWED
 			DisplayServer.window_set_mode([DisplayServer.WINDOW_MODE_FULLSCREEN, MasterDirectoryManager.user_data_dict["window_mode"]][int(DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN)])
+		elif Input.is_action_just_pressed("Save", true):
+			MasterDirectoryManager.save_data()
 		elif Input.is_action_just_pressed("QuitAndSave", true):
 			MasterDirectoryManager.save_data()
 			await get_tree().process_frame
@@ -101,8 +104,6 @@ func _input(event : InputEvent) -> void:
 			get_tree().quit()
 		elif Input.is_action_just_pressed("ToggleCLI", true) and $Camera.enabled == true:
 			%CommandLineInterface.active = !%CommandLineInterface.active
-			%CommandLineInterface.visible = %CommandLineInterface.active
-			%CommandLineInterface/Container/InputField.call(["release_focus", "grab_focus"][int(%CommandLineInterface.visible)])
 	return
 
 func update_keybinds_screen() -> void:
@@ -115,74 +116,6 @@ func update_keybinds_screen() -> void:
 			if typeof(events[i]) == TYPE_DICTIONARY:
 				data["button_" + str(i+1) + "_text"] = GeneralManager.customevent_to_string(events[i])
 		%MainContainer/Profile/Container/Body/Keybinds/Container/Panel1/Container/Keybinds.get_child(MasterDirectoryManager.keybinds.keys().find(keybind)).update(data)
-	return
-
-func update_new_artist_screen(create : bool = false) -> void:
-	var image_file_path : String = %MainContainer/New/Container/Container/Body/Artist/Container/InfoPanel/Container/ImageContainer/ImagePath.text
-	%MainContainer/New/Container/Container/Body/Artist/Container/ImageContainer/Image.texture = GeneralManager.get_icon_texture("Missing")
-	if GeneralManager.is_valid_image.call(image_file_path):
-		%MainContainer/New/Container/Container/Body/Artist/Container/ImageContainer/Image.texture = ImageTexture.create_from_image(Image.load_from_file(image_file_path))
-	if create:
-		var data : Dictionary = MasterDirectoryManager.get_data_template(MasterDirectoryManager.use_type.ARTIST)
-		data["name"] = %MainContainer/New/Container/Container/Body/Artist/Container/InfoPanel/Container/NameField.text
-		data["image_file_path"] = image_file_path
-		MasterDirectoryManager.artist_id_dict[MasterDirectoryManager.generate_id(MasterDirectoryManager.use_type.ARTIST)] = data
-		create_popup_notif("[i] New Artist Created Succesfully [/i]")
-	return
-
-func update_new_album_screen(create : bool = false) -> void:
-	var image_file_path : String = %MainContainer/New/Container/Container/Body/Album/Container/InfoPanel/Container/ImageContainer/ImagePath.text
-	%MainContainer/New/Container/Container/Body/Album/Container/ImageContainer/Image.texture = GeneralManager.get_icon_texture("Missing")
-	if GeneralManager.is_valid_image.call(image_file_path):
-		%MainContainer/New/Container/Container/Body/Album/Container/ImageContainer/Image.texture = ImageTexture.create_from_image(Image.load_from_file(image_file_path))
-	var artist_id : String = %MainContainer/New/Container/Container/Body/Album/Container/InfoPanel/Container/ArtistContainer/ArtistField.text
-	%MainContainer/New/Container/Container/Body/Album/Container/InfoPanel/Container/ArtistDisplay.text = "Artist: "
-	if MasterDirectoryManager.artist_id_dict.has(artist_id):
-		%MainContainer/New/Container/Container/Body/Album/Container/InfoPanel/Container/ArtistDisplay.text += MasterDirectoryManager.artist_id_dict[artist_id]["name"]
-	%MainContainer/New/Container/Container/Body/Album/ArtistList.visible = false
-	if create:
-		var data : Dictionary = MasterDirectoryManager.get_data_template(MasterDirectoryManager.use_type.ALBUM)
-		data["name"] = %MainContainer/New/Container/Container/Body/Album/Container/InfoPanel/Container/NameField.text
-		data["artist"] = artist_id
-		data["image_file_path"] = image_file_path
-		MasterDirectoryManager.album_id_dict[MasterDirectoryManager.generate_id(MasterDirectoryManager.use_type.ALBUM)] = data
-		MasterDirectoryManager.artist_id_dict[artist_id]["albums"].append(MasterDirectoryManager.album_id_dict.find_key(data))
-		create_popup_notif("[i] New Album Created Succesfully [/i]")
-	return
-
-func update_new_song_screen(create : bool = false) -> void:
-	var album_id : String = %MainContainer/New/Container/Container/Body/Song/Container/InfoPanel/Container/HeaderContainer/Container/AlbumContainer/AlbumField.text
-	%MainContainer/New/Container/Container/Body/Song/Container/InfoPanel/Container/HeaderContainer/Container/AlbumDisplay.text = "Album: "
-	%MainContainer/New/Container/Container/Body/Song/Container/InfoPanel/Container/HeaderContainer/ImageContainer/Image.texture = GeneralManager.get_icon_texture("Missing")
-	if MasterDirectoryManager.album_id_dict.has(album_id):
-		%MainContainer/New/Container/Container/Body/Song/Container/InfoPanel/Container/HeaderContainer/Container/AlbumDisplay.text += MasterDirectoryManager.album_id_dict[album_id]["name"]
-		if GeneralManager.is_valid_image.call(MasterDirectoryManager.album_id_dict[album_id]["image_file_path"]):
-			%MainContainer/New/Container/Container/Body/Song/Container/InfoPanel/Container/HeaderContainer/ImageContainer/Image.texture = ImageTexture.create_from_image(Image.load_from_file(MasterDirectoryManager.album_id_dict[album_id]["image_file_path"]))
-	if create:
-		for item : Dictionary in song_upload_list:
-			var data : Dictionary = MasterDirectoryManager.get_data_template(MasterDirectoryManager.use_type.SONG)
-			data["name"] = item["name"]
-			data["album"] = album_id
-			data["song_file_path"] = item["path"]
-			MasterDirectoryManager.song_id_dict[MasterDirectoryManager.generate_id(MasterDirectoryManager.use_type.SONG)] = data
-			if album_id != "":
-				MasterDirectoryManager.album_id_dict[album_id]["songs"].append(MasterDirectoryManager.song_id_dict.find_key(data))
-		create_popup_notif("[i] New Song" + ["(s)", ""][int(len(song_upload_list) < 2)] + " Uploaded Succesfully. [/i]")
-		clear_song_upload_list()
-	return
-
-func album_artist_selected(id : String) -> void:
-	print("selected album artist id is " + id)
-	%MainContainer/New/Container/Container/Body/Album/ArtistList.visible = false
-	%MainContainer/New/Container/Container/Body/Album/Container/InfoPanel/Container/ArtistContainer/ArtistField.text = id
-	update_new_album_screen()
-	return
-
-func song_album_selected(id : String) -> void:
-	print("selected song album id is " + id)
-	%MainContainer/New/Container/Container/Body/Song/AlbumList.visible = false
-	%MainContainer/New/Container/Container/Body/Song/Container/InfoPanel/Container/HeaderContainer/Container/AlbumContainer/AlbumField.text = id
-	update_new_song_screen()
 	return
 
 func profile_clear_pressed() -> void:
@@ -501,6 +434,7 @@ func cache_managment_button_pressed(button : String) -> void:
 			GeneralManager.image_average_cache = {}
 			for item : Node in %MainContainer/Library/Container/ScrollContainer/ItemList.get_children():
 				item.queue_free()
+			playing_screen.song_cache = {}
 		1:
 			GeneralManager.image_cache = {}
 		2:
@@ -508,6 +442,8 @@ func cache_managment_button_pressed(button : String) -> void:
 		3:
 			for item : Node in %MainContainer/Library/Container/ScrollContainer/ItemList.get_children():
 				item.queue_free()
+		4:
+			playing_screen.song_cache = {}
 	return
 
 func keybind_button_pressed(args : Array) -> void:
@@ -607,6 +543,8 @@ func create_button_pressed(button : String, arg : String = "") -> void:
 				create_popup_notif(" [i]Uploaded [u]" + str(len(song_upload_list)) + "[/u] New Song" + ["", "s"][int(len(song_upload_list) > 1)] + [" To The Album [u]" + new_entry_data["album"] + ".[/i] ", ".[/i] "][int(new_entry_data["album"] == "")])
 			else:
 				MasterDirectoryManager.get(MasterDirectoryManager.get_data_types.call()[new_page] + "_id_dict")[id] = new_entry_data
+				if new_page == 1 and new_entry_data["artist"] != "":
+					MasterDirectoryManager.artist_id_dict[new_entry_data["artist"]]["albums"].append(id)
 				create_popup_notif(" [i]Made A New " + MasterDirectoryManager.get_data_types.call()[new_page].capitalize() + " With The ID [u]" + id + "[/u].[/i] ")
 			set_create_screen_page(str(new_page))
 		"3":
@@ -677,8 +615,9 @@ func set_profile_screen_page(page : String) -> void:
 	return
 
 func create_popup_notif(title : String, custom_min_size : Vector2 = Vector2(240, 25)) -> void:
-	$Camera/AspectRatioContainer/PopupNotifications.add_child(popup_notif_scene.instantiate())
-	$Camera/AspectRatioContainer/PopupNotifications.get_child(-1).update(title, custom_min_size)
+	if $Camera.enabled:
+		$Camera/AspectRatioContainer/PopupNotifications.add_child(popup_notif_scene.instantiate())
+		$Camera/AspectRatioContainer/PopupNotifications.get_child(-1).update(title, custom_min_size)
 	return
 
 func create_popup(title : String, response_1 : String = "Yes", response_2 : String = "No") -> int:
@@ -695,6 +634,10 @@ func popup_response_pressed(arg : String) -> void:
 	%PopupContainer.visible = false
 	return
 
+func toggle_cli(_arg : String) -> void:
+	cli.active = !cli.active
+	return
+
 func _set_soft_loading(state : bool) -> void:
 	%SoftLoadingScreen.visible = state
 	await get_tree().process_frame
@@ -702,9 +645,9 @@ func _set_soft_loading(state : bool) -> void:
 
 func exit(_arg : String = "0") -> void:
 	if await create_popup("Do You Wish To Save Your Data Before Exiting?") == 0:
-		print("they said yes")
 		MasterDirectoryManager.save_data()
 		await get_tree().process_frame
 		if MasterDirectoryManager.finished_saving_data == false:
 			await MasterDirectoryManager.finished_saving_data_signal
+		get_tree().quit(0)
 	return

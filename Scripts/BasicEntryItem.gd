@@ -5,9 +5,9 @@ extends ColorRect
 @export var id : int = 0
 @export var button_enabled : bool = true
 @export var editable_title : bool = false
-@export var signal_sender : Node
 @export var button_min_size : Vector2 = Vector2(24, 24)
 @export var button_icon_name : String = "Missing"
+@export var signal_sender : Node
 @export var pressed_signal_name : String = ""
 @export var title_changed_signal_name : String = ""
 
@@ -15,7 +15,7 @@ func _ready() -> void:
 	update()
 	return
 
-func update(data : Dictionary = {"title": title, "subtitle": subtitle, "id": id, "button_enabled": button_enabled, "editable_title": editable_title, "signal_sender": signal_sender, "button_min_size": button_min_size, "button_icon_name": button_icon_name, "pressed_signal_name": pressed_signal_name, "title_changed_signal_name": title_changed_signal_name}) -> void:
+func update(data : Dictionary = {}) -> void:
 	for item : String in data.keys():
 		self.set(item, data[item])
 	$Container/ToggleLineEdit.visible = editable_title

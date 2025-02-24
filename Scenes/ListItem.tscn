@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3 uid="uid://b5n1vjgghwt10"]
 
-[ext_resource type="StyleBox" uid="uid://bvsmn8sm7d00h" path="res://Assets/DarkBackground.tres" id="1_0rqud"]
-[ext_resource type="StyleBox" uid="uid://dydjfep1b7fhc" path="res://Assets/DefaultStylebox.tres" id="2_6y7dr"]
+[ext_resource type="StyleBox" uid="uid://bvsmn8sm7d00h" path="res://Assets/Styleboxes/DarkBackground.tres" id="1_0rqud"]
+[ext_resource type="StyleBox" uid="uid://dydjfep1b7fhc" path="res://Assets/Styleboxes/DefaultStylebox.tres" id="2_6y7dr"]
 [ext_resource type="Script" path="res://Scripts/ListItem.gd" id="2_hh4tj"]
 [ext_resource type="Texture2D" uid="uid://bib3ce2ocxmme" path="res://Assets/Icons/Missing.svg" id="3_78lpw"]
 

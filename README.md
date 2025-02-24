@@ -9,7 +9,7 @@ The app is entirely offline and modifiable.
 ## Scalability / ID's ##
 
 This project has been made with scalability in mind; As such many efforts have been made to ensure that the app doesn't limit your ability to listen to and organise music, including the ID system for every item.  
-Each either Artist, Album, Song or Playlist uses a unique ID to identify itself, which is 17 characters long. The first character is a number ranged 0-3 which signs/indicates the type of the ID, and the other 16 are picked from a list of 120 characters, giving each data type 16**120 or 3.121749e+144 unique items available.  
+Each either Artist, Album, Song or Playlist uses a unique ID to identify itself, which is 17 characters long. The first character is a number ranged 0-3 which signs/indicates the type of the ID, and the other 16 are picked from a list of 120 characters, giving each data type 16**100 unique items available.  
 
 Other smaller efforts have been made to make the app able to handle itself despite the way you want to use it, including giving multiple functions to the CLI to help make your management of the app and its data easier.
 

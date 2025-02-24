@@ -15,16 +15,29 @@ var data_location : String = ""
 signal finished_loading_data_signal
 signal finished_saving_data_signal
 const default_user_data : Dictionary = {
-	"volume": -10, "player_fullscreen": false, "special_icon_scale": 2, "icon_scale": 1, "song_cache_size": 3, "image_cache_size": 20, "player_widgets": [false, false], "auto_clear": false, "clear_input": false, "shuffle": false, "command_on_startup": "", "window_position": Vector2.ZERO, "window_mode": DisplayServer.WINDOW_MODE_MAXIMIZED, "window_screen": 0, "window_size": Vector2(960, 540), "save_on_quit": true, "continue_playing": true, "continue_playing_exact": true, "active_song_data": {"active_song_list": [], "active_song_list_id": "", "active_song_id": "", "song_progress": 0}, "keybinds": {}}
-const id_chars : PackedStringArray = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", 
-"n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H", 
-"I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "0", "1", "2", 
-"3", "4", "5", "6", "7", "8", "9", "!", '"', "£", "$", "%", "^", "&", "*", "(", ")", "¤", "_", "=", "+", 
-"{", "}", ":", ";", "'", "@", "~", "#", ",", "<", ".", ">", "/", "?", "|", "`", "¬", "¥", "¢", "§", "¦", 
-"¯", "±", "²", "³", "´", "˄", "˅", "ˆ", "ϕ", "ʭ", "ϖ", "ϣ", "Ϣ", "Ж", "Џ", "λ", "ϐ", "Ͼ", "Ͽ", "Ͻ", "•", 
-"·", "¶"]
+"volume": 0, "player_fullscreen": false, "special_icon_scale": 2, "icon_scale": 1, 
+"song_cache_size": 3, "image_cache_size": 20, "player_widgets": [false, false], 
+"auto_clear": false, "clear_input": false, "shuffle": false, "command_on_startup": "", 
+"window_position": Vector2.ZERO, "window_mode": DisplayServer.WINDOW_MODE_MAXIMIZED, 
+"window_screen": 0, "window_size": Vector2(960, 540), "save_on_quit": true, 
+"continue_playing": true, "continue_playing_exact": true, 
+"active_song_data": {"active_song_list": [], "active_song_list_id": "", "active_song_id": "", "song_progress": 0}, 
+"keybinds": {}, "sleep_when_unfocused": false
+}
+const id_chars : PackedStringArray = [
+"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", 
+"u", "v", "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", 
+"O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "0", "1", "2", "3", "4", "5", "6", "7", 
+"8", "9", "!", '"', "`", "¬", "%", "^", "&", "*", "(", ")", "|", "_", "=", "+", "{", "}", ":", ";", 
+"'", "@", "~", "#", ",", "<", ".", ">", "/", "?", "¤", "£", "$", "¥", "¢", "§", "´", "˄", "˅", "ˆ", 
+]
 var keybinds : Dictionary = {} # const after ready is finished
-var settable_settings : PackedStringArray = ["volume", "player_fullscreen", "special_icon_scale", "icon_scale", "song_cache_size", "image_cache_size", "player_widgets", "auto_clear", "clear_input", "shuffle", "command_on_startup", "window_position", "window_mode", "window_screen", "window_size", "save_on_quit", "continue_playing", "continue_playing_exact"]
+var settable_settings : PackedStringArray = [
+"volume", "player_fullscreen", "special_icon_scale", "icon_scale", "song_cache_size", 
+"image_cache_size", "player_widgets", "auto_clear", "clear_input", "shuffle", 
+"command_on_startup", "window_position", "window_mode", "window_screen", "window_size", 
+"save_on_quit", "continue_playing", "continue_playing_exact", "sleep_when_unfocused"
+]
 enum use_type {ARTIST, ALBUM, SONG, PLAYLIST, UNKNOWN}
 
 func _ready() -> void:
@@ -32,9 +45,10 @@ func _ready() -> void:
 	for item : String in InputMap.get_actions().filter(func(item : String) -> bool: return not item.left(3) == "ui_"):
 		keybinds[item] = Array(InputMap.action_get_events(item).map(func(event : InputEvent) -> Dictionary: return GeneralManager.parse_inputevent_to_customevent(event)))
 		if len(keybinds[item]) < 2:
-			keybinds[item] = [keybinds[item][0], ""]
+			keybinds[item].append("")
 	keybinds.make_read_only()
 	print(str("- - - - -\nkeybinds after completion: " + str(keybinds).replace('], "', ']\n= "')).replace('completion: { "', 'completion:\n= { "'))
+	print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! master finished ready")
 	return
 
 func _notification(notif : int) -> void:
@@ -72,7 +86,7 @@ func generate_id(type : use_type) -> String:
 func save_data(save_location : String = "NMP_Data.dat") -> int:
 	finished_saving_data = false
 	save_location = OS.get_executable_path().get_base_dir() + "/" + save_location
-	print("\n!! Saving Data !!")
+	print("\n!! Saving Data In " + save_location + " !!")
 	GeneralManager.set_mouse_busy_state.call(true)
 	var data : ConfigFile = ConfigFile.new()
 	user_data_dict["window_position"] = DisplayServer.window_get_position()
@@ -90,10 +104,14 @@ func save_data(save_location : String = "NMP_Data.dat") -> int:
 		if not keybind in keybinds:
 			user_data_dict["keybinds"].erase(keybind)
 	data.set_value("data", "user_data_dict", user_data_dict)
-	if data.encode_to_text() != FileAccess.open(save_location, FileAccess.READ).get_as_text():
+	print("got to the writing portion")
+	if (not FileAccess.file_exists(save_location)) or (data.encode_to_text() != FileAccess.open(save_location, FileAccess.READ).get_as_text()):
+		print("i am going to write it now")
 		data.save(save_location)
+	print("finished writing portion")
 	GeneralManager.set_mouse_busy_state.call(false)
 	GeneralManager.cli_print_callable.call("[i]Saved Data Succesfully To '[u]" + save_location.get_file() + "[/u]' In '[u]" + save_location.get_base_dir() + "[/u]'.[/i]")
+	get_node("/root/MainScreen").call("create_popup_notif", "[i]Saved Data Succesfully To '[u]" + save_location.get_file() + "[/u]' In '[u]" + save_location.get_base_dir() + "[/u]'.[/i]")
 	finished_saving_data = true
 	self.emit_signal("finished_saving_data_signal")
 	print("!! Saved Data Succesfully To '" + save_location + "' !!\n")
@@ -157,10 +175,10 @@ func set_user_settings(setting : StringName, value : Variant) -> int:
 					user_data_dict[setting] = 1
 					GeneralManager.cli_print_callable.call("[i]User Settings: Tried to set [u]" + setting + "[/u] to [u]" + str(value) + "[/u], which is lower than 1, setting was set to 1 instead.[/i]")
 		return OK
-	if not setting in settable_settings:
-		GeneralManager.cli_print_callable.call("[i]ERROR: Setting '[u]" + setting + "[/u]' is not a valid setting that can be set, please check it and try again.[/i]")
+	if typeof(self.get(setting)) != typeof(value):
+		GeneralManager.cli_print_callable.call("[i]ERROR: Tried to set [u]" + setting + "[/u] whos value is of type [u]" + type_string(typeof(self.get(setting))) + "[/u] to [u]" + value + "[/u] which is of type [u]" + type_string(typeof(value)) + "[/u].[/i]")
 	else:
-		GeneralManager.cli_print_callable.call("[i]ERROR: Tried to set value '[u]" + setting + "[/u]' to a value of the type '[u]" + type_string(typeof(value)) + "[/u]', when the expected type was '[u]" + type_string(typeof(user_data_dict[setting])) + "[/u]'.[/i]")
+		GeneralManager.cli_print_callable.call("[i]ERROR: Setting [u]" + setting + "[/u] does not exist in User Settings.[/i]")
 	return ERR_INVALID_PARAMETER
 
 func get_user_settings() -> Dictionary:

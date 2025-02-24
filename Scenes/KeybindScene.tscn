@@ -1,9 +1,9 @@
 [gd_scene load_steps=6 format=3 uid="uid://jwe3biaas3x7"]
 
 [ext_resource type="Script" path="res://Scripts/KeybindScene.gd" id="1_bxwcv"]
-[ext_resource type="StyleBox" uid="uid://cvlx7sgwyg4ft" path="res://Assets/CustomButtonHovered.tres" id="2_fnp81"]
-[ext_resource type="StyleBox" uid="uid://cyk1k4nde07k7" path="res://Assets/CustomButtonPressed.tres" id="2_tgw4o"]
-[ext_resource type="StyleBox" uid="uid://dvt0bb3h5ar54" path="res://Assets/CustomButtonNormal.tres" id="3_107xp"]
+[ext_resource type="StyleBox" uid="uid://cvlx7sgwyg4ft" path="res://Assets/Styleboxes/CustomButtonHovered.tres" id="2_fnp81"]
+[ext_resource type="StyleBox" uid="uid://cyk1k4nde07k7" path="res://Assets/Styleboxes/CustomButtonPressed.tres" id="2_tgw4o"]
+[ext_resource type="StyleBox" uid="uid://dvt0bb3h5ar54" path="res://Assets/Styleboxes/CustomButtonNormal.tres" id="3_107xp"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_n4ikh"]
 

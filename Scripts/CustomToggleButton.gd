@@ -14,7 +14,7 @@ func _ready() -> void:
 	update()
 	return
 
-func update(data : Dictionary = {"button_custom_minimum_size": button_custom_minimum_size, "button_text": button_text, "button_font_size": button_font_size, "pressed": pressed, "button_group": button_group, "send_signal_when_disabled": send_signal_when_disabled, "pressed_signal_sender": pressed_signal_sender, "pressed_signal_name": pressed_signal_name, "argument": argument}) -> void:
+func update(data : Dictionary = {}) -> void:
 	for item : String in data.keys():
 		self.set(item, data[item])
 	custom_minimum_size = button_custom_minimum_size

@@ -3,6 +3,12 @@ extends Control
 @export var active_song_list : Array = []
 @export var active_song_list_id : String = ""
 @export var active_song_id : String = ""
+@export var sleeping_state : bool = false:
+	set(value):
+		sleeping_state = value
+		$Camera/SleepScreen.visible = value
+	get:
+		return sleeping_state
 @export var shuffle : bool = false
 @export var paused : bool = false:
 	set(value):
@@ -32,6 +38,17 @@ extends Control
 		if %AudioPlayer.stream != null:
 			return (%ProgressBar.value / %ProgressBar.max_value) * 100
 		return 0
+@export var song_cache : Dictionary
+@export var fullscreen : bool = false:
+	set(value):
+		fullscreen = value
+		$Camera.enabled = value
+		get_node("/root/MainScreen/Camera").enabled = !value
+		%ToggleFullscreen.button_pressed = value
+		if value == true:
+			get_node("/root/MainScreen").cli.active = false
+	get:
+		return fullscreen
 var change_callable : Callable = (
 	func(dir : int, do_loop : bool) -> String: 
 		if do_loop:
@@ -39,18 +56,18 @@ var change_callable : Callable = (
 		if ((dir == 1 and (active_song_list.find(active_song_id) == len(active_song_list) - 1)) or (dir == 0 and (active_song_list.find(active_song_id) == 0))) and shuffle:
 			active_song_list.shuffle()
 		return active_song_list[wrapi(active_song_list.find(active_song_id) + dir, 0, len(active_song_list))])
-var fullscreen_callable : Callable = (func() -> void: var state : bool = get_node("/root/MainScreen/Camera").enabled; get_node("/root/MainScreen/Camera").enabled = !state; self.get_child(0).enabled = state; %ToggleFullscreen.button_pressed = state; return)
-var song_cache : Dictionary
 var load_song_thread : Thread = Thread.new()
 var load_song_mutex : Mutex = Mutex.new()
 var dragging_progress_bar : bool = false
-var volume_indicator_tween : Tween = create_tween()
+var volume_indicator_tween : Tween
 var volume_indicator_textures : Array[ImageTexture] = []
 #const after ready
 const special_ids : PackedStringArray = ["@all", "@everyone"]
-const settable_settings : Dictionary = {"shuffle": [false, true], "paused": [false, true], "loop": [false, true], "muted": [false, true]}
+const settable_settings : PackedStringArray = ["paused", "shuffle", "mute", "loop", "sleeping_state"]
 
 func _ready() -> void:
+	volume_indicator_tween = create_tween()
+	volume_indicator_tween.tween_interval(0)
 	if not GeneralManager.finished_loading_icons:
 		await GeneralManager.finished_loading_icons_signal
 	#
@@ -80,7 +97,7 @@ func _ready() -> void:
 	%ToggleLoop.pressed.connect(func() -> void: loop = !loop; return)
 	%ToggleFullscreen.texture_normal = GeneralManager.load_svg_to_img("res://Assets/Icons/Fullscreen.svg", MasterDirectoryManager.user_data_dict["special_icon_scale"])
 	%ToggleFullscreen.texture_pressed = GeneralManager.load_svg_to_img("res://Assets/Icons/CloseFullscreen.svg", MasterDirectoryManager.user_data_dict["special_icon_scale"])
-	%ToggleFullscreen.pressed.connect(fullscreen_callable)
+	%ToggleFullscreen.pressed.connect(func() -> void: fullscreen = !fullscreen; return)
 	%MuteWidget.texture_normal = GeneralManager.load_svg_to_img("res://Assets/Icons/VolumeDisabled.svg", MasterDirectoryManager.user_data_dict["special_icon_scale"])
 	%MuteWidget.texture_pressed = GeneralManager.load_svg_to_img("res://Assets/Icons/VolumeUp.svg", MasterDirectoryManager.user_data_dict["special_icon_scale"])
 	%MuteWidget.toggled.connect(func(state : bool) -> void: muted = state; return)
@@ -91,11 +108,22 @@ func _ready() -> void:
 	shuffle = MasterDirectoryManager.user_data_dict["shuffle"]
 	#
 	set_widgets()
+	await get_tree().process_frame
 	if active_song_id != "":
 		load_song(active_song_id)
 	await get_tree().process_frame
 	if MasterDirectoryManager.user_data_dict["continue_playing_exact"] == true:
 		song_progress = MasterDirectoryManager.user_data_dict["active_song_data"].get("song_progress", 0)
+	print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! playing finished ready")
+	return
+
+func _notification(notif : int) -> void:
+	match notif:
+		Node.NOTIFICATION_APPLICATION_FOCUS_IN:
+			sleeping_state = false
+		Node.NOTIFICATION_APPLICATION_FOCUS_OUT:
+			if MasterDirectoryManager.user_data_dict["sleep_when_unfocused"]:
+				sleeping_state = true
 	return
 
 func _process(_delta : float) -> void:
@@ -136,7 +164,7 @@ func _input(_event : InputEvent) -> void:
 	elif is_pressed("TogglePause"):
 		paused = !paused
 	elif is_pressed("ToggleLargePlayer"):
-		fullscreen_callable.call()
+		fullscreen = !fullscreen
 	return
 
 func _exit_tree() -> void:
@@ -150,8 +178,7 @@ func load_song_list(list_id : String = active_song_list_id) -> int:
 	if list_id in special_ids:
 		match list_id:
 			"@all", "@everyone":
-				for song : String in MasterDirectoryManager.song_id_dict.keys():
-					active_song_list.append(song)
+				active_song_list = MasterDirectoryManager.song_id_dict.keys()
 	else:
 		if (GeneralManager.get_id_type(list_id) == MasterDirectoryManager.use_type.UNKNOWN) or GeneralManager.get_data(list_id) in ["", "Unknown"]:
 			print("Invalid Song List ID, type is " + str(GeneralManager.get_id_type(list_id)) + ", data is invalid: " + str(GeneralManager.get_data(list_id) in ["", "Unknown"]))
@@ -171,7 +198,6 @@ func load_song_list(list_id : String = active_song_list_id) -> int:
 	active_song_list.filter(func(item : String) -> bool: return MasterDirectoryManager.song_id_dict.keys().has(item))
 	if shuffle == true:
 		active_song_list.shuffle()
-	song_cache = {}
 	load_song(GeneralManager.arr_get(active_song_list, 0, ""))
 	print("Load Song List Ran Succesfully")
 	return OK
@@ -195,7 +221,7 @@ func load_song(song_id : String = active_song_id) -> int:
 	if %AudioPlayer.stream == null:
 		GeneralManager.cli_print_callable.call("[i] ERROR: Song with an ID of [u]" + song_id + "[/u] was unable to be loaded, the path may be invalid or corrupted, please check the audio file and try again. [/i]")
 		reset_playing_screen()
-	%Title.text = GeneralManager.limit_str(song_data["name"], 25)
+	%Title.text = GeneralManager.limit_str(song_data["name"], 30)
 	%"Album&Band".text = GeneralManager.limit_str(GeneralManager.get_data(song_data["album"], "name"), 10) + " | " + GeneralManager.limit_str(GeneralManager.get_data(GeneralManager.get_data(song_data["album"], "artist"), "name"), 10)
 	var list_name : String = GeneralManager.get_data(active_song_list_id, "name")
 	if not active_song_list_id in special_ids:
@@ -210,7 +236,11 @@ func load_song(song_id : String = active_song_id) -> int:
 	var image_average : Color = GeneralManager.get_image_average(GeneralManager.get_image(GeneralManager.get_data(song_data["album"], "image_file_path")))
 	%Background.color = image_average
 	var stylebox : StyleBoxFlat = %Image.get_parent().get("theme_override_styles/panel").duplicate()
-	stylebox.border_color = Color(image_average.r / 1.5, image_average.g / 1.5, image_average.b / 1.5)
+	#stylebox.border_color = Color(1.0 - image_average.r, 1.0 - image_average.g, 1.0 - image_average.b)
+	if ((image_average.r / 1.5) > 0.1) and ((image_average.g / 1.5) > 0.1) and ((image_average.b / 1.5) > 0.1):
+		stylebox.border_color = Color(image_average.r / 1.5, image_average.g / 1.5, image_average.b / 1.5)
+	else:
+		stylebox.border_color = Color(max(image_average.r, 0.03) * 1.5, max(image_average.g, 0.03) * 1.5, max(image_average.b, 0.03) * 1.5)
 	%Image.get_parent().set("theme_override_styles/panel", stylebox)
 	%AudioPlayer.play()
 	paused = paused
@@ -231,14 +261,21 @@ func load_next_song_into_cache() -> void:
 	return
 
 func set_player_settings(setting : StringName, value : Variant) -> int:
-	if setting in settable_settings.keys():
+	if setting in settable_settings and typeof(self.get(setting)) == typeof(value):
 		GeneralManager.cli_print_callable.call("[i]Player Settings: Set [u]" + setting + "[/u] from [u]" + str(self.get(setting)) + "[/u] > [u]" + str(value) + "[/u].[/i]")
 		self.set(setting, value)
 		return OK
+	if typeof(self.get(setting)) != typeof(value):
+		GeneralManager.cli_print_callable.call("[i]ERROR: Tried to set [u]" + setting + "[/u] whos value is of type [u]" + type_string(typeof(self.get(setting))) + "[/u] to [u]" + value + "[/u] which is of type [u]" + type_string(typeof(value)) + "[/u].[/i]")
+	else:
+		GeneralManager.cli_print_callable.call("[i]ERROR: Setting [u]" + setting + "[/u] does not exist in Player Settings.[/i]")
 	return ERR_INVALID_PARAMETER
 
 func get_player_settings() -> Dictionary:
-	return settable_settings
+	var data : Dictionary
+	for setting : String in settable_settings:
+		data[setting] = self.get(setting)
+	return data
 
 func reset_playing_screen() -> void:
 	active_song_id = ""

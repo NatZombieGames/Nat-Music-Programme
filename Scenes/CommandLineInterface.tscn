@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://bmc50mv2rgkwt"]
 
-[ext_resource type="StyleBox" uid="uid://dj6ianfhju64w" path="res://Assets/CLI_Stylebox.tres" id="1_kqyvi"]
+[ext_resource type="StyleBox" uid="uid://dj6ianfhju64w" path="res://Assets/Styleboxes/CLI_Stylebox.tres" id="1_kqyvi"]
 [ext_resource type="Script" path="res://Scripts/CommandLineInterface.gd" id="2_khwqj"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_udip1"]

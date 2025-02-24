@@ -17,7 +17,7 @@ func _ready() -> void:
 	update()
 	return
 
-func update(data : Dictionary = {"title": title, "subtitle": subtitle, "copy_subtitle_button": copy_subtitle_button, "copy_subtitle_text": copy_subtitle_text, "image": image, "action_button_sender": action_button_sender, "action_buttons": action_buttons, "action_button_images": action_button_images, "action_button_signal_names": action_button_signal_names, "action_button_arguments": action_button_arguments}) -> void:
+func update(data : Dictionary = {}) -> void:
 	for item : String in data.keys():
 		self.set(item, data[item])
 	%Container/InfoContainer/Title.text = title

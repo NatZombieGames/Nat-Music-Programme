@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3 uid="uid://cmjfi4l6s5xcy"]
 
 [ext_resource type="Script" path="res://Scripts/EntryItem.gd" id="1_8fcor"]
-[ext_resource type="StyleBox" uid="uid://dydjfep1b7fhc" path="res://Assets/DefaultStylebox.tres" id="2_s1y6p"]
+[ext_resource type="StyleBox" uid="uid://dydjfep1b7fhc" path="res://Assets/Styleboxes/DefaultStylebox.tres" id="2_s1y6p"]
 [ext_resource type="Texture2D" uid="uid://bib3ce2ocxmme" path="res://Assets/Icons/Missing.svg" id="3_v6vnf"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_68gdd"]

@@ -1,9 +1,0 @@
-[gd_resource type="StyleBoxFlat" format=3 uid="uid://dkgym2u000nvk"]
-
-[resource]
-content_margin_left = 0.0
-content_margin_top = 0.0
-content_margin_right = 3.0
-content_margin_bottom = 3.0
-bg_color = Color(0, 0, 0, 0.498039)
-corner_radius_bottom_right = 15

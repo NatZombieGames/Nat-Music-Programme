@@ -6,7 +6,16 @@ const output_scene : PackedScene = preload("res://Scenes/CliOutputLabel.tscn")
 @onready var command_line_interface : PanelContainer = self
 @onready var master_directory_manager : Node = MasterDirectoryManager
 @onready var general_manager : Node = GeneralManager
-@export var active : bool = false
+@export var active : bool = false:
+	set(value):
+		active = value
+		self.visible = value
+		if value == false:
+			%InputField.release_focus()
+		else:
+			%InputField.grab_focus()
+	get:
+		return active
 @export var auto_clear : bool = false:
 	set(value):
 		auto_clear = value
@@ -26,16 +35,12 @@ var set_arg_type_callable : Callable = (
 	func(arg : String) -> Variant: 
 		match check_call_arg_type.call(arg):
 			"int":
-				print("set arg is returning int")
 				return int(arg.right(-4))
 			"bool":
-				print("set arg is returning bool")
 				return bool(arg.right(-5).to_lower() in boolean_strings)
 			"vec2":
-				print("set arg is returning vec")
 				return Vector2(int(arg.right(-5).split(",", false)[0]), int(arg.right(-5).split(",", false)[1]))
 			"arr":
-				print("set arg is returning arr")
 				return Array(arg.right(-4).split(",", false)).map(set_arg_type_callable)
 			_:
 				print("set arg type defaulted on " + arg + " since type was " + check_call_arg_type.call(arg))
@@ -45,11 +50,29 @@ var command_history : PackedStringArray = (func() -> PackedStringArray: var arr 
 var command_history_placement : int = 0
 const commands : PackedStringArray = ["echo", "call", "set", "get"]
 const command_minimum_args : PackedInt32Array = [1, 1, 2, 1]
-const set_and_get_types : PackedStringArray = ["user_settings", "player_settings", "general_settings"]
-const special_commands : PackedStringArray = ["help", "clear", "info", "error_codes", "read", "close", "exit", "hard_reload"]
+const set_and_get_types : PackedStringArray = ["user_settings", "player_settings", "general_settings", "cli_settings"]
+const special_commands : PackedStringArray = [
+	"help", "clear", "info", "error_codes", 
+	"read", "close", "exit", "hard_reload", 
+	"get_callables", "get_commands"
+	]
 const debug_commands : PackedStringArray = ["print_id_dict"]
-const callables : Dictionary = {"MasterDirectoryManager": ["save_data", "set_user_settings", "get_user_settings"], "GeneralManager": ["set_general_settings", "get_general_settings"], "CommandLineInterface": ["print_to_output", "run_command"], "MainScreen": ["play", "set_favourite"], "PlayingScreen": ["reset_playing_screen", "set_player_settings", "get_player_settings", "set_pause", "set_mute"]}
+const callables : Dictionary = {
+	"MasterDirectoryManager": ["save_data", "set_user_settings", "get_user_settings"], 
+	"GeneralManager": ["set_general_settings", "get_general_settings"], 
+	"CommandLineInterface": ["print_to_output", "run_command", "get_cli_settings", "set_cli_settings"], 
+	"MainScreen": ["play", "set_favourite"], 
+	"PlayingScreen": [
+		"reset_playing_screen", "set_player_settings", "get_player_settings", 
+		"set_pause", "set_mute"
+		]
+	}
 const boolean_strings : PackedStringArray = ["1", "true", "enabled", "yes", "on"]
+const keyword_to_text : Dictionary = {
+		"ERROR:": "[color=red]ERROR>[/color]", 
+		"DEBUG:": "[color=web_purple]DEBUG>[/color]"
+		}
+const settable_settings : PackedStringArray = ["auto_clear", "clear_input"]
 var callables_commands : Array[String] = []
 #   const after ready
 
@@ -66,6 +89,7 @@ func _ready() -> void:
 	clear_input = MasterDirectoryManager.user_data_dict["clear_input"]
 	if MasterDirectoryManager.user_data_dict["command_on_startup"] != "":
 		run_command(MasterDirectoryManager.user_data_dict["command_on_startup"], true)
+	print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! cli finished ready")
 	return
 
 func _input(_event: InputEvent) -> void:
@@ -100,7 +124,7 @@ func run_command(command : String, bypass_active : bool = false) -> int:
 			"help":
 				print_to_output(
 					("[b]NMP CLI Help Page:[/b]
-					 Welcome to the NMP (Nat Music Programme) CLI (Command Line Interface) Help Page! Please look below for information on how to effectively use the CLI.
+					 Welcome to the Nat Music Programme CLI (Command Line Interface) Help Page! Please look below for information on how it works.
 					
 					[i]Command Structure:[/i]
 					 When writing a command, you must seperate each argument with a hiphon (-), unless it does not have any arguments, in which case only the name is neaded.
@@ -109,11 +133,9 @@ func run_command(command : String, bypass_active : bool = false) -> int:
 					
 					[i]Special Commands.[/i]
 					- [color=green]help[/color]
-					  - Opens the 'NMP CLI Help Page'.
+					  - Opens this help page.
 					- [color=green]clear[/color]
 					  - Clears the output.
-					- [color=green]auto_clear[/color] (0+)
-					  - If used with no arguments, tells you the state of auto_clear, otherwise sets autoclear to the argument given, must be a Boolean.
 					- [color=green]info[/color]
 					  - Prints info about the programme.
 					- [color=green]error_codes[/color] (1)
@@ -125,8 +147,12 @@ func run_command(command : String, bypass_active : bool = false) -> int:
 					- [color=green]exit[/color]
 					  - Closes the programme, if you have 'save_on_quit' enabled then it will save before exiting.
 					- [color=green]hard_reload[/color]
-					  - Reloades the programme, same as 'HardReloadApp' shortcut.
+					  - Reloades the programme, functions the same as 'HardReloadApp' shortcut.
 					    !WARNING! This will not save beforehand, this is equivilent to exiting without saving and re-opening.
+					- [color=green]get_callables[/color]
+					  - Returns all of the functions that can be called using the 'call' command.
+					- [color=green]get_commands[/color]
+					  - Returns all of the special and normal commands you can call, which may have ones not listed inside this 'help' page.
 					
 					[i]Commands.[/i]
 					- [color=green]echo[/color] (1+)
@@ -134,62 +160,50 @@ func run_command(command : String, bypass_active : bool = false) -> int:
 					    can be used to see the return values of certain functions.
 					- [color=green]call[/color] (2+)
 					  - Calls the given function (argument 1), with all other arguments being given to the called function. The available functions to call are:
-					    - [color=orange]play[/color] (1)
-					      - Starts playing the songs from an Artist, Album, Playlist or an individual Song with the given ID (argument 1).
-					    - [color=orange]reset_playing_screen[/color]
-					      - Resets the playing screen and stops all audio.
-					    - [color=orange]set_favourite[/color] (1)
-					      - Toggles the 'favourite' setting on a Artist, Album, Song or Playlist between On and Off, depending on the ID given (argument 1). Returns an error code.
-					    - [color=orange]print_to_output[/color] (1)
-					      - Prints the given argument to the output, the same as [u]echo-{argument}[/u] except 'print_to_output' does not call commands if the first argument is 'call'.
-					    - [color=orange]set_player_setting[/color] (2)
-					      - Sets a setting on the music player, the setting it sets is the first argument and the value to set it to is the second argument. Returns an error code.
-					    - [color=orange]get_player_settings[/color]
-					      - Returns all the settings that 'set_player_setting' can set, and their possible values if there is a finite number of possible values,
-					        the first value in the list will be the settings default value.
-					    - [color=orange]set_user_setting[/color] (2)
-					      - Sets a setting inside your user data, the setting it sets is the first argument and the value to set it to is the second argument. Returns an error code.
-					    - [color=orange]get_user_settings[/color]
-					      - Returns all the settings that 'set_user_setting' can set, and their possible values if there is a finite number of possible values,
-					        the first value in the list will be the settings default value. Note these are not all the values stored inside user data.
-					    - [color=orange]run_command[/color] (1)
-					      - Runs the rest of the command as a command, intended to be used with 'echo' to check for errors when writing commands.
+					- [color=green]set[/color] (3)
+					  - Sets the given property (argument 2) on the object (argument 1) to the value (argument 3), the type of the new and existing argument must match (see type-casting below).
+					- [color=green]get[/color] (1+)
+					  - Sets sister command, Get returns the settable setting of object (argument 1) alongside their current values, and additional argument (argument 2) can be provided to get
+					    just the keys (by passing 'keys') or just the values (by passing 'values').
 					
 					[i]Argument Types.[/i]
-					 When giving argument to a function/command, by default they will all be a String, which is just the characters you put in. But some functions will want other numbers,
+					 When giving argument(s) to a function / command, by default they will all be a String, which is just the characters you put in. But some functions will want other numbers,
 					 for example trying to enabled the 'shuffle' setting on the player using 'set_player_setting' will want a Boolean value of what to set the value to, you can see the types
 					 and how to cast them below.
 					
 					 - {argument}
 					   - The default, returns a String as whatever the argument was, Strings are used in cases such as wanting an ID.
 					 - bool/{argument}
-					   - This will return a Boolean (true or false) depending on the argument, it will return True if the argument is either 1, true, enabled, on or yes, and will return false otherwise.
+					   - This will return a Boolean (true or false) depending on the argument, it will return True if the argument is either '1', 'true', 'enabled', 'on' or 'yes', and will return false otherwise.
+					     (case insensetive)
 					 - int/{argument}
-					   - This will return an Integer (whole number) depending on the argument, for example a value of 'int/15' would return the number 15.}}").replace("\t", ""))
+					   - This will return an Integer (whole number) depending on the argument, for example a value of 'int/15' would return the number 15.
+					 - arr/{argument}
+					   - This will return an Array (list) of the contents of the argument as seperated by commas (,), the contents can also be type-cast.
+					     For example 'arr/int/5,hello,bool/1' would return an array containing [5, \"hello\", True].
+					 - vec2/{argument}
+					   - This will return a Vector 2 (two Integers) of the contents of the argument as seperated by commans (,), the contents can't and should not be type-cast as they will always be turned into numbers.
+					     For example 'vec2/2,91' would return 'Vector2(2, 91)', but 'vec2/hello,5' would return 'Vector2(0, 5)' as any non-numerical String when turned into a number is 0.
+					     Vectors are used rarely for settings such as positions and sizes for the app's Window.").replace("\t", ""))
 			"clear":
 				%OutputContainer.get_children().map(func(node : Node) -> Node: node.queue_free(); return node)
-			#"auto_clear":
-			#	if len(command_chunks) > 1:
-			#		if check_call_arg_type.call(command_chunks[1]) != "bool":
-			#			print_to_output("[i]ERROR: Invalid argument, please use a Boolean value.[/i]")
-			#			return ERR_INVALID_PARAMETER
-			#		auto_clear = command_chunks[1].right(-5) in boolean_strings
-			#		print_to_output("[i]Auto-Clear is now [u]" + ["Disabled", "Enabled"][int(auto_clear)] + "[/u].[/i]")
-			#	else:
-			#		print_to_output("[i]Auto-Clear is currently set to; [u]" + str(auto_clear).capitalize() + "[/u].[/i]")
 			"info":
+				print("i am getting info here! build date is: " + GeneralManager.build_date)
 				print_to_output(
 					("[b]NMP Info:[/b]
 					-Version: [i]" + GeneralManager.version + "[/i]
 					-Build: [i]" + GeneralManager.build + "[/i]
 					-Location: [i]" + OS.get_executable_path() + "[/i]
 					- [color=orange]-[/color]Data Location: [i]" + MasterDirectoryManager.data_location + "[/i]
-					-License: [i]" + FileAccess.open("res://license.txt", FileAccess.READ).get_as_text().get_slice("\n", 2) + "[/i]
-					-Source Location: [url=www.google.com][i]Github[/i][/url]
-					-RNG Seed: [i]" + str(GeneralManager.rng_seed) + "[/i]").replace("\t", "").replace("\n-", "\n[color=green]-[/color]"))
+					-License: [i]" + FileAccess.open("res://LICENSE.txt", FileAccess.READ).get_as_text().get_slice("\n", 2) + "[/i]
+					-Source Location: [url=https://github.com/NatZombieGames/Nat-Music-Programme][i]Github[/i][/url]
+					-RNG Seed: [i]" + str(GeneralManager.rng_seed) + "[/i]
+					-Current Date: [i]" + str(GeneralManager.get_date()) + "[/i]
+					-Build Date: [i]" + str(GeneralManager.build_date) + "[/i]").replace("\t", "").replace("\n-", "\n[color=green]-[/color]"))
+				print("i finished printing info!")
 			"error_codes":
 				if len(command_chunks) < 2:
-					print_to_output("[i][u]ERROR: No error code given to see context about.[/u][/i]")
+					print_to_output("[i][u]ERROR: No error code given to see information about.[/u][/i]")
 					return ERR_INVALID_PARAMETER
 				if not typeof(command_chunks[1]) in [TYPE_STRING, TYPE_INT] or error_string(int(command_chunks[1])) == "(invalid error code)":
 					print_to_output("[i][u]ERROR: Not a valid error code.[/u][/i]")
@@ -203,32 +217,44 @@ func run_command(command : String, bypass_active : bool = false) -> int:
 					print_to_output("[i][u]ERROR: Unable to read data for the ID of: " + command_chunks[1] + ", as it is not a valid ID.[/u][/i]")
 					return ERR_INVALID_PARAMETER
 				if not command_chunks[1] in MasterDirectoryManager.get(MasterDirectoryManager.get_data_types.call()[int(command_chunks[1][0])] + "_id_dict").keys():
-					print_to_output("[i][u]ERROR: Unable to read for the ID of: " + command_chunks[1] + ", as it is not an existing ID, please check it and try again.[/u][/i]")
+					print_to_output("[i][u]ERROR: Unable to read data for the ID of: " + command_chunks[1] + ", as it is not an existing ID, please check it and try again.[/u][/i]")
 					return ERR_INVALID_PARAMETER
 				var data : Dictionary = MasterDirectoryManager.get_object_data.call(command_chunks[1])
 				var to_print : String = "[b]ID [u]" + command_chunks[1] + "[/u] Data:[/b] [i](Displayed data names are capitalized, real name are lowercase and use _ instead of spaces.)[/i]"
-				for item : String in (func() -> PackedStringArray: var keys : Array = data.keys(); keys.sort_custom(func(x : String, y : String) -> bool: return x < y); return keys).call():
+				for item : String in (func() -> PackedStringArray: var keys : Array = data.keys(); return GeneralManager.sort_alphabetically(keys)).call():
 					var to_add : String = str(data[item])
-					if typeof(data[item]) == TYPE_ARRAY:
+					if typeof(data[item]) in [TYPE_ARRAY, TYPE_PACKED_STRING_ARRAY]:
 						to_add = ""
 						for item2 : Variant in data[item]:
-							to_add += "\n-- " + str(data[item].find(item2)) + ": " + item2
+							to_add += "\n-- " + str(data[item].find(item2) + 1) + ": " + item2
 					to_print += "\n- " + item.capitalize() + ": [i]" + to_add + "[/i]"
 				print_to_output(to_print)
 			"close":
 				active = false
-				self.visible = false
-				%InputField.release_focus()
 			"exit":
 				if MasterDirectoryManager.user_data_dict["save_on_quit"]:
 					MasterDirectoryManager.save_data()
 					if MasterDirectoryManager.finished_saving_data == false:
 						await MasterDirectoryManager.finished_saving_data_signal
-				get_tree().quit()
+					await get_tree().process_frame
+				get_tree().quit(0)
 			"hard_reload":
 				OS.set_restart_on_exit(true)
-				get_tree().quit()
-	elif ((command_chunks[0].to_lower() == "debug") and (len(command_chunks) > 1) and (command_chunks[1] in debug_commands) and (GeneralManager.is_in_debug == true)):
+				get_tree().quit(0)
+			"get_callables":
+				var to_print : String = "[b]Callables:[/b]"
+				for callable : String in callables_commands:
+					to_print += "\n- " + str(callables_commands.find(callable) + 1) + " - [i]" + callable + "[/i]"
+				print_to_output(to_print)
+			"get_commands":
+				var to_print : String = "[b]Commands:[/b]\n- [u]Special Commands:[/u]"
+				for cmd : String in special_commands:
+					to_print += "\n- - " + str(special_commands.find(cmd) + 1) + " - [i]" + cmd + "[/i]"
+				to_print += "\n- [u]Commands:[/u]"
+				for cmd : String in commands:
+					to_print += "\n- - " + str(commands.find(cmd) + 1) + " - [i]" + cmd + "[/i]"
+				print_to_output(to_print)
+	elif ((command_chunks[0].to_lower() == "debug") and (len(command_chunks) > 1) and (command_chunks[1] in debug_commands) and (GeneralManager.is_in_debug)):
 		print("command is a debug command")
 		match command_chunks[1]:
 			"print_id_dict":
@@ -292,18 +318,25 @@ func run_command(command : String, bypass_active : bool = false) -> int:
 						data = get_node("/root/MainScreen").playing_screen.call("get_player_settings")
 					"general_settings":
 						data = GeneralManager.get_general_settings()
+					"cli_settings":
+						data = get_cli_settings()
+						command_chunks[1] = "command_line_interface_settings"
 				if len(command_chunks) > 2 and command_chunks[2] in ["keys", "values"]:
 					print_to_output("[i][b]" + command_chunks[1].capitalize() + " " + command_chunks[2].capitalize() + ":[/b]\n " + str({"keys": data.keys(), "values": data.values()}[command_chunks[2]]) + "[/i]")
 				else:
 					print_to_output("[i][b]" + command_chunks[1].capitalize() + ":[/b]\n " + str(data) + "[/i]")
 	else:
-		print_to_output("[i][u]ERROR: Command '" + command + "' is not understandable; please check your command and try again.[/u][/i]")
+		print_to_output("[i][u]ERROR: Command '" + command + "' is not understandable; please check it and try again.[/u][/i]")
 		return ERR_INVALID_PARAMETER
 	return OK
 
 func print_to_output(text : String) -> int:
+	for key : String in keyword_to_text.keys():
+		text = text.replace(key, keyword_to_text[key])
 	%OutputContainer.add_child(output_scene.instantiate())
 	%OutputContainer.get_child(-1).text = text
+	await get_tree().process_frame
+	$Container/ScrollContainer/_v_scroll.set_deferred("value", $Container/ScrollContainer/_v_scroll.max_value)
 	return OK
 
 func _run(command : String, args : Array[Variant]) -> Variant:
@@ -316,7 +349,8 @@ func _run(command : String, args : Array[Variant]) -> Variant:
 		if typeof(args[i]) == TYPE_STRING:
 			args[i] = set_arg_type_callable.call(args[i])
 	#args.map(func(item : String) -> Variant: return set_arg_type_callable.call(item))
-	print_to_output("[i]Attempting to run the command '[u]" + command + "[/u]' with the arguments of: '[u]" + str(args) + "[/u]'[/i]")
+	if GeneralManager.is_in_debug:
+		print_to_output("[i]DEBUG: Attempting to run the command '[u]" + command + "[/u]' with the argument(s): '[u]" + str(args) + "[/u]'[/i]")
 	print("- - trying to call '" + command + "' with the new args of " + str(args) + " on node: " + _find_callable_key(command).to_snake_case())
 	if len(args.filter(func(item : Variant) -> bool: return str(item) != "")) > 0:
 		return self.get(_find_callable_key(command).to_snake_case()).callv(command, args)
@@ -324,7 +358,24 @@ func _run(command : String, args : Array[Variant]) -> Variant:
 
 func _find_callable_key(command : String) -> String:
 	if command in callables_commands:
-		for list : Array in callables.values():
+		for list : PackedStringArray in callables.values():
 			if list.has(command):
 				return callables.find_key(list)
 	return ""
+
+func get_cli_settings() -> Dictionary:
+	var data : Dictionary
+	for setting : String in settable_settings:
+		data[setting] = self.get(setting)
+	return data
+
+func set_cli_settings(setting : String, value : Variant) -> int:
+	if setting in settable_settings and typeof(value) == typeof(self.get(setting)):
+		print_to_output("[i]Command Line Interface Settings: Set [u]" + setting + "[/u] from [u]" + str(self.get(setting)) + "[/u] > [u]" + str(value) + "[/u].[/i]")
+		self.set(setting, value)
+		return OK
+	if typeof(self.get(setting)) != typeof(value):
+		GeneralManager.cli_print_callable.call("[i]ERROR: Tried to set [u]" + setting + "[/u] whos value is of type [u]" + type_string(typeof(self.get(setting))) + "[/u] to [u]" + value + "[/u] which is of type [u]" + type_string(typeof(value)) + "[/u].[/i]")
+	else:
+		GeneralManager.cli_print_callable.call("[i]ERROR: Setting [u]" + setting + "[/u] does not exist in CLI Settings.[/i]")
+	return ERR_INVALID_PARAMETER

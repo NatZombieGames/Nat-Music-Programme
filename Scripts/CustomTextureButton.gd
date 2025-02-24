@@ -1,7 +1,7 @@
 extends PanelContainer
 
-@onready var normal_stylebox : StyleBoxFlat = preload("res://Assets/CustomButtonNormal.tres")
-@onready var pressed_stylebox : StyleBoxFlat = preload("res://Assets/CustomButtonPressed.tres")
+static var normal_stylebox : StyleBoxFlat = preload("res://Assets/Styleboxes/CustomButtonNormal.tres")
+static var pressed_stylebox : StyleBoxFlat = preload("res://Assets/Styleboxes/CustomButtonPressed.tres")
 @export var button_custom_minimum_size : Vector2i = Vector2i(24, 24)
 @export var texture_icon_name : String = "Missing"
 @export var pressed_texture_icon_name : String = "Missing"
@@ -18,7 +18,7 @@ func _ready() -> void:
 	update()
 	return
 
-func update(data : Dictionary = {"button_custom_minimum_size": button_custom_minimum_size, "texture_icon_name": texture_icon_name, "pressed_texture_icon_name": pressed_texture_icon_name, "toggle": toggle, "pressed": pressed, "button_group": button_group, "pressed_signal_sender": pressed_signal_sender, "pressed_signal_name": pressed_signal_name, "argument": argument}) -> void:
+func update(data : Dictionary = {}) -> void:
 	for item : String in data.keys():
 		self.set(item, data[item])
 	set_panel()

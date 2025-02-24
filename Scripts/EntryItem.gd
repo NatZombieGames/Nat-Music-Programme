@@ -1,7 +1,7 @@
 extends ColorRect
 
-@onready var normal_stylebox : StyleBoxFlat = preload("res://Assets/CustomButtonNormal.tres")
-@onready var pressed_stylebox : StyleBoxFlat = preload("res://Assets/CustomButtonPressed.tres")
+static var normal_stylebox : StyleBoxFlat = preload("res://Assets/Styleboxes/CustomButtonNormal.tres")
+static var pressed_stylebox : StyleBoxFlat = preload("res://Assets/Styleboxes/CustomButtonPressed.tres")
 @export var title : String = ""
 @export var subtitle : String = ""
 @export var image : ImageTexture
@@ -20,7 +20,7 @@ func _ready() -> void:
 	update()
 	return
 
-func update(data : Dictionary = {"title": title, "subtitle": subtitle, "image": image, "enabled": enabled, "toggle": toggle, "pressed": pressed, "button_group": button_group, "pressed_signal_sender": pressed_signal_sender, "pressed_signal_name": pressed_signal_name, "pressed_signal_argument": pressed_signal_argument}) -> void:
+func update(data : Dictionary = {}) -> void:
 	for item : String in data.keys():
 		self.set(item, data[item])
 	$Button/Container/Title.text = title

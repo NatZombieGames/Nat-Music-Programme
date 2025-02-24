@@ -10,6 +10,7 @@ extends Node
 @export var cli_print_callable : Callable = (func(msg : String) -> void: get_node("/root/MainScreen/Camera/AspectRatioContainer/CommandLineInterface").call("print_to_output", msg); return)
 @export var version : String = ""
 @export var build : String = ""
+@export var build_date : String = "1970-1-1 (Thursday) | 00:00"
 @export var rng_seed : int = 0:
 	set(value):
 		rng_seed = value
@@ -29,24 +30,51 @@ func _ready() -> void:
 	is_in_debug = not OS.has_feature("release") or (OS.has_feature("debug") and not OS.has_feature("editor"))
 	build = ["Release", "Debug"][int(is_in_debug)]
 	version = ProjectSettings.get("application/config/version")
+	if not is_in_debug:
+		print("we are not in debug so are getting the export data, does the file exist? " + str(FileAccess.file_exists("res://ExportData.cfg")))
+		var export_file : ConfigFile = ConfigFile.new()
+		export_file.load("res://ExportData.cfg")
+		build_date = export_file.get_value("data", "build_date", build_date)
+		export_file.free()
+		print("finished setting build date to: " + build_date)
+	print("build date is: " + build_date)
 	if not MasterDirectoryManager.finished_loading_data:
 		await MasterDirectoryManager.finished_loading_data_signal
-	print("icon folder:")
-	Array(DirAccess.get_files_at("res://Assets/Icons")).map(func(item : String) -> String: print(item); return item)
-	print("loading files from list:\n" + str(Array(DirAccess.get_files_at("res://Assets/Icons")).filter(func(item : String) -> bool: print("wrapi for item " + item + " is " + str(int(item.right(7) == ".import") + int(is_in_debug)) + ": " + str(bool(wrapi(int(item.right(7) == ".import") + int(is_in_debug), 0, 2)))); return bool(wrapi(int(item.right(7) == ".import") + int(is_in_debug), 0, 2)))))
-	for icon : String in Array(DirAccess.get_files_at("res://Assets/Icons")).filter(func(item : String) -> bool: return bool(wrapi(int(item.right(7) == ".import") + int(is_in_debug), 0, 2))):
-		icons[icon.left(icon.find("."))] = (func(file : String) -> Image: var to_return : Image = load_svg_to_img("res://Assets/Icons/" + file).get_image(); to_return.resource_name = icon.left(icon.find(".")); return to_return).call(icon)
-	print("icons after load: " + str(icons))
-	await get_tree().process_frame
 	cli_print_callable.call("[color=gray][i]Launching NMP Version [u]" + version + "[/u] In [u]" + build + "[/u] Mode.[/i][/color]")
+	_load_icons()
+	print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! general finished ready")
+	return
+
+func _load_icons() -> void:
+	finished_loading_icons = false
+	icons = {}
+	#print("\n\nfiles in icons:")
+	#Array(Array(DirAccess.get_files_at("res://Assets/Icons")).filter(func(file : String) -> bool: return file.get_extension() == "svg")).map(func(item : String) -> String: print("- " + item); return item)
+	#print("\n\n")
+	for icon : String in PackedStringArray(Array(DirAccess.get_files_at("res://Assets/Icons")).filter(func(file : String) -> bool: return file.get_extension() == "svg")):
+		icons[icon.left(icon.find("."))] = (func() -> Image: var to_return : Image = load_svg_to_img("res://Assets/Icons" + "/" + icon, MasterDirectoryManager.user_data_dict["icon_scale"]).get_image(); return to_return).call()
+	await get_tree().process_frame
 	finished_loading_icons = true
 	self.emit_signal("finished_loading_icons_signal")
 	return
+
+func load_svg_to_img(svg_path : String, scale : float = 1.0) -> ImageTexture:
+	#Code inspired from https://forum.godotengine.org/t/how-to-leverage-the-scalability-of-svg-in-godot/82292
+	#But made for single-use instead.
+	var bitmap : Image = Image.new()
+	bitmap.load_svg_from_buffer(FileAccess.get_file_as_bytes(svg_path), scale)
+	var texture : ImageTexture = ImageTexture.create_from_image(bitmap)
+	texture.resource_name = svg_path.get_file().left(svg_path.get_file().find("."))
+	return ImageTexture.create_from_image(bitmap)
 
 func set_general_settings(setting : StringName, value : Variant) -> int:
 	if setting in settable_settings and typeof(value) == typeof(self.get(setting)):
 		cli_print_callable.call("[i]General Settings: Set [u]" + setting + "[/u] from [u]" + str(self.get(setting)) + "[/u] > [u]" + str(value) + "[/u].[/i]")
 		self.set(setting, value)
+	if typeof(self.get(setting)) != typeof(value):
+		GeneralManager.cli_print_callable.call("[i]ERROR: Tried to set [u]" + setting + "[/u] whos value is of type [u]" + type_string(typeof(self.get(setting))) + "[/u] to [u]" + value + "[/u] which is of type [u]" + type_string(typeof(value)) + "[/u].[/i]")
+	else:
+		GeneralManager.cli_print_callable.call("[i]ERROR: Setting [u]" + setting + "[/u] does not exist in General Settings.[/i]")
 	return ERR_INVALID_PARAMETER
 
 func get_general_settings() -> Dictionary:
@@ -129,10 +157,24 @@ func arr_get(arr : Array[Variant], index : int, default : Variant) -> Variant:
 		return arr[index]
 	return default
 
-func limit_str(string : String, size : int, limiter : String = "...") -> String:
+func limit_str(string : String, size : int, limiter : String = "…") -> String:
 	if len(string) > size:
 		return string.left((len(string) - size) * -1) + limiter
 	return string
+
+func get_date() -> String:
+	print("me is got here")
+	var date_dict : Dictionary = Time.get_date_dict_from_system()
+	date_dict.merge(Time.get_time_dict_from_system())
+	print("soy er here ahora")
+	for item : String in date_dict.keys():
+		date_dict[item] = str(date_dict[item])
+	print("i even got here!")
+	return date_dict["year"] + "-" + date_dict["month"] + "-" + date_dict["day"] + " (" + ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"][int(date_dict["weekday"])] + ") | " + date_dict["hour"] + ":" + date_dict["minute"]
+
+func sort_alphabetically(arr : Array[String]) -> PackedStringArray:
+	arr.sort_custom(func(item1 : String, item2 : String) -> bool: return item2 > item1)
+	return PackedStringArray(arr)
 
 func get_input_event(keycode : int) -> InputEvent:
 	if keycode in key_keycodes:
@@ -199,17 +241,6 @@ func customevent_to_string(event : Dictionary) -> String:
 				to_return = "Null"
 		return to_return
 	return "Null"
-
-func load_svg_to_img(svg_path : String, scale : float = 1.0) -> ImageTexture:
-	#Code inspired from https://forum.godotengine.org/t/how-to-leverage-the-scalability-of-svg-in-godot/82292
-	#But made for single-use instead.
-	var bitmap : Image = Image.new()
-	print("trying to load svg from path: " + svg_path + "\ndoes this path exist? " + str(FileAccess.file_exists(svg_path)) + "\nis this file empty? " + str(len(FileAccess.open(svg_path, FileAccess.READ).get_as_text()) == 0))
-	bitmap.load_svg_from_buffer(FileAccess.get_file_as_bytes(svg_path), scale)
-	var texture : ImageTexture = ImageTexture.create_from_image(bitmap)
-	texture.resource_name = svg_path.get_file().replace(".svg", "").replace(".import", "")
-	#print("name: " + str(texture.resource_name))
-	return ImageTexture.create_from_image(bitmap)
 
 func bool_arr_to_num(bools : Array[bool], size : int = 16) -> int:
 	bools.resize(size)

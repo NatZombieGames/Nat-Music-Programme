@@ -1,11 +1,11 @@
 [gd_scene load_steps=9 format=3 uid="uid://di0ca61w28uio"]
 
 [ext_resource type="Script" path="res://Scripts/PlayingScreen.gd" id="1_7klv3"]
-[ext_resource type="StyleBox" uid="uid://dydjfep1b7fhc" path="res://Assets/DefaultStylebox.tres" id="2_i1rv6"]
-[ext_resource type="StyleBox" uid="uid://dkgym2u000nvk" path="res://Assets/CornerStylebox.tres" id="2_ruksw"]
+[ext_resource type="StyleBox" uid="uid://dydjfep1b7fhc" path="res://Assets/Styleboxes/DefaultStylebox.tres" id="2_i1rv6"]
+[ext_resource type="StyleBox" uid="uid://dkgym2u000nvk" path="res://Assets/Styleboxes/CornerStylebox.tres" id="2_ruksw"]
 [ext_resource type="Texture2D" uid="uid://d0fqgyrdwlqvc" path="res://Assets/Icons/Fullscreen.svg" id="2_sf1x2"]
 [ext_resource type="Texture2D" uid="uid://bib3ce2ocxmme" path="res://Assets/Icons/Missing.svg" id="3_rmwdd"]
-[ext_resource type="StyleBox" uid="uid://bvsmn8sm7d00h" path="res://Assets/DarkBackground.tres" id="4_34oy1"]
+[ext_resource type="StyleBox" uid="uid://bvsmn8sm7d00h" path="res://Assets/Styleboxes/DarkBackground.tres" id="4_34oy1"]
 [ext_resource type="Texture2D" uid="uid://cal4jupkype3e" path="res://Assets/Icons/VolumeDisabled.svg" id="4_v4ack"]
 [ext_resource type="Texture2D" uid="uid://d1mkxnwgk6m7y" path="res://Assets/Icons/VolumeUp.svg" id="5_ey3hu"]
 
@@ -50,8 +50,8 @@ layout_mode = 2
 unique_name_in_owner = true
 custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
-size_flags_horizontal = 0
-size_flags_vertical = 0
+size_flags_horizontal = 4
+size_flags_vertical = 4
 mouse_default_cursor_shape = 2
 toggle_mode = true
 action_mode = 0
@@ -61,7 +61,6 @@ stretch_mode = 5
 
 [node name="MuteWidget" type="TextureButton" parent="Camera/ScreenContainer/Background/TopBar/Container"]
 unique_name_in_owner = true
-visible = false
 custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
 size_flags_horizontal = 0
@@ -76,7 +75,6 @@ stretch_mode = 5
 
 [node name="TimeWidget" type="Label" parent="Camera/ScreenContainer/Background/TopBar/Container"]
 unique_name_in_owner = true
-visible = false
 layout_mode = 2
 size_flags_vertical = 1
 text = "19:84"
@@ -84,7 +82,6 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Void" type="Panel" parent="Camera/ScreenContainer/Background/TopBar/Container"]
-visible = false
 self_modulate = Color(1, 1, 1, 0)
 custom_minimum_size = Vector2(2, 0)
 layout_mode = 2
@@ -140,7 +137,7 @@ vertical_alignment = 1
 unique_name_in_owner = true
 custom_minimum_size = Vector2(250, 0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 17
+theme_override_font_sizes/font_size = 16
 text = "Title"
 autowrap_mode = 3
 
@@ -226,6 +223,31 @@ layout_mode = 2
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
+
+[node name="SleepScreen" type="ColorRect" parent="Camera"]
+visible = false
+custom_minimum_size = Vector2(480, 270)
+offset_right = 480.0
+offset_bottom = 270.0
+color = Color(0.0605303, 0.0605303, 0.0605303, 1)
+
+[node name="Text" type="Label" parent="Camera/SleepScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -11.0
+offset_right = 20.0
+offset_bottom = 11.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 20
+text = "Sleeping..."
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="AudioPlayer" type="AudioStreamPlayer" parent="."]
 unique_name_in_owner = true
