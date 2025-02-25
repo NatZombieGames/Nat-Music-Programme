@@ -48,15 +48,15 @@ var set_arg_type_callable : Callable = (
 		)
 var command_history : PackedStringArray = (func() -> PackedStringArray: var arr : PackedStringArray = []; return arr).call()
 var command_history_placement : int = 0
-const commands : PackedStringArray = ["echo", "call", "set", "get"]
-const command_minimum_args : PackedInt32Array = [1, 1, 2, 1]
+const commands : PackedStringArray = ["echo", "call", "set", "get", "add", "del"]
+const command_minimum_args : PackedInt32Array = [1, 1, 2, 1, 3, 3]
 const set_and_get_types : PackedStringArray = ["user_settings", "player_settings", "general_settings", "cli_settings"]
 const special_commands : PackedStringArray = [
 	"help", "clear", "info", "error_codes", 
 	"read", "close", "exit", "hard_reload", 
 	"get_callables", "get_commands"
 	]
-const debug_commands : PackedStringArray = ["print_id_dict"]
+const debug_commands : PackedStringArray = ["print_id_dict", "push"]
 const callables : Dictionary = {
 	"MasterDirectoryManager": ["save_data", "set_user_settings", "get_user_settings"], 
 	"GeneralManager": ["set_general_settings", "get_general_settings"], 
@@ -69,8 +69,11 @@ const callables : Dictionary = {
 	}
 const boolean_strings : PackedStringArray = ["1", "true", "enabled", "yes", "on"]
 const keyword_to_text : Dictionary = {
-		"ERROR:": "[color=red]ERROR>[/color]", 
-		"DEBUG:": "[color=web_purple]DEBUG>[/color]"
+		"DEBUG_ERROR:": "[color=medium_violet_red]DEBUG ERROR |>[/color]", 
+		"ERROR:": "[color=red]ERROR |>[/color]", 
+		"DEBUG:": "[color=rebecca_purple]DEBUG |>[/color]", 
+		"SYS:": "[color=silver]SYSTEM |>[/color]", 
+		"ALERT:": "[color=gold]ALERT |>[/color]", 
 		}
 const settable_settings : PackedStringArray = ["auto_clear", "clear_input"]
 var callables_commands : Array[String] = []
@@ -89,7 +92,6 @@ func _ready() -> void:
 	clear_input = MasterDirectoryManager.user_data_dict["clear_input"]
 	if MasterDirectoryManager.user_data_dict["command_on_startup"] != "":
 		run_command(MasterDirectoryManager.user_data_dict["command_on_startup"], true)
-	print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! cli finished ready")
 	return
 
 func _input(_event: InputEvent) -> void:
@@ -188,46 +190,45 @@ func run_command(command : String, bypass_active : bool = false) -> int:
 			"clear":
 				%OutputContainer.get_children().map(func(node : Node) -> Node: node.queue_free(); return node)
 			"info":
-				print("i am getting info here! build date is: " + GeneralManager.build_date)
+				#https://docs.godotengine.org/en/stable/tutorials/ui/bbcode_in_richtextlabel.html#doc-bbcode-in-richtextlabel-named-colors
 				print_to_output(
 					("[b]NMP Info:[/b]
-					-Version: [i]" + GeneralManager.version + "[/i]
-					-Build: [i]" + GeneralManager.build + "[/i]
-					-Location: [i]" + OS.get_executable_path() + "[/i]
-					- [color=orange]-[/color]Data Location: [i]" + MasterDirectoryManager.data_location + "[/i]
-					-License: [i]" + FileAccess.open("res://LICENSE.txt", FileAccess.READ).get_as_text().get_slice("\n", 2) + "[/i]
-					-Source Location: [url=https://github.com/NatZombieGames/Nat-Music-Programme][i]Github[/i][/url]
-					-RNG Seed: [i]" + str(GeneralManager.rng_seed) + "[/i]
-					-Current Date: [i]" + str(GeneralManager.get_date()) + "[/i]
-					-Build Date: [i]" + str(GeneralManager.build_date) + "[/i]").replace("\t", "").replace("\n-", "\n[color=green]-[/color]"))
-				print("i finished printing info!")
+					-Version: " + GeneralManager.version + "
+					-Build: " + GeneralManager.build + "
+					-Location: " + OS.get_executable_path() + "
+					- [color=orange]-[/color]Data Location: " + MasterDirectoryManager.data_location + "
+					-License: " + FileAccess.open("res://LICENSE.txt", FileAccess.READ).get_as_text().get_slice("\n", 2) + "
+					-Source Location: [url=https://github.com/NatZombieGames/Nat-Music-Programme]Github[/url]
+					-RNG Seed: " + str(GeneralManager.rng_seed) + "
+					-Current Date: " + str(GeneralManager.get_date()) + "
+					-Build Date: " + str(GeneralManager.build_date)).replace("\t", "").replace(": ", "[color=lime_green]:[/color] ").replace("\n-", "\n[color=lime_green]-[/color]"))
 			"error_codes":
 				if len(command_chunks) < 2:
-					print_to_output("[i][u]ERROR: No error code given to see information about.[/u][/i]")
+					print_to_output("ERROR: No error code given to see information about.")
 					return ERR_INVALID_PARAMETER
 				if not typeof(command_chunks[1]) in [TYPE_STRING, TYPE_INT] or error_string(int(command_chunks[1])) == "(invalid error code)":
-					print_to_output("[i][u]ERROR: Not a valid error code.[/u][/i]")
+					print_to_output("ERROR: Not a valid error code.")
 					return ERR_INVALID_PARAMETER
 				print_to_output("-Error Code " + str(int(command_chunks[1])) + ": " + error_string(int(command_chunks[1])))
 			"read":
 				if len(command_chunks) < 2:
-					print_to_output("[i][u]ERROR: No ID given to read, please provide an ID.")
+					print_to_output("ERROR: No ID given to read, please provide an ID.")
 					return ERR_INVALID_PARAMETER
 				if GeneralManager.get_id_type(command_chunks[1]) == MasterDirectoryManager.use_type.UNKNOWN:
-					print_to_output("[i][u]ERROR: Unable to read data for the ID of: " + command_chunks[1] + ", as it is not a valid ID.[/u][/i]")
+					print_to_output("ERROR: Unable to read data for the ID of: " + command_chunks[1] + ", as it is not a valid ID.")
 					return ERR_INVALID_PARAMETER
 				if not command_chunks[1] in MasterDirectoryManager.get(MasterDirectoryManager.get_data_types.call()[int(command_chunks[1][0])] + "_id_dict").keys():
-					print_to_output("[i][u]ERROR: Unable to read data for the ID of: " + command_chunks[1] + ", as it is not an existing ID, please check it and try again.[/u][/i]")
+					print_to_output("ERROR: Unable to read data for the ID of: " + command_chunks[1] + ", as it is not an existing ID, please check it and try again.")
 					return ERR_INVALID_PARAMETER
 				var data : Dictionary = MasterDirectoryManager.get_object_data.call(command_chunks[1])
-				var to_print : String = "[b]ID [u]" + command_chunks[1] + "[/u] Data:[/b] [i](Displayed data names are capitalized, real name are lowercase and use _ instead of spaces.)[/i]"
+				var to_print : String = "[b]ID [u]" + command_chunks[1] + "[/u] Data:[/b] (Displayed data names are capitalized, real name are lowercase and use _ instead of spaces.)"
 				for item : String in (func() -> PackedStringArray: var keys : Array = data.keys(); return GeneralManager.sort_alphabetically(keys)).call():
 					var to_add : String = str(data[item])
 					if typeof(data[item]) in [TYPE_ARRAY, TYPE_PACKED_STRING_ARRAY]:
 						to_add = ""
 						for item2 : Variant in data[item]:
-							to_add += "\n-- " + str(data[item].find(item2) + 1) + ": " + item2
-					to_print += "\n- " + item.capitalize() + ": [i]" + to_add + "[/i]"
+							to_add += "\n-- " + str(data[item].find(item2) + 1) + ": " + str(item2)
+					to_print += "\n- " + item.capitalize() + ": " + to_add
 				print_to_output(to_print)
 			"close":
 				active = false
@@ -244,25 +245,25 @@ func run_command(command : String, bypass_active : bool = false) -> int:
 			"get_callables":
 				var to_print : String = "[b]Callables:[/b]"
 				for callable : String in callables_commands:
-					to_print += "\n- " + str(callables_commands.find(callable) + 1) + " - [i]" + callable + "[/i]"
+					to_print += "\n- " + str(callables_commands.find(callable) + 1) + " - " + callable
 				print_to_output(to_print)
 			"get_commands":
 				var to_print : String = "[b]Commands:[/b]\n- [u]Special Commands:[/u]"
 				for cmd : String in special_commands:
-					to_print += "\n- - " + str(special_commands.find(cmd) + 1) + " - [i]" + cmd + "[/i]"
+					to_print += "\n- - " + str(special_commands.find(cmd) + 1) + " - " + cmd
 				to_print += "\n- [u]Commands:[/u]"
 				for cmd : String in commands:
-					to_print += "\n- - " + str(commands.find(cmd) + 1) + " - [i]" + cmd + "[/i]"
+					to_print += "\n- - " + str(commands.find(cmd) + 1) + " - " + cmd
 				print_to_output(to_print)
 	elif ((command_chunks[0].to_lower() == "debug") and (len(command_chunks) > 1) and (command_chunks[1] in debug_commands) and (GeneralManager.is_in_debug)):
 		print("command is a debug command")
 		match command_chunks[1]:
 			"print_id_dict":
 				if len(command_chunks) < 3:
-					print_to_output("[i][u]ERROR: No argument given, please give an argument.[/u][/i]")
+					print_to_output("DEBUG_ERROR: No argument given, please give an argument.")
 					return ERR_INVALID_PARAMETER
 				if not (command_chunks[2] in MasterDirectoryManager.get_data_types.call() or command_chunks[2] == "user"):
-					print_to_output("[i][u]ERROR: Not a valid argument, please give a valid argument.[/u][/i]")
+					print_to_output("DEBUG_ERROR: Not a valid argument, please give a valid argument.")
 					return ERR_INVALID_PARAMETER
 				if len(command_chunks) < 4:
 					print_to_output("[b]" + command_chunks[2].capitalize() + " ID Dict:[/b]\n" + str(MasterDirectoryManager.get(command_chunks[2] + ["_id_dict", "_data_dict"][int(command_chunks[2] == "user")])))
@@ -273,24 +274,32 @@ func run_command(command : String, bypass_active : bool = false) -> int:
 						"values":
 							print_to_output("[b]" + command_chunks[2].capitalize() + " ID Dict Values:[/b]\n" + str(MasterDirectoryManager.get(command_chunks[2] + ["_id_dict", "_data_dict"][int(command_chunks[2] == "user")]).values()))
 						_:
-							print_to_output("[i][u]ERROR: Not a valid argument, please give a valid argument.[/u][/i]")
+							print_to_output("DEBUG_ERROR: Not a valid argument, please give a valid argument.")
 							return ERR_INVALID_PARAMETER
+			"push":
+				if len(command_chunks) < 4:
+					print_to_output("DEBUG_ERROR: Invalid amount of arguments for 'push', needs 3 arguments.")
+					return ERR_INVALID_DATA
+				if not (command_chunks[2].to_upper() + ":") in keyword_to_text.keys():
+					print_to_output("DEBUG_ERROR: Invalid push type, please use one of the following: " + str(keyword_to_text.keys()).replace(":", "").to_lower() + ".")
+					return ERR_INVALID_PARAMETER
+				print_to_output(command_chunks[2].to_upper() + ": " + command.right((12 + len(command_chunks[2])) * -1))
 	elif command_chunks[0].to_lower() in commands:
 		print("command '" + command_chunks[0].to_lower() + "' is a normal command")
 		if not len(command_chunks) > command_minimum_args[commands.find(command_chunks[0].to_lower())]:
-			print_to_output("[i]ERROR: Tried to run '[u]" + command_chunks[0] + "[/u]' with too little arguments. You gave " + str(len(command_chunks)) + " arguments and " + str(command_minimum_args[commands.find(command_chunks[0].to_lower())]) + " were needed, please try again.[/i]")
+			print_to_output("ERROR: Tried to run '[u]" + command_chunks[0] + "[/u]' with too little arguments. You gave " + str(len(command_chunks)-1) + " arguments and " + str(command_minimum_args[commands.find(command_chunks[0].to_lower())]) + " were needed, please try again.")
 			return ERR_INVALID_PARAMETER
 		match command_chunks[0].to_lower():
 			"echo":
 				match command_chunks[1].to_lower():
 					"call":
 						if not len(command_chunks) > 2:
-							print_to_output("[i]ERROR: Tried to run 'call' inside 'echo' with too little arguments, please try again.[/i]")
+							print_to_output("ERROR: Tried to run 'call' inside 'echo' with too little arguments, please try again.")
 							return ERR_INVALID_PARAMETER
 						print("trying to echo the call of '" + command_chunks[2] + "' with the args: " + str([command.right((11 + len(command_chunks[2])) * -1)]))
 						print_to_output(str(_run(command_chunks[2], (func(arr : PackedStringArray) -> PackedStringArray: arr.remove_at(0); arr.remove_at(0); arr.remove_at(0); return arr).call(command_chunks))))
 					_:
-						print_to_output(command.right(-5))
+						print_to_output(command.right(-5), false)
 			"call":
 				_run(command_chunks[1], (func(arr : PackedStringArray) -> PackedStringArray: arr.remove_at(0); arr.remove_at(0); return arr).call(command_chunks))
 			"set":
@@ -299,16 +308,16 @@ func run_command(command : String, bypass_active : bool = false) -> int:
 				elif GeneralManager.get_id_type(command_chunks[1]) != MasterDirectoryManager.use_type.UNKNOWN:
 					var data : Variant = MasterDirectoryManager.get(MasterDirectoryManager.get_data_types.call()[int(command_chunks[1][1])] + "_id_dict")[command_chunks[1]]
 					if typeof(data[command_chunks[2]]) != typeof(set_arg_type_callable.call(command_chunks[3])):
-						print_to_output("[i]ERROR: Invalid type for 'set', tried to set '[u]" + command_chunks[2] + "[/u]' of type '[u]" + type_string(typeof(data[command_chunks[2]])) + "[/u]' to '[u]" + str(set_arg_type_callable.call(command_chunks[3])) + "[/u]', which is of type '[u]" + type_string(typeof(set_arg_type_callable.call(command_chunks[3]))) + "[/u]', please check the command and try again.[/i]")
+						print_to_output("ERROR: Invalid type for 'set', tried to set '[u]" + command_chunks[2] + "[/u]' of type '[u]" + type_string(typeof(data[command_chunks[2]])) + "[/u]' to '[u]" + str(set_arg_type_callable.call(command_chunks[3])) + "[/u]', which is of type '[u]" + type_string(typeof(set_arg_type_callable.call(command_chunks[3]))) + "[/u]', please check the command and try again.")
 						return ERR_INVALID_PARAMETER
 					data[command_chunks[2]] = set_arg_type_callable.call(command_chunks[3])
-					print_to_output("[i]Set data of name '[u]" + command_chunks[2] + "[/u]' on object with the ID of '[u]" + command_chunks[1] + "[/u]' to a value of '[u]" + command_chunks[3] + "[/u]'.")
+					print_to_output("Set data of name '[u]" + command_chunks[2] + "[/u]' on object with the ID of '[u]" + command_chunks[1] + "[/u]' to a value of '[u]" + command_chunks[3] + "[/u]'.")
 				else:
-					print_to_output("[i]ERROR: First argument given for 'set' is invalid, please try again with an ID or setting type.[/i]")
+					print_to_output("ERROR: First argument given for 'set' is invalid, please try again with an ID or setting type.")
 					return ERR_INVALID_PARAMETER
 			"get":
 				if not command_chunks[1] in set_and_get_types:
-					print_to_output("[i]ERROR: First argument given for 'get' is invalid, please try again with a setting type.[/i]")
+					print_to_output("ERROR: First argument given for 'get' is invalid, please try again with a setting type.")
 					return ERR_INVALID_PARAMETER
 				var data : Dictionary
 				match command_chunks[1]:
@@ -322,35 +331,67 @@ func run_command(command : String, bypass_active : bool = false) -> int:
 						data = get_cli_settings()
 						command_chunks[1] = "command_line_interface_settings"
 				if len(command_chunks) > 2 and command_chunks[2] in ["keys", "values"]:
-					print_to_output("[i][b]" + command_chunks[1].capitalize() + " " + command_chunks[2].capitalize() + ":[/b]\n " + str({"keys": data.keys(), "values": data.values()}[command_chunks[2]]) + "[/i]")
+					print_to_output("[b]" + command_chunks[1].capitalize() + " " + command_chunks[2].capitalize() + ":[/b]\n " + str({"keys": data.keys(), "values": data.values()}[command_chunks[2]]))
 				else:
-					print_to_output("[i][b]" + command_chunks[1].capitalize() + ":[/b]\n " + str(data) + "[/i]")
+					print_to_output("[b]" + command_chunks[1].capitalize() + ":[/b]\n " + str(data))
+			"add":
+				if not (GeneralManager.get_id_type(command_chunks[1]) != MasterDirectoryManager.use_type.UNKNOWN and MasterDirectoryManager.get(MasterDirectoryManager.get_data_types.call()[int(command_chunks[1][1])] + "_id_dict").has(command_chunks[1])):
+					print_to_output("ERROR: ID [u]" + command_chunks[1] + "[/u] during 'add' is not valid or is nonexistant, please check it and try again.")
+					return ERR_INVALID_PARAMETER
+				var data : Dictionary =  MasterDirectoryManager.get(MasterDirectoryManager.get_data_types.call()[int(command_chunks[1][1])] + "_id_dict")[command_chunks[1]]
+				if not data.has(command_chunks[2]):
+					print_to_output("ERROR: Tried to add to [u]" + command_chunks[2] + "[/u] in object with ID [u]" + command_chunks[1] + "[/u] which does not have a matching field, please check it and try again.")
+					return ERR_INVALID_PARAMETER
+				if not typeof(data[command_chunks[2]]) in [TYPE_ARRAY]:
+					print_to_output("ERROR: Trying to add an item to [u]" + command_chunks[2] + "[/u], which is not a type with contents that can be added too using this command.")
+					return ERR_INVALID_PARAMETER
+				data[command_chunks[2]].append(set_arg_type_callable.call(command_chunks[3]))
+				print_to_output("Added [u]" + str(set_arg_type_callable.call(command_chunks[3])) + "[/u] to [u]" + command_chunks[2] + "[/u] in object with ID [u]" + command_chunks[1] + "[/u].")
+			"del":
+				if not (GeneralManager.get_id_type(command_chunks[1]) != MasterDirectoryManager.use_type.UNKNOWN and MasterDirectoryManager.get(MasterDirectoryManager.get_data_types.call()[int(command_chunks[1][1])] + "_id_dict").has(command_chunks[1])):
+					print_to_output("ERROR: ID [u]" + command_chunks[1] + "[/u] during 'del' is not valid or is nonexistant, please check it and try again.")
+					return ERR_INVALID_PARAMETER
+				var data : Dictionary =  MasterDirectoryManager.get(MasterDirectoryManager.get_data_types.call()[int(command_chunks[1][1])] + "_id_dict")[command_chunks[1]]
+				if not data.has(command_chunks[2]):
+					print_to_output("ERROR: Tried to delete in [u]" + command_chunks[2] + "[/u] in object with ID [u]" + command_chunks[1] + "[/u] which does not have a matching field, please check it and try again.")
+					return ERR_INVALID_PARAMETER
+				if not typeof(data[command_chunks[2]]) in [TYPE_ARRAY]:
+					print_to_output("ERROR: Trying to delete an item to [u]" + command_chunks[2] + "[/u], which is not a type with contents that can be deleted from using this command.")
+					return ERR_INVALID_PARAMETER
+				if not typeof(set_arg_type_callable.call(command_chunks[3])) == TYPE_INT:
+					print_to_output("ERROR: Need an index to delete with, provided index was not a number. Please provide a number by type-casting the argument with 'int/'.")
+					return ERR_INVALID_PARAMETER
+				if not set_arg_type_callable.call(command_chunks[3]) in range(0, len(data[command_chunks[2]])):
+					print_to_output("ERROR: Index during 'del' was not a valid index as it is outside the range of the data size.")
+					return ERR_INVALID_PARAMETER
+				print_to_output("Removed item [u]" + data[command_chunks[2]][set_arg_type_callable.call(command_chunks[3])] + "[/u] at index [u]" + str(set_arg_type_callable.call(command_chunks[3])) + "[/u] from [u]" + str(data[command_chunks[2]]) + "[/u] on object with ID [u]" + command_chunks[1] + "[/u].")
+				data[command_chunks[2]].remove_at(set_arg_type_callable.call(command_chunks[3]))
 	else:
-		print_to_output("[i][u]ERROR: Command '" + command + "' is not understandable; please check it and try again.[/u][/i]")
+		print_to_output("ERROR: Command '" + command + "' is not understandable; please check it and try again.")
 		return ERR_INVALID_PARAMETER
 	return OK
 
-func print_to_output(text : String) -> int:
-	for key : String in keyword_to_text.keys():
-		text = text.replace(key, keyword_to_text[key])
+func print_to_output(text : String, use_keywords : bool = true) -> int:
+	if use_keywords:
+		for key : String in keyword_to_text.keys():
+			text = text.replace(key, keyword_to_text[key])
+			break
 	%OutputContainer.add_child(output_scene.instantiate())
 	%OutputContainer.get_child(-1).text = text
-	await get_tree().process_frame
 	$Container/ScrollContainer/_v_scroll.set_deferred("value", $Container/ScrollContainer/_v_scroll.max_value)
 	return OK
 
 func _run(command : String, args : Array[Variant]) -> Variant:
 	print("running _run with a command of '" + command + "' with args of " + str(args))
 	if not command in callables_commands:
-		print_to_output("[i]ERROR: Command '[u]" + command + "[/u]' Is not a valid command, please check it and try again.[/i]")
+		print_to_output("ERROR: Command '[u]" + command + "[/u]' Is not a valid command, please check it and try again.")
 		print("command not in callables values, callables values are: " + str(callables_commands))
 		return ERR_INVALID_PARAMETER
 	for i : int in range(0, len(args)):
 		if typeof(args[i]) == TYPE_STRING:
 			args[i] = set_arg_type_callable.call(args[i])
-	#args.map(func(item : String) -> Variant: return set_arg_type_callable.call(item))
 	if GeneralManager.is_in_debug:
-		print_to_output("[i]DEBUG: Attempting to run the command '[u]" + command + "[/u]' with the argument(s): '[u]" + str(args) + "[/u]'[/i]")
+		print_to_output("DEBUG: Attempting to run the command '[u]" + command + "[/u]' with the argument(s): '[u]" + str(args) + "[/u]'")
 	print("- - trying to call '" + command + "' with the new args of " + str(args) + " on node: " + _find_callable_key(command).to_snake_case())
 	if len(args.filter(func(item : Variant) -> bool: return str(item) != "")) > 0:
 		return self.get(_find_callable_key(command).to_snake_case()).callv(command, args)
@@ -360,7 +401,7 @@ func _find_callable_key(command : String) -> String:
 	if command in callables_commands:
 		for list : PackedStringArray in callables.values():
 			if list.has(command):
-				return callables.find_key(list)
+				return callables.find_key(Array(list))
 	return ""
 
 func get_cli_settings() -> Dictionary:
@@ -371,11 +412,11 @@ func get_cli_settings() -> Dictionary:
 
 func set_cli_settings(setting : String, value : Variant) -> int:
 	if setting in settable_settings and typeof(value) == typeof(self.get(setting)):
-		print_to_output("[i]Command Line Interface Settings: Set [u]" + setting + "[/u] from [u]" + str(self.get(setting)) + "[/u] > [u]" + str(value) + "[/u].[/i]")
+		print_to_output("Command Line Interface Settings: Set [u]" + setting + "[/u] from [u]" + str(self.get(setting)) + "[/u] > [u]" + str(value) + "[/u].")
 		self.set(setting, value)
 		return OK
 	if typeof(self.get(setting)) != typeof(value):
-		GeneralManager.cli_print_callable.call("[i]ERROR: Tried to set [u]" + setting + "[/u] whos value is of type [u]" + type_string(typeof(self.get(setting))) + "[/u] to [u]" + value + "[/u] which is of type [u]" + type_string(typeof(value)) + "[/u].[/i]")
+		GeneralManager.cli_print_callable.call("ERROR: Tried to set [u]" + setting + "[/u] whos value is of type [u]" + type_string(typeof(self.get(setting))) + "[/u] to [u]" + value + "[/u] which is of type [u]" + type_string(typeof(value)) + "[/u].")
 	else:
-		GeneralManager.cli_print_callable.call("[i]ERROR: Setting [u]" + setting + "[/u] does not exist in CLI Settings.[/i]")
+		GeneralManager.cli_print_callable.call("ERROR: Setting [u]" + setting + "[/u] does not exist in CLI Settings.")
 	return ERR_INVALID_PARAMETER

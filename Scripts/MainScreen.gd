@@ -5,6 +5,7 @@ const basic_entryitem_scene : PackedScene = preload("res://Scenes/BasicEntryItem
 const popup_notif_scene : PackedScene = preload("res://Scenes/PopupNotification.tscn")
 const list_item_scene : PackedScene = preload("res://Scenes/ListItem.tscn")
 const keybind_scene : PackedScene = preload("res://Scenes/KeybindScene.tscn")
+const tooltip_scene : PackedScene = preload("res://Scenes/Tooltip.tscn")
 @export var playing_screen : Control
 @export var cli : PanelContainer
 var song_upload_list : Array = []
@@ -65,7 +66,7 @@ func _ready() -> void:
 	await create_tween().tween_property(%LoadingScreen, "modulate", Color(1, 1, 1, 0), 0.25).from(Color(1, 1, 1, 1)).finished
 	%LoadingScreen.visible = false
 	GeneralManager.set_mouse_busy_state.call(false)
-	print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! main finished ready")
+	GeneralManager.cli_print_callable.call("SYS: Finished Programme Initialization")
 	return
 
 func _input(event : InputEvent) -> void:
@@ -175,7 +176,7 @@ func populate_data_list_context_menu(location : Node, type : MasterDirectoryMana
 			var parent_id : String
 			if type in [MasterDirectoryManager.use_type.ALBUM, MasterDirectoryManager.use_type.SONG]:
 				parent_id = data[key][MasterDirectoryManager.use_type.find_key(int(key.left(1))-1).to_lower()]
-			var to_update : Dictionary = {"title": data[key]["name"], "subtitle": key, "copy_subtitle_text": ("[i] ID '[u]" + key + "[/u]' Was Copied To Clipboard. [/i]"), "image": GeneralManager.get_icon_texture("Missing"), "action_button_sender": pressed_sender, "action_buttons": 4, "action_button_images": ["Up", "Down", "Play", ["Favourite", "Favourited"][int(data[key]["favourite"])]], "action_button_signal_names": action_button_signal_names, "action_button_arguments": [["0", parent_id, location], ["1", parent_id, location], ["2", key], ["3", key]]}
+			var to_update : Dictionary = {"title": data[key]["name"], "subtitle": key, "copy_subtitle_text": (" ID '[u]" + key + "[/u]' Was Copied To Clipboard. "), "image": GeneralManager.get_icon_texture("Missing"), "action_button_sender": pressed_sender, "action_buttons": 4, "action_button_images": ["Up", "Down", "Play", ["Favourite", "Favourited"][int(data[key]["favourite"])]], "action_button_signal_names": action_button_signal_names, "action_button_arguments": [["0", parent_id, location], ["1", parent_id, location], ["2", key], ["3", key]]}
 			if type in [MasterDirectoryManager.use_type.ARTIST, MasterDirectoryManager.use_type.ALBUM, MasterDirectoryManager.use_type.PLAYLIST] and GeneralManager.is_valid_image.call(data[key]["image_file_path"]):
 				to_update["image"] = get_image.call(data[key]["image_file_path"])
 			elif type == MasterDirectoryManager.use_type.SONG and GeneralManager.is_valid_image.call(MasterDirectoryManager.album_id_dict[data[key]["album"]]["image_file_path"]):
@@ -193,7 +194,7 @@ func set_song_upload_style(style : String) -> void:
 	print("selected " + selected)
 	print("selected is valid path: " + str(DirAccess.dir_exists_absolute(selected)))
 	if selected != "" and not [FileAccess.file_exists(selected), DirAccess.dir_exists_absolute(selected)][int(style)]:
-		create_popup_notif("[i]" + [" Unable To Validate File", " Unable To Validate Directory"][int(style)] + ", Please Try Again With A Different Path. [/i]")
+		create_popup_notif(" " + ["Unable To Validate File", "Unable To Validate Directory"][int(style)] + ", Please Try Again With A Different Path. ")
 		return
 	if int(style) == 0:
 		print("adding one file")
@@ -228,7 +229,7 @@ func populate_library_screen(page : int) -> void:
 		node.visible = data_id != "invalid"
 		if node.visible:
 			print("data id: " + data_id + ", data: " + str(data[data_id]))
-			var to_update : Dictionary = {"title": data[data_id]["name"], "subtitle": data_id, "copy_subtitle_text": ("[i] ID '[u]" + data_id + "[/u]' Was Copied To Clipboard. [/i]"), "image": "", "action_button_sender": self, "action_buttons": 4, "action_button_images": ["Elipses", "Play", ["Favourite", "Favourited"][int(data[data_id]["favourite"])], "Delete"], "action_button_signal_names": ["open_context_menu", "play", "set_favourite", "delete"], "action_button_arguments": [data_id, data_id, data_id, data_id]}
+			var to_update : Dictionary = {"title": data[data_id]["name"], "subtitle": data_id, "copy_subtitle_text": (" ID '[u]" + data_id + "[/u]' Was Copied To Clipboard. "), "image": "", "action_button_sender": self, "action_buttons": 4, "action_button_images": ["Elipses", "Play", ["Favourite", "Favourited"][int(data[data_id]["favourite"])], "Delete"], "action_button_signal_names": ["open_context_menu", "play", "set_favourite", "delete"], "action_button_arguments": [data_id, data_id, data_id, data_id]}
 			if library_page == 2:
 				if data[data_id]["album"] != "" and data[data_id]["album"] in MasterDirectoryManager.album_id_dict.keys():
 					to_update["image"] = ImageTexture.create_from_image(GeneralManager.get_image(MasterDirectoryManager.album_id_dict[data[data_id]["album"]]["image_file_path"]))
@@ -540,12 +541,12 @@ func create_button_pressed(button : String, arg : String = "") -> void:
 					MasterDirectoryManager.song_id_dict[id] = data
 					if new_entry_data["album"] != "":
 						MasterDirectoryManager.album_id_dict[new_entry_data["album"]]["songs"].append(id)
-				create_popup_notif(" [i]Uploaded [u]" + str(len(song_upload_list)) + "[/u] New Song" + ["", "s"][int(len(song_upload_list) > 1)] + [" To The Album [u]" + new_entry_data["album"] + ".[/i] ", ".[/i] "][int(new_entry_data["album"] == "")])
+				create_popup_notif(" Uploaded [u]" + str(len(song_upload_list)) + "[/u] New Song" + ["", "s"][int(len(song_upload_list) > 1)] + [" To The Album [u]" + new_entry_data["album"] + ".[/i] ", ". "][int(new_entry_data["album"] == "")])
 			else:
 				MasterDirectoryManager.get(MasterDirectoryManager.get_data_types.call()[new_page] + "_id_dict")[id] = new_entry_data
 				if new_page == 1 and new_entry_data["artist"] != "":
 					MasterDirectoryManager.artist_id_dict[new_entry_data["artist"]]["albums"].append(id)
-				create_popup_notif(" [i]Made A New " + MasterDirectoryManager.get_data_types.call()[new_page].capitalize() + " With The ID [u]" + id + "[/u].[/i] ")
+				create_popup_notif(" Made A New " + MasterDirectoryManager.get_data_types.call()[new_page].capitalize() + " With The ID [u]" + id + "[/u]. ")
 			set_create_screen_page(str(new_page))
 		"3":
 			%MainContainer/New/Container/Body/SelectList.visible = false
@@ -618,6 +619,13 @@ func create_popup_notif(title : String, custom_min_size : Vector2 = Vector2(240,
 	if $Camera.enabled:
 		$Camera/AspectRatioContainer/PopupNotifications.add_child(popup_notif_scene.instantiate())
 		$Camera/AspectRatioContainer/PopupNotifications.get_child(-1).update(title, custom_min_size)
+	return
+
+func create_tooltip(text : String, text_size : int = 16) -> void:
+	if $Camera.enabled:
+		$Camera/AspectRatioContainer/TooltipContainer.add_child(tooltip_scene.instantiate())
+		$Camera/AspectRatioContainer/TooltipContainer.get_child(-1).set("text_size", text_size)
+		$Camera/AspectRatioContainer/TooltipContainer.get_child(-1).set("text", text)
 	return
 
 func create_popup(title : String, response_1 : String = "Yes", response_2 : String = "No") -> int:

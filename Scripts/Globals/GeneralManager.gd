@@ -35,14 +35,11 @@ func _ready() -> void:
 		var export_file : ConfigFile = ConfigFile.new()
 		export_file.load("res://ExportData.cfg")
 		build_date = export_file.get_value("data", "build_date", build_date)
-		export_file.free()
-		print("finished setting build date to: " + build_date)
 	print("build date is: " + build_date)
 	if not MasterDirectoryManager.finished_loading_data:
 		await MasterDirectoryManager.finished_loading_data_signal
-	cli_print_callable.call("[color=gray][i]Launching NMP Version [u]" + version + "[/u] In [u]" + build + "[/u] Mode.[/i][/color]")
+	cli_print_callable.call("SYS: Launching NMP Version [u]" + version + "[/u] In [u]" + build + "[/u] Mode At [u]" + get_date() + "[/u].")
 	_load_icons()
-	print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! general finished ready")
 	return
 
 func _load_icons() -> void:
@@ -69,12 +66,12 @@ func load_svg_to_img(svg_path : String, scale : float = 1.0) -> ImageTexture:
 
 func set_general_settings(setting : StringName, value : Variant) -> int:
 	if setting in settable_settings and typeof(value) == typeof(self.get(setting)):
-		cli_print_callable.call("[i]General Settings: Set [u]" + setting + "[/u] from [u]" + str(self.get(setting)) + "[/u] > [u]" + str(value) + "[/u].[/i]")
+		cli_print_callable.call("General Settings: Set [u]" + setting + "[/u] from [u]" + str(self.get(setting)) + "[/u] > [u]" + str(value) + "[/u].")
 		self.set(setting, value)
 	if typeof(self.get(setting)) != typeof(value):
-		GeneralManager.cli_print_callable.call("[i]ERROR: Tried to set [u]" + setting + "[/u] whos value is of type [u]" + type_string(typeof(self.get(setting))) + "[/u] to [u]" + value + "[/u] which is of type [u]" + type_string(typeof(value)) + "[/u].[/i]")
+		GeneralManager.cli_print_callable.call("ERROR: Tried to set [u]" + setting + "[/u] whos value is of type [u]" + type_string(typeof(self.get(setting))) + "[/u] to [u]" + value + "[/u] which is of type [u]" + type_string(typeof(value)) + "[/u].")
 	else:
-		GeneralManager.cli_print_callable.call("[i]ERROR: Setting [u]" + setting + "[/u] does not exist in General Settings.[/i]")
+		GeneralManager.cli_print_callable.call("ERROR: Setting [u]" + setting + "[/u] does not exist in General Settings.")
 	return ERR_INVALID_PARAMETER
 
 func get_general_settings() -> Dictionary:
@@ -162,17 +159,22 @@ func limit_str(string : String, size : int, limiter : String = "…") -> String:
 		return string.left((len(string) - size) * -1) + limiter
 	return string
 
-func get_date() -> String:
-	print("me is got here")
+func get_date(include_date : bool = true, include_weekday : bool = true, include_time : bool = true) -> String:
+	if not include_date and not include_weekday and not include_time:
+		return ""
 	var date_dict : Dictionary = Time.get_date_dict_from_system()
 	date_dict.merge(Time.get_time_dict_from_system())
-	print("soy er here ahora")
 	for item : String in date_dict.keys():
 		date_dict[item] = str(date_dict[item])
-	print("i even got here!")
-	return date_dict["year"] + "-" + date_dict["month"] + "-" + date_dict["day"] + " (" + ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"][int(date_dict["weekday"])] + ") | " + date_dict["hour"] + ":" + date_dict["minute"]
+	date_dict = {
+		"date": date_dict["year"] + "-" + date_dict["month"] + "-" + date_dict["day"], 
+		"weekday": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"][int(date_dict["weekday"])], 
+		"time": date_dict["hour"] + ":" + date_dict["minute"]}
+	if include_date and include_weekday and include_time:
+		return date_dict["date"] + " (" + date_dict["weekday"] + ") | " + date_dict["time"]
+	return [date_dict["date"], ""][int(!include_date)] + ["", " "][int(include_weekday and include_date)] + [["", "("][int(include_date)] + date_dict["weekday"] + ["", ")"][int(include_date)], ""][int(!include_weekday)] + ["", " | "][int(include_time and (include_date or include_weekday))] + [date_dict["time"], ""][int(!include_time)]
 
-func sort_alphabetically(arr : Array[String]) -> PackedStringArray:
+func sort_alphabetically(arr : Array) -> PackedStringArray:
 	arr.sort_custom(func(item1 : String, item2 : String) -> bool: return item2 > item1)
 	return PackedStringArray(arr)
 

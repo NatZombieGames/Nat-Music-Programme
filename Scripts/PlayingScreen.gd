@@ -114,7 +114,6 @@ func _ready() -> void:
 	await get_tree().process_frame
 	if MasterDirectoryManager.user_data_dict["continue_playing_exact"] == true:
 		song_progress = MasterDirectoryManager.user_data_dict["active_song_data"].get("song_progress", 0)
-	print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! playing finished ready")
 	return
 
 func _notification(notif : int) -> void:
@@ -168,7 +167,10 @@ func _input(_event : InputEvent) -> void:
 	return
 
 func _exit_tree() -> void:
-	load_song_thread.wait_to_finish()
+	if load_song_thread.is_started():
+		load_song_thread.wait_to_finish()
+	volume_indicator_tween.kill()
+	volume_indicator_tween.free()
 	return
 
 func load_song_list(list_id : String = active_song_list_id) -> int:
@@ -182,7 +184,7 @@ func load_song_list(list_id : String = active_song_list_id) -> int:
 	else:
 		if (GeneralManager.get_id_type(list_id) == MasterDirectoryManager.use_type.UNKNOWN) or GeneralManager.get_data(list_id) in ["", "Unknown"]:
 			print("Invalid Song List ID, type is " + str(GeneralManager.get_id_type(list_id)) + ", data is invalid: " + str(GeneralManager.get_data(list_id) in ["", "Unknown"]))
-			GeneralManager.cli_print_callable.call("[i][b]ERROR:[/b] Attempted to load song list with an ID of [u]" + list_id + "[/u], which isn't valid. Please check it and try again.[/i]")
+			GeneralManager.cli_print_callable.call("[i]ERROR: Attempted to load song list with an ID of [u]" + list_id + "[/u], which isn't valid. Please check it and try again.[/i]")
 			reset_playing_screen()
 			return ERR_INVALID_PARAMETER
 		match GeneralManager.get_id_type(list_id):
@@ -198,6 +200,7 @@ func load_song_list(list_id : String = active_song_list_id) -> int:
 	active_song_list.filter(func(item : String) -> bool: return MasterDirectoryManager.song_id_dict.keys().has(item))
 	if shuffle == true:
 		active_song_list.shuffle()
+	GeneralManager.cli_print_callable.call("SYS: Loaded song list with ID [u]" + list_id + "[/u] with a length of [u]" + str(len(active_song_list)) + "[/u].")
 	load_song(GeneralManager.arr_get(active_song_list, 0, ""))
 	print("Load Song List Ran Succesfully")
 	return OK
@@ -205,12 +208,12 @@ func load_song_list(list_id : String = active_song_list_id) -> int:
 func load_song(song_id : String = active_song_id) -> int:
 	print("\n\nLoad Song ID: '" + song_id + "', begins with '" + song_id.left(1) + "'")
 	if (GeneralManager.get_id_type(song_id) != MasterDirectoryManager.use_type.SONG) or (not MasterDirectoryManager.song_id_dict.has(song_id)):
-		GeneralManager.cli_print_callable.call("[i][b]ERROR:[/b] Attempted to load song of ID '[u]" + song_id + "[/u]' which isn't valid, please check it and try again.[/i]")
+		GeneralManager.cli_print_callable.call("ERROR: Attempted to load song of ID '[u]" + song_id + "[/u]' which isn't valid, please check it and try again.")
 		reset_playing_screen()
 		return ERR_INVALID_PARAMETER
 	print("Song ID is valid.")
 	active_song_id = song_id
-	GeneralManager.cli_print_callable.call("[i]Player is now playing song [u]" + str(active_song_list.find(active_song_id) + 1) + "[/u]/[u]" + str(len(active_song_list)) + "[/u] with the ID of [u]" + active_song_id + "[/u].[/i]")
+	GeneralManager.cli_print_callable.call("SYS: Now playing song [u]" + str(active_song_list.find(active_song_id) + 1) + "[/u]/[u]" + str(len(active_song_list)) + "[/u] with the ID of [u]" + active_song_id + "[/u].")
 	var song_data : Dictionary = GeneralManager.get_data(active_song_id)
 	print("song data: " + str(song_data))
 	if not song_data["song_file_path"] in song_cache.keys():
@@ -262,13 +265,13 @@ func load_next_song_into_cache() -> void:
 
 func set_player_settings(setting : StringName, value : Variant) -> int:
 	if setting in settable_settings and typeof(self.get(setting)) == typeof(value):
-		GeneralManager.cli_print_callable.call("[i]Player Settings: Set [u]" + setting + "[/u] from [u]" + str(self.get(setting)) + "[/u] > [u]" + str(value) + "[/u].[/i]")
+		GeneralManager.cli_print_callable.call("Player Settings: Set [u]" + setting + "[/u] from [u]" + str(self.get(setting)) + "[/u] > [u]" + str(value) + "[/u].")
 		self.set(setting, value)
 		return OK
 	if typeof(self.get(setting)) != typeof(value):
-		GeneralManager.cli_print_callable.call("[i]ERROR: Tried to set [u]" + setting + "[/u] whos value is of type [u]" + type_string(typeof(self.get(setting))) + "[/u] to [u]" + value + "[/u] which is of type [u]" + type_string(typeof(value)) + "[/u].[/i]")
+		GeneralManager.cli_print_callable.call("ERROR: Tried to set [u]" + setting + "[/u] whos value is of type [u]" + type_string(typeof(self.get(setting))) + "[/u] to [u]" + value + "[/u] which is of type [u]" + type_string(typeof(value)) + "[/u].")
 	else:
-		GeneralManager.cli_print_callable.call("[i]ERROR: Setting [u]" + setting + "[/u] does not exist in Player Settings.[/i]")
+		GeneralManager.cli_print_callable.call("ERROR: Setting [u]" + setting + "[/u] does not exist in Player Settings.")
 	return ERR_INVALID_PARAMETER
 
 func get_player_settings() -> Dictionary:

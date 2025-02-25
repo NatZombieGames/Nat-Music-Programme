@@ -1233,33 +1233,53 @@ layout_mode = 2
 alignment = 1
 last_wrap_alignment = 2
 
-[node name="Button1" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Data/Container/Panel1/Container/Buttons" instance=ExtResource("5_5wduh")]
+[node name="Button1" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Data/Container/Panel1/Container/Buttons" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("5_5wduh")]
 layout_mode = 2
 button_text = "Delete All Data"
+pressed_signal_sender = NodePath("../../../../../../../../../../../../..")
+pressed_signal_name = "data_managment_button_pressed"
 
-[node name="Button2" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Data/Container/Panel1/Container/Buttons" instance=ExtResource("5_5wduh")]
+[node name="Button2" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Data/Container/Panel1/Container/Buttons" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("5_5wduh")]
 layout_mode = 2
 button_text = "Delete Artist Data"
+pressed_signal_sender = NodePath("../../../../../../../../../../../../..")
+pressed_signal_name = "data_managment_button_pressed"
+argument = "1"
 
-[node name="Button3" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Data/Container/Panel1/Container/Buttons" instance=ExtResource("5_5wduh")]
+[node name="Button3" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Data/Container/Panel1/Container/Buttons" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("5_5wduh")]
 layout_mode = 2
 button_text = "Delete Album Data"
+pressed_signal_sender = NodePath("../../../../../../../../../../../../..")
+pressed_signal_name = "data_managment_button_pressed"
+argument = "2"
 
-[node name="Button4" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Data/Container/Panel1/Container/Buttons" instance=ExtResource("5_5wduh")]
+[node name="Button4" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Data/Container/Panel1/Container/Buttons" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("5_5wduh")]
 layout_mode = 2
 button_text = "Delete Song Data"
+pressed_signal_sender = NodePath("../../../../../../../../../../../../..")
+pressed_signal_name = "data_managment_button_pressed"
+argument = "3"
 
-[node name="Button5" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Data/Container/Panel1/Container/Buttons" instance=ExtResource("5_5wduh")]
+[node name="Button5" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Data/Container/Panel1/Container/Buttons" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("5_5wduh")]
 layout_mode = 2
 button_text = "Delete Playlist Data"
+pressed_signal_sender = NodePath("../../../../../../../../../../../../..")
+pressed_signal_name = "data_managment_button_pressed"
+argument = "4"
 
-[node name="Button6" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Data/Container/Panel1/Container/Buttons" instance=ExtResource("5_5wduh")]
+[node name="Button6" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Data/Container/Panel1/Container/Buttons" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("5_5wduh")]
 layout_mode = 2
 button_text = "Delete User Data"
+pressed_signal_sender = NodePath("../../../../../../../../../../../../..")
+pressed_signal_name = "data_managment_button_pressed"
+argument = "5"
 
-[node name="Button7" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Data/Container/Panel1/Container/Buttons" instance=ExtResource("5_5wduh")]
+[node name="Button7" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Data/Container/Panel1/Container/Buttons" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("5_5wduh")]
 layout_mode = 2
 button_text = "Backup/Duplicate Data"
+pressed_signal_sender = NodePath("../../../../../../../../../../../../..")
+pressed_signal_name = "data_managment_button_pressed"
+argument = "6"
 
 [node name="Text2" type="RichTextLabel" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Data/Container/Panel1/Container"]
 custom_minimum_size = Vector2(775, 0)
@@ -1322,25 +1342,39 @@ layout_mode = 2
 alignment = 1
 last_wrap_alignment = 2
 
-[node name="Button1" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Settings/Container/CachePanel/Container/Buttons" instance=ExtResource("5_5wduh")]
+[node name="Button1" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Settings/Container/CachePanel/Container/Buttons" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("5_5wduh")]
 layout_mode = 2
 button_text = "Delete All Caches"
+pressed_signal_sender = NodePath("../../../../../../../../../../../../..")
+pressed_signal_name = "cache_managment_button_pressed"
 
-[node name="Button2" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Settings/Container/CachePanel/Container/Buttons" instance=ExtResource("5_5wduh")]
+[node name="Button2" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Settings/Container/CachePanel/Container/Buttons" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("5_5wduh")]
 layout_mode = 2
 button_text = "Delete Image Cache"
+pressed_signal_sender = NodePath("../../../../../../../../../../../../..")
+pressed_signal_name = "cache_managment_button_pressed"
+argument = "1"
 
-[node name="Button3" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Settings/Container/CachePanel/Container/Buttons" instance=ExtResource("5_5wduh")]
+[node name="Button3" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Settings/Container/CachePanel/Container/Buttons" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("5_5wduh")]
 layout_mode = 2
 button_text = "Delete Image Average Cache"
+pressed_signal_sender = NodePath("../../../../../../../../../../../../..")
+pressed_signal_name = "cache_managment_button_pressed"
+argument = "2"
 
-[node name="Button4" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Settings/Container/CachePanel/Container/Buttons" instance=ExtResource("5_5wduh")]
+[node name="Button4" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Settings/Container/CachePanel/Container/Buttons" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("5_5wduh")]
 layout_mode = 2
 button_text = "Delete Library Cache"
+pressed_signal_sender = NodePath("../../../../../../../../../../../../..")
+pressed_signal_name = "cache_managment_button_pressed"
+argument = "3"
 
-[node name="Button5" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Settings/Container/CachePanel/Container/Buttons" instance=ExtResource("5_5wduh")]
+[node name="Button5" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Settings/Container/CachePanel/Container/Buttons" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("5_5wduh")]
 layout_mode = 2
 button_text = "Delete Song Cache"
+pressed_signal_sender = NodePath("../../../../../../../../../../../../..")
+pressed_signal_name = "cache_managment_button_pressed"
+argument = "4"
 
 [node name="SettingsPanel" type="PanelContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Settings/Container"]
 custom_minimum_size = Vector2(775, 400)
@@ -1375,20 +1409,28 @@ layout_mode = 2
 alignment = 1
 last_wrap_alignment = 2
 
-[node name="Button1" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Settings/Container/SettingsPanel/Container/Buttons" instance=ExtResource("19_g648t")]
+[node name="Button1" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Settings/Container/SettingsPanel/Container/Buttons" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("19_g648t")]
 layout_mode = 2
 button_text = "Save On Quit"
 pressed = true
+pressed_signal_sender = NodePath("../../../../../../../../../../../../..")
+pressed_signal_name = "user_setting_changed"
 
-[node name="Button2" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Settings/Container/SettingsPanel/Container/Buttons" instance=ExtResource("19_g648t")]
+[node name="Button2" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Settings/Container/SettingsPanel/Container/Buttons" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("19_g648t")]
 layout_mode = 2
 button_text = "Continue Playing"
 pressed = true
+pressed_signal_sender = NodePath("../../../../../../../../../../../../..")
+pressed_signal_name = "user_setting_changed"
+argument = "1"
 
-[node name="Button3" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Settings/Container/SettingsPanel/Container/Buttons" instance=ExtResource("19_g648t")]
+[node name="Button3" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Settings/Container/SettingsPanel/Container/Buttons" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("19_g648t")]
 layout_mode = 2
 button_text = "Continue Playing Exact"
 pressed = true
+pressed_signal_sender = NodePath("../../../../../../../../../../../../..")
+pressed_signal_name = "user_setting_changed"
+argument = "2"
 
 [node name="WidgetPanel" type="PanelContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Settings/Container"]
 custom_minimum_size = Vector2(775, 400)
@@ -1420,13 +1462,18 @@ layout_mode = 2
 alignment = 1
 last_wrap_alignment = 2
 
-[node name="Button1" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Settings/Container/WidgetPanel/Container/Buttons" instance=ExtResource("19_g648t")]
+[node name="Button1" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Settings/Container/WidgetPanel/Container/Buttons" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("19_g648t")]
 layout_mode = 2
 button_text = "Mute Toggle"
+pressed_signal_sender = NodePath("../../../../../../../../../../../../..")
+pressed_signal_name = "player_widget_changed"
 
-[node name="Button2" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Settings/Container/WidgetPanel/Container/Buttons" instance=ExtResource("19_g648t")]
+[node name="Button2" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Settings/Container/WidgetPanel/Container/Buttons" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("19_g648t")]
 layout_mode = 2
 button_text = "Time Display"
+pressed_signal_sender = NodePath("../../../../../../../../../../../../..")
+pressed_signal_name = "player_widget_changed"
+argument = "1"
 
 [node name="Keybinds" type="ScrollContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body"]
 visible = false
@@ -1494,7 +1541,7 @@ self_modulate = Color(1, 1, 1, 0)
 layout_mode = 2
 
 [node name="Panel1" type="PanelContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Command Line Interface/Container"]
-custom_minimum_size = Vector2(775, 400)
+custom_minimum_size = Vector2(775, 226)
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_styles/panel = ExtResource("18_53o1o")
@@ -1510,30 +1557,16 @@ size_flags_vertical = 3
 bbcode_enabled = true
 text = "[center][b]Command Line Interface (CLI)[/b]
 The CLI can be opened using the 'ToggleCLI' keybind found inside the Keybinds screen or the button below, when open you are given the Input field which is where you will input your commands, and above that is the Output Histroy where everything that is outputed/printed goes.
-For more general assistance you can use the 'help' special-command to get information about how to use the CLI. More specific information can be found below.
+For assistance you can use the 'help' special-command to get information about how to use the CLI.
 [/center]"
 fit_content = true
 scroll_active = false
 
-[node name="CustomButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Command Line Interface/Container/Panel1/Container" instance=ExtResource("5_5wduh")]
+[node name="CustomButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Command Line Interface/Container/Panel1/Container" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("5_5wduh")]
 layout_mode = 2
 button_text = " Open CLI "
-
-[node name="Text2" type="RichTextLabel" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Command Line Interface/Container/Panel1/Container"]
-custom_minimum_size = Vector2(750, 0)
-layout_mode = 2
-size_flags_vertical = 3
-bbcode_enabled = true
-text = "[center][b]Type-Casting:[/b]
-When trying to set certain values (for example a setting like 'save_on_quit') you may need to case the type of your argument to match that of the value you are trying to set. Below are all the types that can be casted to, how to cast to them and an example. If something isn't type-casted it will be treated as a String, being the argument in plain-text.
-
-- [u]Int[/u]: The type for whole-numbers (or Integers), they can be case using 'int/' followed by the number, for example trying to get the number 15 would look like: 'int/15'.
-- [u]Bool[/u]: The type for Boolean (on/off or true/false) values, they can be cast using 'bool/' followed by one of the following for True and anything else for False: '1', 'true', 'enabled', 'yes', 'on'. For example trying to get True could look like 'bool/on'.
-- [u]Vector 2[/u]: The type for Vectors (In this case a pair of two integer numbers), they can be cast using 'vec2/' with the numbers seperated by commas, Vectors are used for certain settings such as the windows position and size. You could get a vector of (21, 89) by doing: 'vec2/21,89'. The values inside the vector do not need to be and should not be type-casted.
-- [u]Array[/u]: The type for Arrays (Also known as Lists), used for storing multiple values, they can be cast using 'arr/' with the items to be inside the list seperated with commas, the contents of the array can and should be type-casted.
-[/center]"
-fit_content = true
-scroll_active = false
+pressed_signal_sender = NodePath("../../../../../../../../../../../..")
+pressed_signal_name = "toggle_cli"
 
 [node name="PlayerContainer" type="PanelContainer" parent="Camera/AspectRatioContainer"]
 layout_mode = 2
@@ -1558,6 +1591,10 @@ size_flags_horizontal = 4
 size_flags_vertical = 8
 
 [node name="PopupNotifications" type="Control" parent="Camera/AspectRatioContainer"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="TooltipContainer" type="Control" parent="Camera/AspectRatioContainer"]
 layout_mode = 2
 mouse_filter = 2
 
@@ -1628,17 +1665,22 @@ layout_mode = 2
 size_flags_vertical = 3
 alignment = 1
 
-[node name="Response1" parent="Camera/AspectRatioContainer/PopupContainer/Popup/Container/ResponseContainer" instance=ExtResource("5_5wduh")]
+[node name="Response1" parent="Camera/AspectRatioContainer/PopupContainer/Popup/Container/ResponseContainer" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("5_5wduh")]
 layout_mode = 2
 button_custom_minimum_size = Vector2i(210, 105)
 button_text = "Yes"
 button_font_size = 32
+pressed_signal_sender = NodePath("../../../../../../..")
+pressed_signal_name = "popup_response_pressed"
 
-[node name="Response2" parent="Camera/AspectRatioContainer/PopupContainer/Popup/Container/ResponseContainer" instance=ExtResource("5_5wduh")]
+[node name="Response2" parent="Camera/AspectRatioContainer/PopupContainer/Popup/Container/ResponseContainer" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("5_5wduh")]
 layout_mode = 2
 button_custom_minimum_size = Vector2i(210, 105)
 button_text = "No"
 button_font_size = 32
+pressed_signal_sender = NodePath("../../../../../../..")
+pressed_signal_name = "popup_response_pressed"
+argument = "1"
 
 [node name="SoftLoadingScreen" type="ColorRect" parent="Camera/AspectRatioContainer"]
 unique_name_in_owner = true

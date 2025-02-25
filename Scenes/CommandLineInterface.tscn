@@ -42,6 +42,7 @@ layout_mode = 2
 theme_override_styles/focus = SubResource("StyleBoxEmpty_udip1")
 placeholder_text = " run 'help' for help using the command line."
 expand_to_text_length = true
+context_menu_enabled = false
 virtual_keyboard_enabled = false
 clear_button_enabled = true
 caret_blink = true

@@ -9,17 +9,22 @@ The app is entirely offline and modifiable.
 ## Scalability / ID's ##
 
 This project has been made with scalability in mind; As such many efforts have been made to ensure that the app doesn't limit your ability to listen to and organise music, including the ID system for every item.  
-Each either Artist, Album, Song or Playlist uses a unique ID to identify itself, which is 17 characters long. The first character is a number ranged 0-3 which signs/indicates the type of the ID, and the other 16 are picked from a list of 120 characters, giving each data type 16**100 unique items available.  
+Each either Artist, Album, Song or Playlist uses a unique ID to identify itself, which is 17 characters long. The first character is a number ranged 0-3 which signs/indicates the type of the ID, and the other 16 are picked from a list of 100 characters, giving each data type 16**100 unique items available.  
 
 Other smaller efforts have been made to make the app able to handle itself despite the way you want to use it, including giving multiple functions to the CLI to help make your management of the app and its data easier.
 
 ## Project Details ##
 
 This is made entirely using Godot 4.3, which GDScript (all statically-typed) as the language. The project is organized into the following folders:
+- addons:
+  - BuildDateSetter: Addon folder for the export plugin used to set the build date for any exported builds.
+  - NatCustomExporter: Used to keep integrity of .svg files when exporting the project.
 - Assets:
   - Fonts: The main font used by the app (JetBrains Mono Light (Light)), and any future fonts.
   - Icons: All the icons (.svg) used by the app, when the app is launched these are all read and imported into a dictionary with their names as the keys
-  - Everything else is misc. assets including Styleboxes, ButtonGroups and the AudioBusLayout
+  - Styleboxes: All the styleboxes used.
+  - ButtonGroups: All the button groups used.
+  - Everything else is misc. assets including the AudioBusLayout and Icon.
 - Exported:
   - Latest stable version of the app for all available platforms (Windows & Linux)
 - Scenes:

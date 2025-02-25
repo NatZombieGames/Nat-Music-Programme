@@ -42,13 +42,13 @@ enum use_type {ARTIST, ALBUM, SONG, PLAYLIST, UNKNOWN}
 
 func _ready() -> void:
 	data_location = OS.get_executable_path().get_base_dir() + "/NMP_Data.dat"
+	print("i am about to load the keybinds")
 	for item : String in InputMap.get_actions().filter(func(item : String) -> bool: return not item.left(3) == "ui_"):
 		keybinds[item] = Array(InputMap.action_get_events(item).map(func(event : InputEvent) -> Dictionary: return GeneralManager.parse_inputevent_to_customevent(event)))
 		if len(keybinds[item]) < 2:
 			keybinds[item].append("")
 	keybinds.make_read_only()
 	print(str("- - - - -\nkeybinds after completion: " + str(keybinds).replace('], "', ']\n= "')).replace('completion: { "', 'completion:\n= { "'))
-	print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! master finished ready")
 	return
 
 func _notification(notif : int) -> void:
@@ -110,8 +110,8 @@ func save_data(save_location : String = "NMP_Data.dat") -> int:
 		data.save(save_location)
 	print("finished writing portion")
 	GeneralManager.set_mouse_busy_state.call(false)
-	GeneralManager.cli_print_callable.call("[i]Saved Data Succesfully To '[u]" + save_location.get_file() + "[/u]' In '[u]" + save_location.get_base_dir() + "[/u]'.[/i]")
-	get_node("/root/MainScreen").call("create_popup_notif", "[i]Saved Data Succesfully To '[u]" + save_location.get_file() + "[/u]' In '[u]" + save_location.get_base_dir() + "[/u]'.[/i]")
+	GeneralManager.cli_print_callable.call("SYS: Saved Data Succesfully To '[u]" + save_location.get_file() + "[/u]' In '[u]" + save_location.get_base_dir() + "[/u]'.")
+	get_node("/root/MainScreen").call("create_popup_notif", "Saved Data Succesfully To '[u]" + save_location.get_file() + "[/u]' In '[u]" + save_location.get_base_dir() + "[/u]'.")
 	finished_saving_data = true
 	self.emit_signal("finished_saving_data_signal")
 	print("!! Saved Data Succesfully To '" + save_location + "' !!\n")
@@ -126,7 +126,7 @@ func load_data() -> void:
 		finished_loading_data = true
 		self.emit_signal("finished_loading_data_signal")
 		await get_tree().process_frame
-		GeneralManager.cli_print_callable.call("[i]No Data File Found During Load, Running With Default Data.[/i]")
+		GeneralManager.cli_print_callable.call("ALERT: No Data File Found During Load, Running With Default Data.")
 		return
 	var data : ConfigFile = ConfigFile.new()
 	data.load(data_location)
@@ -143,12 +143,12 @@ func load_data() -> void:
 	finished_loading_data = true
 	self.emit_signal("finished_loading_data_signal")
 	await GeneralManager.finished_loading_icons_signal
-	GeneralManager.cli_print_callable.call("[i]Loaded Data Succesfully From '[u]" + data_location + "[/u]'.[/i]")
+	GeneralManager.cli_print_callable.call("SYS: Loaded Data Succesfully From '[u]" + data_location + "[/u]'.")
 	return
 
 func set_user_settings(setting : StringName, value : Variant) -> int:
 	if setting in settable_settings and typeof(value) == typeof(user_data_dict[setting]):
-		GeneralManager.cli_print_callable.call("[i]User Settings: Set [u]" + setting + "[/u] from [u]" + str(user_data_dict[setting]) + "[/u] > [u]" + str(value) + "[/u].[/i]")
+		GeneralManager.cli_print_callable.call("User Settings: Set [u]" + setting + "[/u] from [u]" + str(user_data_dict[setting]) + "[/u] > [u]" + str(value) + "[/u].")
 		user_data_dict[setting] = value
 		match setting:
 			"volume":
@@ -173,12 +173,12 @@ func set_user_settings(setting : StringName, value : Variant) -> int:
 			"special_icon_scale", "icon_scale", "song_cache_size", "image_cache_size":
 				if value < 1:
 					user_data_dict[setting] = 1
-					GeneralManager.cli_print_callable.call("[i]User Settings: Tried to set [u]" + setting + "[/u] to [u]" + str(value) + "[/u], which is lower than 1, setting was set to 1 instead.[/i]")
+					GeneralManager.cli_print_callable.call("User Settings: Tried to set [u]" + setting + "[/u] to [u]" + str(value) + "[/u], which is lower than 1, setting was set to 1 instead.")
 		return OK
 	if typeof(self.get(setting)) != typeof(value):
-		GeneralManager.cli_print_callable.call("[i]ERROR: Tried to set [u]" + setting + "[/u] whos value is of type [u]" + type_string(typeof(self.get(setting))) + "[/u] to [u]" + value + "[/u] which is of type [u]" + type_string(typeof(value)) + "[/u].[/i]")
+		GeneralManager.cli_print_callable.call("ERROR: Tried to set [u]" + setting + "[/u] whos value is of type [u]" + type_string(typeof(self.get(setting))) + "[/u] to [u]" + value + "[/u] which is of type [u]" + type_string(typeof(value)) + "[/u].")
 	else:
-		GeneralManager.cli_print_callable.call("[i]ERROR: Setting [u]" + setting + "[/u] does not exist in User Settings.[/i]")
+		GeneralManager.cli_print_callable.call("ERROR: Setting [u]" + setting + "[/u] does not exist in User Settings.")
 	return ERR_INVALID_PARAMETER
 
 func get_user_settings() -> Dictionary:
