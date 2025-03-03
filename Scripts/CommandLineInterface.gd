@@ -49,7 +49,7 @@ var set_arg_type_callable : Callable = (
 var command_history : PackedStringArray = (func() -> PackedStringArray: var arr : PackedStringArray = []; return arr).call()
 var command_history_placement : int = 0
 const commands : PackedStringArray = ["echo", "call", "set", "get", "add", "del"]
-const command_minimum_args : PackedInt32Array = [1, 1, 2, 1, 3, 3]
+const command_minimum_args : PackedInt32Array = [1, 1, 3, 1, 3, 3]
 const set_and_get_types : PackedStringArray = ["user_settings", "player_settings", "general_settings", "cli_settings"]
 const special_commands : PackedStringArray = [
 	"help", "clear", "info", "error_codes", 
@@ -61,15 +61,15 @@ const callables : Dictionary = {
 	"MasterDirectoryManager": ["save_data", "set_user_settings", "get_user_settings"], 
 	"GeneralManager": ["set_general_settings", "get_general_settings"], 
 	"CommandLineInterface": ["print_to_output", "run_command", "get_cli_settings", "set_cli_settings"], 
-	"MainScreen": ["play", "set_favourite"], 
+	"MainScreen": ["play", "set_favourite", "toggle_cli", "open_tutorial"], 
 	"PlayingScreen": [
 		"reset_playing_screen", "set_player_settings", "get_player_settings", 
-		"set_pause", "set_mute"
 		]
 	}
 const boolean_strings : PackedStringArray = ["1", "true", "enabled", "yes", "on"]
 const keyword_to_text : Dictionary = {
 		"DEBUG_ERROR:": "[color=medium_violet_red]DEBUG ERROR |>[/color]", 
+		"SYS_ERROR:": "[color=orange_red]SYSTEM ERROR |>[/color]", 
 		"ERROR:": "[color=red]ERROR |>[/color]", 
 		"DEBUG:": "[color=rebecca_purple]DEBUG |>[/color]", 
 		"SYS:": "[color=silver]SYSTEM |>[/color]", 
@@ -154,54 +154,64 @@ func run_command(command : String, bypass_active : bool = false) -> int:
 					- [color=green]get_callables[/color]
 					  - Returns all of the functions that can be called using the 'call' command.
 					- [color=green]get_commands[/color]
-					  - Returns all of the special and normal commands you can call, which may have ones not listed inside this 'help' page.
+					  - Returns all of the special, normal and any other commands you can call, which may include ones not listed inside this 'help' page.
 					
 					[i]Commands.[/i]
 					- [color=green]echo[/color] (1+)
 					  - Prints the first argument. If the first argument is the 'call' command, can be used to print the output/returned values of the command, 
 					    can be used to see the return values of certain functions.
 					- [color=green]call[/color] (2+)
-					  - Calls the given function (argument 1), with all other arguments being given to the called function. The available functions to call are:
+					  - Calls the given function (argument 1), with all other arguments being given to the called function.
+					    The available functions to call can be checked using the 'get_callables' special command.
 					- [color=green]set[/color] (3)
-					  - Sets the given property (argument 2) on the object (argument 1) to the value (argument 3), the type of the new and existing argument must match (see type-casting below).
+					  - Set has two functions: It can either set a property (argument 2) on an item with a certain ID (argument 1) to a new value (argument 3) which can be type-cast,
+					    or it can be used to change certain settings using a similar structure, for example enabling your 'save_on_quit' setting could look like; [u]set-user_settings-save_on_quit-bool/true[/u].
 					- [color=green]get[/color] (1+)
-					  - Sets sister command, Get returns the settable setting of object (argument 1) alongside their current values, and additional argument (argument 2) can be provided to get
-					    just the keys (by passing 'keys') or just the values (by passing 'values').
+					  - Sets sister command, Get returns the settable setting of the item with the ID of (argument 1) or a certain group of settings (argument 1) alongside their current values,
+					    and additional argument (argument 2) can be provided to get just the keys / names of the values (by passing 'keys') or just the values (by passing 'values').
+					- [color=green]add[/color] (3)
+					  - Adds the given item (argument 3) on to the property (argument 2) from the item with the ID of (argument 1), the property must be a container (An Array) for you to add items.
+					- [color=green]del[/color] (3)
+					  - Adds sister command, removes the item at the given index (argument 3) from the property (argument 2) on the item with the ID of (argument 1),
+					    the property must be a container (An Array) for you to delete items.
 					
 					[i]Argument Types.[/i]
-					 When giving argument(s) to a function / command, by default they will all be a String, which is just the characters you put in. But some functions will want other numbers,
+					 When giving argument(s) to a function / command, by default they will all be a String, which is just the characters you put in. But some functions will want other types,
 					 for example trying to enabled the 'shuffle' setting on the player using 'set_player_setting' will want a Boolean value of what to set the value to, you can see the types
 					 and how to cast them below.
 					
-					 - {argument}
+					 - [color=green]{argument}[/color]
 					   - The default, returns a String as whatever the argument was, Strings are used in cases such as wanting an ID.
-					 - bool/{argument}
+					 - [color=web_green]bool[/color]/[color=green]{argument}[/color]
 					   - This will return a Boolean (true or false) depending on the argument, it will return True if the argument is either '1', 'true', 'enabled', 'on' or 'yes', and will return false otherwise.
 					     (case insensetive)
-					 - int/{argument}
+					 - [color=web_green]int[/color]/[color=green]{argument}[/color]
 					   - This will return an Integer (whole number) depending on the argument, for example a value of 'int/15' would return the number 15.
-					 - arr/{argument}
+					 - [color=web_green]arr[/color]/[color=green]{argument}[/color]
 					   - This will return an Array (list) of the contents of the argument as seperated by commas (,), the contents can also be type-cast.
 					     For example 'arr/int/5,hello,bool/1' would return an array containing [5, \"hello\", True].
-					 - vec2/{argument}
-					   - This will return a Vector 2 (two Integers) of the contents of the argument as seperated by commans (,), the contents can't and should not be type-cast as they will always be turned into numbers.
+					 - [color=web_green]vec2[/color]/[color=green]{argument}[/color]
+					   - This will return a Vector 2 (two Integers) of the contents of the argument as seperated by commans (,)
+					     The contents can't and should not be type-cast as they will always be turned into numbers.
 					     For example 'vec2/2,91' would return 'Vector2(2, 91)', but 'vec2/hello,5' would return 'Vector2(0, 5)' as any non-numerical String when turned into a number is 0.
-					     Vectors are used rarely for settings such as positions and sizes for the app's Window.").replace("\t", ""))
+					     Vectors are used rarely for settings such as positions and sizes for the app's Window.").replace("\t", "").replace("(argument 1)", "[color=lawn_green][u]argument 1[/u][/color]").replace("(argument 2)", "[color=lime_green][u]argument 2[/u][/color]").replace("(argument 3)", "[color=forest_green][u]argument 3[/u][/color]"))
 			"clear":
 				%OutputContainer.get_children().map(func(node : Node) -> Node: node.queue_free(); return node)
 			"info":
-				#https://docs.godotengine.org/en/stable/tutorials/ui/bbcode_in_richtextlabel.html#doc-bbcode-in-richtextlabel-named-colors
+				#https://raw.githubusercontent.com/godotengine/godot-docs/master/img/color_constants.png
 				print_to_output(
 					("[b]NMP Info:[/b]
 					-Version: " + GeneralManager.version + "
-					-Build: " + GeneralManager.build + "
+					-[color=orange]-[/color] Build: " + GeneralManager.build + "
+					-[color=orange]-[/color] Build Date: " + GeneralManager.export_data[0] + "
+					-[color=orange]-[/color] License: " + GeneralManager.export_data[2] + "
+					-[color=orange]-[/color] Architecture: " + GeneralManager.export_data[3] + "
+					-[color=orange]-[/color] App Repository: [url=" + GeneralManager.repo_url + "][i]Github[/i][/url]
+					-[color=orange]-[/color] Engine: This software is powered by and created using the [url=https://godotengine.org][i]Godot Engine[/i][/url] [i]" + GeneralManager.export_data[1] + "[/i].
 					-Location: " + OS.get_executable_path() + "
-					- [color=orange]-[/color]Data Location: " + MasterDirectoryManager.data_location + "
-					-License: " + FileAccess.open("res://LICENSE.txt", FileAccess.READ).get_as_text().get_slice("\n", 2) + "
-					-Source Location: [url=https://github.com/NatZombieGames/Nat-Music-Programme]Github[/url]
+					-[color=orange]-[/color] Data Location: " + MasterDirectoryManager.data_location + "
 					-RNG Seed: " + str(GeneralManager.rng_seed) + "
-					-Current Date: " + str(GeneralManager.get_date()) + "
-					-Build Date: " + str(GeneralManager.build_date)).replace("\t", "").replace(": ", "[color=lime_green]:[/color] ").replace("\n-", "\n[color=lime_green]-[/color]"))
+					-Icons: All Icons except that of the NMP logo are sourced from [url=https://fonts.google.com/icons][i]Google Icons[/i][/url].").replace("\t", "").replace(": ", "[/color] ").replace("\n-", "\n[color=lime_green]-[/color] [color=light_steel_blue]"))
 			"error_codes":
 				if len(command_chunks) < 2:
 					print_to_output("ERROR: No error code given to see information about.")
@@ -245,15 +255,19 @@ func run_command(command : String, bypass_active : bool = false) -> int:
 			"get_callables":
 				var to_print : String = "[b]Callables:[/b]"
 				for callable : String in callables_commands:
-					to_print += "\n- " + str(callables_commands.find(callable) + 1) + " - " + callable
+					to_print += "\n[color=lime_green]-[/color] " + str(callables_commands.find(callable) + 1) + " [color=orange]-[/color] " + callable
 				print_to_output(to_print)
 			"get_commands":
-				var to_print : String = "[b]Commands:[/b]\n- [u]Special Commands:[/u]"
+				var to_print : String = "[b]Commands:[/b]\n[color=lime_green]-[/color] [color=light_steel_blue]Special Commands:[/color]"
 				for cmd : String in special_commands:
-					to_print += "\n- - " + str(special_commands.find(cmd) + 1) + " - " + cmd
-				to_print += "\n- [u]Commands:[/u]"
+					to_print += "\n[color=lime_green]-[/color] [color=orange]-[/color] " + str(special_commands.find(cmd) + 1) + " [color=yellow]-[/color] " + cmd
+				to_print += "\n[color=lime_green]-[/color] [color=light_steel_blue]Commands:[/color]"
 				for cmd : String in commands:
-					to_print += "\n- - " + str(commands.find(cmd) + 1) + " - " + cmd
+					to_print += "\n[color=lime_green]-[/color] [color=orange]-[/color] " + str(commands.find(cmd) + 1) + " [color=yellow]-[/color] " + cmd
+				if GeneralManager.is_in_debug:
+					to_print += "\n[color=lime_green]-[/color] [color=light_steel_blue]Debug Commands:[/color]"
+					for cmd : String in debug_commands:
+						to_print += "\n[color=lime_green]-[/color] [color=orange]-[/color] " + str(debug_commands.find(cmd) + 1) + " [color=yellow]-[/color] " + cmd
 				print_to_output(to_print)
 	elif ((command_chunks[0].to_lower() == "debug") and (len(command_chunks) > 1) and (command_chunks[1] in debug_commands) and (GeneralManager.is_in_debug)):
 		print("command is a debug command")
@@ -374,11 +388,12 @@ func run_command(command : String, bypass_active : bool = false) -> int:
 func print_to_output(text : String, use_keywords : bool = true) -> int:
 	if use_keywords:
 		for key : String in keyword_to_text.keys():
-			text = text.replace(key, keyword_to_text[key])
-			break
+			if key in text:
+				text = text.replace(key, keyword_to_text[key])
+				break
 	%OutputContainer.add_child(output_scene.instantiate())
 	%OutputContainer.get_child(-1).text = text
-	$Container/ScrollContainer/_v_scroll.set_deferred("value", $Container/ScrollContainer/_v_scroll.max_value)
+	create_tween().tween_callback(func() -> void: await get_tree().process_frame; $Container/ScrollContainer/_v_scroll.set_deferred("value", $Container/ScrollContainer/_v_scroll.max_value))
 	return OK
 
 func _run(command : String, args : Array[Variant]) -> Variant:
@@ -391,7 +406,7 @@ func _run(command : String, args : Array[Variant]) -> Variant:
 		if typeof(args[i]) == TYPE_STRING:
 			args[i] = set_arg_type_callable.call(args[i])
 	if GeneralManager.is_in_debug:
-		print_to_output("DEBUG: Attempting to run the command '[u]" + command + "[/u]' with the argument(s): '[u]" + str(args) + "[/u]'")
+		print_to_output("DEBUG: Attempting to run the command '[u]" + command + "[/u]' with the argument" + ["", "s"][int(len(args) > 1)] + ": '[u]" + str(args) + "[/u]'")
 	print("- - trying to call '" + command + "' with the new args of " + str(args) + " on node: " + _find_callable_key(command).to_snake_case())
 	if len(args.filter(func(item : Variant) -> bool: return str(item) != "")) > 0:
 		return self.get(_find_callable_key(command).to_snake_case()).callv(command, args)

@@ -1,15 +1,15 @@
 # Nat Music Programme #
  
-To use the programme, please see the 'Exported' folder and select the version for your machine, for more information on the app, please see below;
+To use the programme, please see the 'Exported' folder, then either the 'Windows' or 'Linux' folders for the respective operating system, for more information on the app, please see below;
 
-The NMP (Nat Music Programme) is an app made in Godot (4.3) which allows you to upload and listen to songs (.mp3, .wav and .oog), you can sort them by Artist and Album, and also create and manage Playlists.  
+The NMP (Nat Music Programme) is an app made in Godot (4.3) which allows you to upload and listen to songs (.mp3 and .ogg), you can sort them by Artist and Album, and also create and manage Playlists.  
 You can also use the built-in CLI (Command Line Interface) to get more granular control and specific information.  
-The app is entirely offline and modifiable.
+The app is entirely offline and standalone.
 
 ## Scalability / ID's ##
 
 This project has been made with scalability in mind; As such many efforts have been made to ensure that the app doesn't limit your ability to listen to and organise music, including the ID system for every item.  
-Each either Artist, Album, Song or Playlist uses a unique ID to identify itself, which is 17 characters long. The first character is a number ranged 0-3 which signs/indicates the type of the ID, and the other 16 are picked from a list of 100 characters, giving each data type 16**100 unique items available.  
+Each either Artist, Album, Song or Playlist uses a unique ID to identify itself, which is 17 characters long. The first character is a number ranged 0-3 which signs / indicates the type of the ID, and the other 16 are picked from a list of 100 characters, giving each data type 16**100 unique items available.  
 
 Other smaller efforts have been made to make the app able to handle itself despite the way you want to use it, including giving multiple functions to the CLI to help make your management of the app and its data easier.
 
@@ -24,9 +24,15 @@ This is made entirely using Godot 4.3, which GDScript (all statically-typed) as 
   - Icons: All the icons (.svg) used by the app, when the app is launched these are all read and imported into a dictionary with their names as the keys
   - Styleboxes: All the styleboxes used.
   - ButtonGroups: All the button groups used.
+  - Tutorial Images: The unique images used during the tutorial.
   - Everything else is misc. assets including the AudioBusLayout and Icon.
-- Exported:
-  - Latest stable version of the app for all available platforms (Windows & Linux)
+- Exported, All of the builds for the app, the names are structed; 'NatMusicProgramme_{architecture}', for example the main 64Bit builds for both versions are called 'NatMusicProgramme_x64':
+  - Windows: Folder containing all the Windows builds
+    - Other Builds: Folder with all the other builds for Windows, including 32Bit and Arm64Bit
+    - The main build for Windows, being 64Bit
+  - Linux: Folder containing all the Linux builds, the Linux names are structed; 'NatMusicProgramme_{architecture}', for example the main 64Bit build is called 'NatMusicProgramme_x64'.
+    - Other Builds: Folder with all the other builds for Linux, including 32Bit, Arm64Bit and Arm32Bit
+    - The main build for Linux, being 64Bit
 - Scenes:
   - All the scene files.
 - Scripts:

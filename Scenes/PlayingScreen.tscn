@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://di0ca61w28uio"]
+[gd_scene load_steps=10 format=3 uid="uid://di0ca61w28uio"]
 
 [ext_resource type="Script" path="res://Scripts/PlayingScreen.gd" id="1_7klv3"]
 [ext_resource type="StyleBox" uid="uid://dydjfep1b7fhc" path="res://Assets/Styleboxes/DefaultStylebox.tres" id="2_i1rv6"]
@@ -7,6 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://bib3ce2ocxmme" path="res://Assets/Icons/Missing.svg" id="3_rmwdd"]
 [ext_resource type="StyleBox" uid="uid://bvsmn8sm7d00h" path="res://Assets/Styleboxes/DarkBackground.tres" id="4_34oy1"]
 [ext_resource type="Texture2D" uid="uid://cal4jupkype3e" path="res://Assets/Icons/VolumeDisabled.svg" id="4_v4ack"]
+[ext_resource type="Texture2D" uid="uid://bclb1eihlj361" path="res://Assets/Icons/Exit.svg" id="4_wrr56"]
 [ext_resource type="Texture2D" uid="uid://d1mkxnwgk6m7y" path="res://Assets/Icons/VolumeUp.svg" id="5_ey3hu"]
 
 [node name="PlayingScreen" type="Control"]
@@ -59,8 +60,21 @@ texture_normal = ExtResource("2_sf1x2")
 ignore_texture_size = true
 stretch_mode = 5
 
+[node name="QuitWidget" type="TextureButton" parent="Camera/ScreenContainer/Background/TopBar/Container"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+mouse_default_cursor_shape = 2
+texture_normal = ExtResource("4_wrr56")
+ignore_texture_size = true
+stretch_mode = 5
+
 [node name="MuteWidget" type="TextureButton" parent="Camera/ScreenContainer/Background/TopBar/Container"]
 unique_name_in_owner = true
+visible = false
 custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
 size_flags_horizontal = 0
@@ -75,6 +89,7 @@ stretch_mode = 5
 
 [node name="TimeWidget" type="Label" parent="Camera/ScreenContainer/Background/TopBar/Container"]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 size_flags_vertical = 1
 text = "19:84"
@@ -82,6 +97,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Void" type="Panel" parent="Camera/ScreenContainer/Background/TopBar/Container"]
+visible = false
 self_modulate = Color(1, 1, 1, 0)
 custom_minimum_size = Vector2(2, 0)
 layout_mode = 2

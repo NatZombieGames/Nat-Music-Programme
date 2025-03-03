@@ -10,7 +10,7 @@ extends Node
 @export var cli_print_callable : Callable = (func(msg : String) -> void: get_node("/root/MainScreen/Camera/AspectRatioContainer/CommandLineInterface").call("print_to_output", msg); return)
 @export var version : String = ""
 @export var build : String = ""
-@export var build_date : String = "1970-1-1 (Thursday) | 00:00"
+@export var export_data : PackedStringArray = ["1970-1-1 (Thursday) | 00:00", "Godot Version Undetermined", "License Undetermined", "Architecture Undetermined"]
 @export var rng_seed : int = 0:
 	set(value):
 		rng_seed = value
@@ -23,6 +23,8 @@ const mouse_keycodes : PackedInt32Array = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 const banned_keycodes : PackedInt32Array = [4194325, 4194326, 4194328]
 const key_modifiers : PackedStringArray = ["alt_pressed", "shift_pressed", "ctrl_pressed"]
 const settable_settings : PackedStringArray = ["rng_seed"]
+const export_data_names : PackedStringArray = ["build_date", "engine_build_version", "license", "architecture"]
+const repo_url : String = "https://github.com/NatZombieGames/Nat-Music-Programme"
 @warning_ignore("unused_signal")
 signal finished_loading_icons_signal
 
@@ -34,8 +36,8 @@ func _ready() -> void:
 		print("we are not in debug so are getting the export data, does the file exist? " + str(FileAccess.file_exists("res://ExportData.cfg")))
 		var export_file : ConfigFile = ConfigFile.new()
 		export_file.load("res://ExportData.cfg")
-		build_date = export_file.get_value("data", "build_date", build_date)
-	print("build date is: " + build_date)
+		for i : int in range(0, len(export_data_names)):
+			export_data[i] = export_file.get_value("data", export_data_names[i], export_data[i])
 	if not MasterDirectoryManager.finished_loading_data:
 		await MasterDirectoryManager.finished_loading_data_signal
 	cli_print_callable.call("SYS: Launching NMP Version [u]" + version + "[/u] In [u]" + build + "[/u] Mode At [u]" + get_date() + "[/u].")
@@ -132,15 +134,13 @@ func load_audio_file(path : String) -> AudioStream:
 		"mp3":
 			sound = AudioStreamMP3.new()
 			sound.data = file.get_buffer(file.get_length())
-		"wav":
-			sound = ResourceLoader.load(path, "AudioStreamWAV")
-		"oog":
+		"ogg":
 			sound = AudioStreamOggVorbis.load_from_file(path)
 	return sound
 
 func get_id_type(id : String) -> MasterDirectoryManager.use_type:
 	print("Get id is running with an id of; " + id + ", which is " + str(len(id)) + " long and starts with " + id.left(1) + " and " + ["isnt", "is"][int(int(id.left(1)) > -1 and int(id.left(1)) < len(MasterDirectoryManager.get_data_types.call())-1)] + " inside the use type enum")
-	if (len(id) == 17) and (int(id.left(1)) > -1) and (int(id.left(1)) < len(MasterDirectoryManager.get_data_types.call())):
+	if (len(id) == 17) and (int(id.left(1)) > -1) and (int(id.left(1)) < (len(MasterDirectoryManager.use_type.keys()) - 1)):
 		return MasterDirectoryManager.use_type.get(MasterDirectoryManager.use_type.keys()[int(id.left(1))])
 	return MasterDirectoryManager.use_type.UNKNOWN
 

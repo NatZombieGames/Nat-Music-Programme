@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://csr0ysxwormvq"]
 
-[ext_resource type="Script" path="res://Scripts/CliOutputLabel.gd" id="1_of6kd"]
+[ext_resource type="Script" path="res://Scripts/RichTextScript.gd" id="1_of6kd"]
 
 [node name="CLI_OutputLabel" type="RichTextLabel"]
 offset_right = 1.0

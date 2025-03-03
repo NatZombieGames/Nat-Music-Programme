@@ -7,16 +7,19 @@ extends Node
 @export var user_data_dict : Dictionary = {}
 @export var finished_loading_data : bool = false
 @export var finished_saving_data : bool = false
+@export var finished_loading_keybinds : bool = false
 @export var get_data_types : Callable = (func() -> Array: return use_type.keys().map(func(key : String) -> String: return key.to_lower()).filter(func(key : String) -> bool: return key != "unknown"))
 @export var get_object_data : Callable = (func(id : String) -> Dictionary: return self.get(get_data_types.call()[int(id[0])] + "_id_dict")[id])
+@export var new_user : bool = false
 var data_location : String = ""
 #   const after ready
 @warning_ignore("unused_signal")
 signal finished_loading_data_signal
 signal finished_saving_data_signal
+signal finished_loading_keybinds_signal
 const default_user_data : Dictionary = {
 "volume": 0, "player_fullscreen": false, "special_icon_scale": 2, "icon_scale": 1, 
-"song_cache_size": 3, "image_cache_size": 20, "player_widgets": [false, false], 
+"song_cache_size": 3, "image_cache_size": 20, "player_widgets": [false, false, false], 
 "auto_clear": false, "clear_input": false, "shuffle": false, "command_on_startup": "", 
 "window_position": Vector2.ZERO, "window_mode": DisplayServer.WINDOW_MODE_MAXIMIZED, 
 "window_screen": 0, "window_size": Vector2(960, 540), "save_on_quit": true, 
@@ -24,20 +27,20 @@ const default_user_data : Dictionary = {
 "active_song_data": {"active_song_list": [], "active_song_list_id": "", "active_song_id": "", "song_progress": 0}, 
 "keybinds": {}, "sleep_when_unfocused": false
 }
+const settable_settings : PackedStringArray = [
+"volume", "player_fullscreen", "special_icon_scale", "icon_scale", "song_cache_size", 
+"image_cache_size", "player_widgets", "auto_clear", "clear_input", "shuffle", 
+"command_on_startup", "window_position", "window_mode", "window_screen", "window_size", 
+"save_on_quit", "continue_playing", "continue_playing_exact", "sleep_when_unfocused", "theme"
+]
 const id_chars : PackedStringArray = [
 "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", 
 "u", "v", "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", 
 "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "0", "1", "2", "3", "4", "5", "6", "7", 
 "8", "9", "!", '"', "`", "¬", "%", "^", "&", "*", "(", ")", "|", "_", "=", "+", "{", "}", ":", ";", 
-"'", "@", "~", "#", ",", "<", ".", ">", "/", "?", "¤", "£", "$", "¥", "¢", "§", "´", "˄", "˅", "ˆ", 
+"'", "@", "~", "#", ",", "<", ".", ">", "/", "?", "¤", "£", "$", "¥", "¢", "÷", "´", "˄", "˅", "ˆ", 
 ]
 var keybinds : Dictionary = {} # const after ready is finished
-var settable_settings : PackedStringArray = [
-"volume", "player_fullscreen", "special_icon_scale", "icon_scale", "song_cache_size", 
-"image_cache_size", "player_widgets", "auto_clear", "clear_input", "shuffle", 
-"command_on_startup", "window_position", "window_mode", "window_screen", "window_size", 
-"save_on_quit", "continue_playing", "continue_playing_exact", "sleep_when_unfocused"
-]
 enum use_type {ARTIST, ALBUM, SONG, PLAYLIST, UNKNOWN}
 
 func _ready() -> void:
@@ -48,7 +51,9 @@ func _ready() -> void:
 		if len(keybinds[item]) < 2:
 			keybinds[item].append("")
 	keybinds.make_read_only()
-	print(str("- - - - -\nkeybinds after completion: " + str(keybinds).replace('], "', ']\n= "')).replace('completion: { "', 'completion:\n= { "'))
+	finished_loading_keybinds = true
+	self.emit_signal("finished_loading_keybinds_signal")
+	#print(str("- - - - -\nkeybinds after completion: " + str(keybinds).replace('], "', ']\n= "')).replace('completion: { "', 'completion:\n= { "'))
 	return
 
 func _notification(notif : int) -> void:
@@ -122,7 +127,14 @@ func load_data() -> void:
 	print("\n!! Loading Data !!")
 	if not FileAccess.file_exists(data_location):
 		print("!! No Data Available During Data Loading")
-		user_data_dict = default_user_data
+		new_user = true
+		user_data_dict = default_user_data.duplicate()
+		user_data_dict["keybinds"] = {}
+		user_data_dict["active_song_data"] = {}
+		print("all " + str(len(keybinds.keys())) + " keybind keys before setting them: " + str(keybinds.keys()))
+		print(user_data_dict["keybinds"].is_read_only())
+		for keybind : String in keybinds.keys():
+			user_data_dict["keybinds"][keybind] = keybinds[keybind]
 		finished_loading_data = true
 		self.emit_signal("finished_loading_data_signal")
 		await get_tree().process_frame
@@ -133,11 +145,14 @@ func load_data() -> void:
 	for item : String in get_data_types.call():
 		self.set(item + "_id_dict", data.get_value("data", item + "_id_dict", {}))
 	var loaded_user_data : Dictionary = data.get_value("data", "user_data_dict", default_user_data)
-	for item : String in default_user_data.keys():
-		user_data_dict[item] = loaded_user_data.get(item, default_user_data[item])
-	for item : String in keybinds.keys():
-		if not item in user_data_dict["keybinds"].keys():
-			user_data_dict["keybinds"][item] = keybinds[item]
+	for key : String in default_user_data.keys():
+		user_data_dict[key] = loaded_user_data.get(key, default_user_data[key])
+	if not finished_loading_keybinds:
+		await self.finished_loading_keybinds_signal
+	print("all " + str(len(keybinds.keys())) + " keybind keys before setting them: " + str(keybinds.keys()))
+	for keybind : String in keybinds.keys():
+		if not keybind in user_data_dict["keybinds"].keys():
+			user_data_dict["keybinds"][keybind] = keybinds[keybind]
 	apply_control_settings()
 	print("!! Data Succesfully Loaded From '" + data_location + "' !!\n")
 	finished_loading_data = true
@@ -195,8 +210,8 @@ func apply_control_settings() -> void:
 		#print("custom events for keybind " + keybind + ": " + str(user_data_dict["keybinds"][keybind]))
 		for custom_event : Dictionary in user_data_dict["keybinds"][keybind].filter(func(array_item : Variant) -> bool: return not typeof(array_item) == TYPE_STRING):
 			InputMap.action_add_event(keybind, GeneralManager.parse_customevent_to_inputevent(custom_event))
-		print("InputMap for action " + keybind + " after applying settings:\n" + str(InputMap.action_get_events(keybind)).replace(", InputEventKey: ", ",\nInputEventKey: "))
-		print("- - -")
+		#print("InputMap for action " + keybind + " after applying settings:\n" + str(InputMap.action_get_events(keybind)).replace(", InputEventKey: ", ",\nInputEventKey: "))
+		#print("- - -")
 	return
 
 func get_artist_discography_data(id : String) -> Dictionary:

@@ -17,8 +17,29 @@ var active_keybind_switching_data : Array = []
 var new_entry_data : Dictionary
 var new_entry_flag : int = 0
 var new_page : int = 0
+var tutorial_page : int = 0:
+	set(value):
+		tutorial_page = value
+		%NewUserScreen/Background/Container/PageButtons/PreviousPage.disabled = tutorial_page == 0
+		%NewUserScreen/Background/Container/PageButtons/NextPage.disabled = tutorial_page == len(tutorial_pages_text)-1
+		%NewUserScreen/Background/Container/PageButtons/PageNumber.text = "Page " + str(tutorial_page + 1) + "/" + str(len(tutorial_pages_text))
+		%NewUserScreen/Background/Container/BodyText.text = "[center]\n" + tutorial_pages_text[tutorial_page] + "\n[/center]"
+		return
+	get:
+		return tutorial_page
 signal popup_responded
 const user_setting_keys : PackedStringArray = ["save_on_quit", "continue_playing", "continue_playing_exact"]
+const tutorial_pages_text : PackedStringArray = [
+	"[img]res://Assets/NMP_Icon.png[/img]\n\nThis is a short guide on how to use the app, if you would like to\nskip this, simply hit the Close button below.\n\nOtherwise, please use the Previous/Next Page buttons respectively to navigate.", 
+	"[img]res://Assets/Tutorial Images/Image_1.png[/img]\n\nIn the top right of the screen you can see buttons for every page of the app, left to right these are:\nHome, New, Library and Profile, with the last button being an exit button.", 
+	"[img]res://Assets/Tutorial Images/Image_1.png[/img]\n\nThe Home page is where you can get random recommendations for Artists, Albums, Songs and Playlists to listen to.\nThis will change depending on the day you open the programme.", 
+	"[img]res://Assets/Tutorial Images/Image_2.png[/img]\n\nThe New page is where you will upload all of your songs, and create your artists/albums to put them in.\nThis is also where you can make new Playlists.", 
+	"[img]res://Assets/Tutorial Images/Image_3.png[/img]\n\nThe Library page is where all of your Artists, Albums, Songs and Playlists are stored.\nThis is where you can manage them, and also Play them by hitting the Play button on every item.", 
+	"[img]res://Assets/Tutorial Images/Image_4.png[/img]\n\nThe Profile page has many things, including Data Managment, Settings and Keybind Managment.\nFor more information see the Profile page.", 
+	"[img=320x180]res://Assets/Tutorial Images/Image_5.png[/img]\n\nThis is the Player / Playing screen, seen in the bottom right of the screen.\n\nWhen playing a song it will appear here.\nYou can customize this screen using Widgets, which can be set inside the Profile page under Settings.", 
+	"[img=175x175]res://Assets/Tutorial Images/Image_6.png[/img]\n\nThe app also features a built-in CLI, or Command Line Interface\nwhich can be oppened using Ctrl+O or in the respective Profile page.\n\nThe CLI can be used for more granular control of the app and its data\nfor more help using it, open it and run 'help'.", 
+	"[img]res://Assets/NMP_Icon.png[/img]\n\nThat is all you need to know to get started using the NMP\n(Nat Music Programme)!\n\nNow you can get started by going to the New page and uploading your first songs!\nIf you have any feedback or suggestions or want to get the latest version; go to the [url=" + GeneralManager.repo_url + "][i]Project's Github[/i][/url]."
+	]
 
 func _ready() -> void:
 	%LoadingScreen.visible = true
@@ -45,28 +66,41 @@ func _ready() -> void:
 	%MainContainer/Library/Container/Profile/Container/Container/ParentContainer/Container/ClearBtn.pressed.connect(Callable(self, "profile_clear_pressed"))
 	%MainContainer/Library/Container/Profile/Container/Container/ParentContainer/Container/SelectBtn.texture_normal = GeneralManager.get_icon_texture("Upload")
 	%MainContainer/Library/Container/Profile/Container/Container/ParentContainer/Container/SelectBtn.pressed.connect(func() -> void: %MainContainer/Library/Container/Profile/SelectList.visible = !%MainContainer/Library/Container/Profile/SelectList.visible; if %MainContainer/Library/Container/Profile/SelectList.visible == true: populate_data_list(%MainContainer/Library/Container/Profile/SelectList/ScrollContainer/Container, [MasterDirectoryManager.use_type.ARTIST, MasterDirectoryManager.use_type.ALBUM][library_page - 1], "profile_selector_selected", self); return)
+	%MainContainer/Library/Container/Profile/Container/Container/Body/Playlist/DataList/Container/InfoContainer/AddArtistButton.texture_normal = GeneralManager.get_icon_texture("ArtistList")
+	%MainContainer/Library/Container/Profile/Container/Container/Body/Playlist/DataList/Container/InfoContainer/AddArtistButton.pressed.connect(func() -> void: %MainContainer/Library/Container/Profile/SelectList.visible = !%MainContainer/Library/Container/Profile/SelectList.visible; if %MainContainer/Library/Container/Profile/SelectList.visible == true: populate_data_list(%MainContainer/Library/Container/Profile/SelectList/ScrollContainer/Container, MasterDirectoryManager.use_type.ARTIST, "playlist_profile_upload_button_pressed", self); return)
+	%MainContainer/Library/Container/Profile/Container/Container/Body/Playlist/DataList/Container/InfoContainer/AddAlbumButton.texture_normal = GeneralManager.get_icon_texture("Album")
+	%MainContainer/Library/Container/Profile/Container/Container/Body/Playlist/DataList/Container/InfoContainer/AddAlbumButton.pressed.connect(func() -> void: %MainContainer/Library/Container/Profile/SelectList.visible = !%MainContainer/Library/Container/Profile/SelectList.visible; if %MainContainer/Library/Container/Profile/SelectList.visible == true: populate_data_list(%MainContainer/Library/Container/Profile/SelectList/ScrollContainer/Container, MasterDirectoryManager.use_type.ALBUM, "playlist_profile_upload_button_pressed", self); return)
+	%MainContainer/Library/Container/Profile/Container/Container/Body/Playlist/DataList/Container/InfoContainer/AddSongButton.texture_normal = GeneralManager.get_icon_texture("Songs")
+	%MainContainer/Library/Container/Profile/Container/Container/Body/Playlist/DataList/Container/InfoContainer/AddSongButton.pressed.connect(func() -> void: %MainContainer/Library/Container/Profile/SelectList.visible = !%MainContainer/Library/Container/Profile/SelectList.visible; if %MainContainer/Library/Container/Profile/SelectList.visible == true: populate_data_list(%MainContainer/Library/Container/Profile/SelectList/ScrollContainer/Container, MasterDirectoryManager.use_type.SONG, "playlist_profile_upload_button_pressed", self); return)
+	%NewUserScreen/Background/Container/PageButtons/PreviousPage.pressed.connect(func() -> void: tutorial_page -= 1; return)
+	%NewUserScreen/Background/Container/PageButtons/NextPage.pressed.connect(func() -> void: tutorial_page += 1; return)
+	%NewUserScreen/Background/Container/PageButtons/Close.pressed.connect(func() -> void: %NewUserScreen.visible = false; return)
 	set_main_screen_page("0")
 	set_create_screen_page("0")
 	populate_library_screen(0)
 	set_profile_screen_page("0")
+	tutorial_page = 0
 	%Hatbar/Container/BuildType.text = GeneralManager.build + " Build."
 	%Hatbar/Container/Version.text = GeneralManager.version
 	for item : String in user_setting_keys:
 		%MainContainer/Profile/Container/Body/Settings/Container/SettingsPanel/Container/Buttons.get_child(user_setting_keys.find(item)).update({"pressed": MasterDirectoryManager.user_data_dict[item]})
 	for i : int in range(0, len(MasterDirectoryManager.user_data_dict["player_widgets"])):
 		%MainContainer/Profile/Container/Body/Settings/Container/WidgetPanel/Container/Buttons.get_child(i).update({"pressed": MasterDirectoryManager.user_data_dict["player_widgets"][i]})
+	if not MasterDirectoryManager.finished_loading_keybinds:
+		await MasterDirectoryManager.finished_loading_keybinds_signal
 	update_keybinds_screen()
 	DisplayServer.window_set_current_screen(wrapi(MasterDirectoryManager.user_data_dict["window_screen"], 0, DisplayServer.get_screen_count()))
 	DisplayServer.window_set_size(MasterDirectoryManager.user_data_dict["window_size"])
 	get_tree().get_root().set("position", MasterDirectoryManager.user_data_dict["window_position"])
 	DisplayServer.window_set_mode(MasterDirectoryManager.user_data_dict["window_mode"])
 	%PlayingScreen.fullscreen = MasterDirectoryManager.user_data_dict["player_fullscreen"]
+	%NewUserScreen.visible = MasterDirectoryManager.new_user
 	#
 	await get_tree().process_frame
 	await create_tween().tween_property(%LoadingScreen, "modulate", Color(1, 1, 1, 0), 0.25).from(Color(1, 1, 1, 1)).finished
 	%LoadingScreen.visible = false
 	GeneralManager.set_mouse_busy_state.call(false)
-	GeneralManager.cli_print_callable.call("SYS: Finished Programme Initialization")
+	GeneralManager.cli_print_callable.call("SYS: Programme Initialization Complete")
 	return
 
 func _input(event : InputEvent) -> void:
@@ -161,7 +195,7 @@ func populate_data_list(location : Node, type : MasterDirectoryManager.use_type,
 	await _set_soft_loading(false)
 	return
 
-func populate_data_list_context_menu(location : Node, type : MasterDirectoryManager.use_type, data : Dictionary, pressed_sender : Node = self, action_button_signal_names : PackedStringArray = ["context_action_button_pressed", "context_action_button_pressed", "context_action_button_pressed", "context_action_button_pressed"]) -> void:
+func populate_data_list_context_menu(location : Node, type : MasterDirectoryManager.use_type, data : Dictionary, pressed_sender : Node = self, action_button_signal_names : PackedStringArray = ["context_action_button_pressed", "context_action_button_pressed", "context_action_button_pressed", "context_action_button_pressed", "context_action_button_pressed"]) -> void:
 	print("\n\ndata received in populate data list context menu: " + str(data) + "\n\n")
 	await _set_soft_loading(true)
 	#
@@ -174,9 +208,11 @@ func populate_data_list_context_menu(location : Node, type : MasterDirectoryMana
 		if item.visible == true:
 			var key : String = keys[location.get_children().find(item)]
 			var parent_id : String
-			if type in [MasterDirectoryManager.use_type.ALBUM, MasterDirectoryManager.use_type.SONG]:
+			if GeneralManager.get_id_type(library_details_item_id) != MasterDirectoryManager.use_type.PLAYLIST and type in [MasterDirectoryManager.use_type.ALBUM, MasterDirectoryManager.use_type.SONG]:
 				parent_id = data[key][MasterDirectoryManager.use_type.find_key(int(key.left(1))-1).to_lower()]
-			var to_update : Dictionary = {"title": data[key]["name"], "subtitle": key, "copy_subtitle_text": (" ID '[u]" + key + "[/u]' Was Copied To Clipboard. "), "image": GeneralManager.get_icon_texture("Missing"), "action_button_sender": pressed_sender, "action_buttons": 4, "action_button_images": ["Up", "Down", "Play", ["Favourite", "Favourited"][int(data[key]["favourite"])]], "action_button_signal_names": action_button_signal_names, "action_button_arguments": [["0", parent_id, location], ["1", parent_id, location], ["2", key], ["3", key]]}
+			else:
+				parent_id = library_details_item_id
+			var to_update : Dictionary = {"title": data[key]["name"], "subtitle": key, "copy_subtitle_text": (" ID '[u]" + key + "[/u]' Was Copied To Clipboard. "), "image": GeneralManager.get_icon_texture("Missing"), "action_button_sender": pressed_sender, "action_buttons": 5, "action_button_images": ["Up", "Down", "Play", ["Favourite", "Favourited"][int(data[key]["favourite"])], "ListRemove"], "action_button_signal_names": action_button_signal_names, "action_button_arguments": [["0", parent_id, location], ["1", parent_id, location], ["2", key], ["3", key], ["4", parent_id, location, key]]}
 			if type in [MasterDirectoryManager.use_type.ARTIST, MasterDirectoryManager.use_type.ALBUM, MasterDirectoryManager.use_type.PLAYLIST] and GeneralManager.is_valid_image.call(data[key]["image_file_path"]):
 				to_update["image"] = get_image.call(data[key]["image_file_path"])
 			elif type == MasterDirectoryManager.use_type.SONG and GeneralManager.is_valid_image.call(MasterDirectoryManager.album_id_dict[data[key]["album"]]["image_file_path"]):
@@ -196,12 +232,12 @@ func set_song_upload_style(style : String) -> void:
 	if selected != "" and not [FileAccess.file_exists(selected), DirAccess.dir_exists_absolute(selected)][int(style)]:
 		create_popup_notif(" " + ["Unable To Validate File", "Unable To Validate Directory"][int(style)] + ", Please Try Again With A Different Path. ")
 		return
-	if int(style) == 0:
+	if style == "0":
 		print("adding one file")
 		song_upload_list.append({"name": selected.get_file().get_basename(), "path": selected})
-	elif int(style) == 1:
+	elif style == "1":
 		print("adding directory")
-		for item : String in (func() -> Array: var dir : DirAccess = DirAccess.open(selected); print("Dir Access Status: " + str(DirAccess.get_open_error())); return Array(dir.get_files()).filter(func(file : String) -> bool: return file.get_extension() in ["mp3", "wav"])).call():
+		for item : String in (func() -> Array: var dir : DirAccess = DirAccess.open(selected); print("Dir Access Status: " + str(DirAccess.get_open_error())); return Array(dir.get_files()).filter(func(file : String) -> bool: return file.get_extension() in ["mp3", "ogg"])).call():
 			print("adding into song upload list: " + str({"name": item.get_basename(), "path": selected + "\\"[0] + item}))
 			song_upload_list.append({"name": item.get_basename(), "path": selected + "\\"[0] + item})
 		print("Dir Acess Err: " + str(DirAccess.get_open_error()))
@@ -271,7 +307,7 @@ func clear_song_upload_list(_arg : String = "0") -> void:
 func remove_from_song_upload_list(index : String) -> void:
 	print("\nindex to remove form song upload list: " + index + "\n")
 	song_upload_list.remove_at(int(index))
-	%MainContainer/New/Container/Container/Body/Song/Container/InfoPanel/Container/SelectPanel/GreaterContainer/ScrollContainer/Container.get_child(int(index)).queue_free()
+	%MainContainer/New/Container/Body/Container/Container/DataList/Container/ScrollContainer/Container.get_child(int(index)).queue_free()
 	populate_song_list(song_upload_list, %MainContainer/New/Container/Body/Container/Container/DataList/Container/ScrollContainer/Container)
 	return
 
@@ -316,8 +352,6 @@ func open_context_menu(id : String) -> int:
 	%MainContainer/Library/Container/Profile/Container/Container/HeaderContainer/Container/Title.update({"editing_mode": false})
 	%MainContainer/Library/Container/Profile/Container/Container/HeaderContainer/Container/Subtitle.text = id
 	%MainContainer/Library/Container/Profile/Container/Container/Body.get_children().map(func(node : Node) -> Node: node.visible = node.name.to_lower() == MasterDirectoryManager.get_data_types.call()[GeneralManager.get_id_type(id)]; return)
-	#for item : Node in %MainContainer/Library/Container/Profile/Container/Container/Body.get_children():
-	#	item.visible = item.name.to_lower() == MasterDirectoryManager.get_data_types.call()[GeneralManager.get_id_type(id)]
 	var page_body : Node = %MainContainer/Library/Container/Profile/Container/Container/Body
 	var page_parent : Node = %MainContainer/Library/Container/Profile/Container/Container/ParentContainer
 	page_parent.visible = id_type in [MasterDirectoryManager.use_type.ALBUM, MasterDirectoryManager.use_type.SONG]
@@ -362,11 +396,14 @@ func context_action_button_pressed(args : Array) -> void:
 	var dataset : Array
 	var item : String
 	var intermediary : String
-	if args[0] in ["0", "1"]:
-		if GeneralManager.get_id_type(args[1]) == MasterDirectoryManager.use_type.ARTIST:
-			dataset = MasterDirectoryManager.artist_id_dict[args[1]]["albums"]
-		else:
-			dataset = MasterDirectoryManager.album_id_dict[args[1]]["songs"]
+	if args[0] in ["0", "1", "4"]:
+		match GeneralManager.get_id_type(args[1]):
+			MasterDirectoryManager.use_type.ARTIST:
+				dataset = MasterDirectoryManager.artist_id_dict[args[1]]["albums"]
+			MasterDirectoryManager.use_type.ALBUM:
+				dataset = MasterDirectoryManager.album_id_dict[args[1]]["songs"]
+			MasterDirectoryManager.use_type.PLAYLIST:
+				dataset = MasterDirectoryManager.playlist_id_dict[args[1]]["songs"]
 	match args[0]:
 		"0":
 			if args[3] > 0:
@@ -386,6 +423,21 @@ func context_action_button_pressed(args : Array) -> void:
 			play(args[1])
 		"3":
 			set_favourite(args[1])
+		"4":
+			dataset.erase(args[3])
+			args[2].remove_child(args[2].get_child(args[4]))
+	return
+
+func playlist_profile_upload_button_pressed(key : String) -> void:
+	match GeneralManager.get_id_type(key):
+		MasterDirectoryManager.use_type.ARTIST:
+			for album : String in MasterDirectoryManager.artist_id_dict[key]["albums"]:
+				MasterDirectoryManager.playlist_id_dict[library_details_item_id]["songs"].append_array(MasterDirectoryManager.album_id_dict[album]["songs"])
+		MasterDirectoryManager.use_type.ALBUM:
+			MasterDirectoryManager.playlist_id_dict[library_details_item_id]["songs"].append_array(MasterDirectoryManager.album_id_dict[key]["songs"])
+		MasterDirectoryManager.use_type.SONG:
+			MasterDirectoryManager.playlist_id_dict[library_details_item_id]["songs"].append(key)
+	open_context_menu(library_details_item_id)
 	return
 
 func play(id : String) -> int:
@@ -646,8 +698,14 @@ func toggle_cli(_arg : String) -> void:
 	cli.active = !cli.active
 	return
 
+func open_tutorial() -> void:
+	tutorial_page = 0
+	%NewUserScreen.visible = true
+	return
+
 func _set_soft_loading(state : bool) -> void:
 	%SoftLoadingScreen.visible = state
+	await get_tree().process_frame
 	await get_tree().process_frame
 	return
 
@@ -657,5 +715,5 @@ func exit(_arg : String = "0") -> void:
 		await get_tree().process_frame
 		if MasterDirectoryManager.finished_saving_data == false:
 			await MasterDirectoryManager.finished_saving_data_signal
-		get_tree().quit(0)
+	get_tree().quit(0)
 	return

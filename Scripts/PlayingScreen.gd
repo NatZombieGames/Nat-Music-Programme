@@ -32,6 +32,7 @@ extends Control
 		return loop
 @export var song_progress : int = 0:
 	set(value):
+		song_progress = value
 		if ((value >= 0) and (value <= 100)) and %AudioPlayer.stream != null:
 			%AudioPlayer.play((%AudioPlayer.stream.get_length() / 100) * value)
 	get:
@@ -49,12 +50,10 @@ extends Control
 			get_node("/root/MainScreen").cli.active = false
 	get:
 		return fullscreen
-var change_callable : Callable = (
+var next_song_callable : Callable = (
 	func(dir : int, do_loop : bool) -> String: 
 		if do_loop:
 			return active_song_id
-		if ((dir == 1 and (active_song_list.find(active_song_id) == len(active_song_list) - 1)) or (dir == 0 and (active_song_list.find(active_song_id) == 0))) and shuffle:
-			active_song_list.shuffle()
 		return active_song_list[wrapi(active_song_list.find(active_song_id) + dir, 0, len(active_song_list))])
 var load_song_thread : Thread = Thread.new()
 var load_song_mutex : Mutex = Mutex.new()
@@ -62,7 +61,7 @@ var dragging_progress_bar : bool = false
 var volume_indicator_tween : Tween
 var volume_indicator_textures : Array[ImageTexture] = []
 #const after ready
-const special_ids : PackedStringArray = ["@all", "@everyone"]
+const special_ids : PackedStringArray = ["@all", "@random"]
 const settable_settings : PackedStringArray = ["paused", "shuffle", "mute", "loop", "sleeping_state"]
 
 func _ready() -> void:
@@ -79,13 +78,12 @@ func _ready() -> void:
 	%TogglePlay.texture_pressed = GeneralManager.load_svg_to_img("res://Assets/Icons/Pause.svg", MasterDirectoryManager.user_data_dict["special_icon_scale"])
 	%TogglePlay.toggled.connect(func(state : bool) -> void: paused = state; return)
 	%Previous.texture_normal = GeneralManager.load_svg_to_img("res://Assets/Icons/Previous.svg", MasterDirectoryManager.user_data_dict["special_icon_scale"])
-	%Previous.pressed.connect(func() -> void: load_song(change_callable.call(-1, false)); return)
+	%Previous.pressed.connect(func() -> void: load_song(next_song_callable.call(-1, false)); return)
 	%Next.texture_normal = GeneralManager.load_svg_to_img("res://Assets/Icons/Next.svg", MasterDirectoryManager.user_data_dict["special_icon_scale"])
-	%Next.pressed.connect(func() -> void: load_song(change_callable.call(1, false)); return)
+	%Next.pressed.connect(func() -> void: load_song(next_song_callable.call(1, false)); return)
 	%ToggleFavourite.texture_normal = GeneralManager.load_svg_to_img("res://Assets/Icons/Favourite.svg", MasterDirectoryManager.user_data_dict["special_icon_scale"])
 	%ToggleFavourite.texture_pressed = GeneralManager.load_svg_to_img("res://Assets/Icons/Favourited.svg", MasterDirectoryManager.user_data_dict["special_icon_scale"])
 	%ToggleFavourite.pressed.connect(func() -> void: get_node("/root/MainScreen").call("set_favourite", active_song_id))
-	%AudioPlayer.finished.connect(func() -> void: load_song(change_callable.call(1, loop)); return)
 	%ProgressBar.drag_started.connect(func() -> void: dragging_progress_bar = true; return)
 	%ProgressBar.drag_ended.connect(func(value_changed : bool) -> void: if value_changed: %AudioPlayer.play(%ProgressBar.value); %AudioPlayer.stream_paused = paused; dragging_progress_bar = false; return)
 	%ProgressBar.set("theme_override_icons/grabber", GeneralManager.get_icon_texture("EmptyCircle"))
@@ -98,12 +96,23 @@ func _ready() -> void:
 	%ToggleFullscreen.texture_normal = GeneralManager.load_svg_to_img("res://Assets/Icons/Fullscreen.svg", MasterDirectoryManager.user_data_dict["special_icon_scale"])
 	%ToggleFullscreen.texture_pressed = GeneralManager.load_svg_to_img("res://Assets/Icons/CloseFullscreen.svg", MasterDirectoryManager.user_data_dict["special_icon_scale"])
 	%ToggleFullscreen.pressed.connect(func() -> void: fullscreen = !fullscreen; return)
+	%QuitWidget.texture_normal = GeneralManager.load_svg_to_img("res://Assets/Icons/Exit.svg", MasterDirectoryManager.user_data_dict["special_icon_scale"])
+	%QuitWidget.pressed.connect(func() -> void: 
+		if MasterDirectoryManager.user_data_dict["save_on_quit"]:
+			MasterDirectoryManager.save_data()
+			await get_tree().process_frame
+			if not MasterDirectoryManager.finished_saving_data:
+				await MasterDirectoryManager.finished_saving_data_signal
+			await get_tree().process_frame
+		get_tree().quit()
+		return)
 	%MuteWidget.texture_normal = GeneralManager.load_svg_to_img("res://Assets/Icons/VolumeDisabled.svg", MasterDirectoryManager.user_data_dict["special_icon_scale"])
 	%MuteWidget.texture_pressed = GeneralManager.load_svg_to_img("res://Assets/Icons/VolumeUp.svg", MasterDirectoryManager.user_data_dict["special_icon_scale"])
 	%MuteWidget.toggled.connect(func(state : bool) -> void: muted = state; return)
 	volume_indicator_textures.append(GeneralManager.load_svg_to_img("res://Assets/Icons/VolumeUp.svg", MasterDirectoryManager.user_data_dict["special_icon_scale"] * 2))
 	volume_indicator_textures.append(GeneralManager.load_svg_to_img("res://Assets/Icons/VolumeDown.svg", MasterDirectoryManager.user_data_dict["special_icon_scale"] * 2))
 	volume_indicator_textures.make_read_only()
+	%AudioPlayer.finished.connect(func() -> void: load_song(next_song_callable.call(1, loop)); return)
 	%AudioPlayer.volume_db = MasterDirectoryManager.user_data_dict["volume"]
 	shuffle = MasterDirectoryManager.user_data_dict["shuffle"]
 	#
@@ -121,7 +130,7 @@ func _notification(notif : int) -> void:
 		Node.NOTIFICATION_APPLICATION_FOCUS_IN:
 			sleeping_state = false
 		Node.NOTIFICATION_APPLICATION_FOCUS_OUT:
-			if MasterDirectoryManager.user_data_dict["sleep_when_unfocused"]:
+			if MasterDirectoryManager.user_data_dict.get("sleep_when_unfocused", false):
 				sleeping_state = true
 	return
 
@@ -147,9 +156,9 @@ func _input(_event : InputEvent) -> void:
 		volume_indicator_tween.tween_property(%VolumeIndicator, "self_modulate", Color(1, 1, 1, 0), 1.0).from(Color(1, 1, 1, 1))
 	elif is_pressed("Previous") or is_pressed("Next"):
 		if is_pressed("Previous"):
-			load_song(change_callable.call(-1, false))
+			load_song(next_song_callable.call(-1, false))
 		else:
-			load_song(change_callable.call(1, false))
+			load_song(next_song_callable.call(1, false))
 	elif is_pressed("Rewind1S") or is_pressed("FastForward1S"):
 		if is_pressed("Rewind1S"):
 			%AudioPlayer.seek(%AudioPlayer.get_playback_position() - 1)
@@ -170,6 +179,7 @@ func _exit_tree() -> void:
 	if load_song_thread.is_started():
 		load_song_thread.wait_to_finish()
 	volume_indicator_tween.kill()
+	await get_tree().process_frame
 	volume_indicator_tween.free()
 	return
 
@@ -179,12 +189,16 @@ func load_song_list(list_id : String = active_song_list_id) -> int:
 	active_song_list = []
 	if list_id in special_ids:
 		match list_id:
-			"@all", "@everyone":
+			"@all":
 				active_song_list = MasterDirectoryManager.song_id_dict.keys()
+			"@random":
+				var songs : Array = MasterDirectoryManager.song_id_dict.keys()
+				for i : int in range(0, 10):
+					active_song_list.append(songs.pick_random())
 	else:
 		if (GeneralManager.get_id_type(list_id) == MasterDirectoryManager.use_type.UNKNOWN) or GeneralManager.get_data(list_id) in ["", "Unknown"]:
 			print("Invalid Song List ID, type is " + str(GeneralManager.get_id_type(list_id)) + ", data is invalid: " + str(GeneralManager.get_data(list_id) in ["", "Unknown"]))
-			GeneralManager.cli_print_callable.call("[i]ERROR: Attempted to load song list with an ID of [u]" + list_id + "[/u], which isn't valid. Please check it and try again.[/i]")
+			GeneralManager.cli_print_callable.call("[i]SYS_ERROR: Attempted to load song list with an ID of [u]" + list_id + "[/u], which isn't valid. Please check it and try again.[/i]")
 			reset_playing_screen()
 			return ERR_INVALID_PARAMETER
 		match GeneralManager.get_id_type(list_id):
@@ -198,6 +212,7 @@ func load_song_list(list_id : String = active_song_list_id) -> int:
 			MasterDirectoryManager.use_type.PLAYLIST:
 				active_song_list = MasterDirectoryManager.playlist_id_dict[list_id]["songs"]
 	active_song_list.filter(func(item : String) -> bool: return MasterDirectoryManager.song_id_dict.keys().has(item))
+	active_song_list = GeneralManager.get_unique_array(active_song_list)
 	if shuffle == true:
 		active_song_list.shuffle()
 	GeneralManager.cli_print_callable.call("SYS: Loaded song list with ID [u]" + list_id + "[/u] with a length of [u]" + str(len(active_song_list)) + "[/u].")
@@ -208,12 +223,11 @@ func load_song_list(list_id : String = active_song_list_id) -> int:
 func load_song(song_id : String = active_song_id) -> int:
 	print("\n\nLoad Song ID: '" + song_id + "', begins with '" + song_id.left(1) + "'")
 	if (GeneralManager.get_id_type(song_id) != MasterDirectoryManager.use_type.SONG) or (not MasterDirectoryManager.song_id_dict.has(song_id)):
-		GeneralManager.cli_print_callable.call("ERROR: Attempted to load song of ID '[u]" + song_id + "[/u]' which isn't valid, please check it and try again.")
+		GeneralManager.cli_print_callable.call("SYS_ERROR: Attempted to load song of ID '[u]" + song_id + "[/u]' which isn't valid, please check it and try again.")
 		reset_playing_screen()
 		return ERR_INVALID_PARAMETER
 	print("Song ID is valid.")
 	active_song_id = song_id
-	GeneralManager.cli_print_callable.call("SYS: Now playing song [u]" + str(active_song_list.find(active_song_id) + 1) + "[/u]/[u]" + str(len(active_song_list)) + "[/u] with the ID of [u]" + active_song_id + "[/u].")
 	var song_data : Dictionary = GeneralManager.get_data(active_song_id)
 	print("song data: " + str(song_data))
 	if not song_data["song_file_path"] in song_cache.keys():
@@ -222,24 +236,23 @@ func load_song(song_id : String = active_song_id) -> int:
 		load_song_mutex.unlock()
 	%AudioPlayer.stream = song_cache[song_data["song_file_path"]]
 	if %AudioPlayer.stream == null:
-		GeneralManager.cli_print_callable.call("[i] ERROR: Song with an ID of [u]" + song_id + "[/u] was unable to be loaded, the path may be invalid or corrupted, please check the audio file and try again. [/i]")
+		GeneralManager.cli_print_callable.call("SYS_ERROR: Song with an ID of [u]" + song_id + "[/u] was unable to be loaded, the path may be invalid or corrupted, please check the audio file and try again.")
 		reset_playing_screen()
+		return ERR_INVALID_DATA
 	%Title.text = GeneralManager.limit_str(song_data["name"], 30)
 	%"Album&Band".text = GeneralManager.limit_str(GeneralManager.get_data(song_data["album"], "name"), 10) + " | " + GeneralManager.limit_str(GeneralManager.get_data(GeneralManager.get_data(song_data["album"], "artist"), "name"), 10)
 	var list_name : String = GeneralManager.get_data(active_song_list_id, "name")
 	if not active_song_list_id in special_ids:
-		%Playlist.text = ["All Of: ", "Album: ", "Listening To: ", "Playlist: "][int(active_song_list_id[0])] + GeneralManager.limit_str(list_name, 13)
+		%Playlist.text = ["All Of: ", "Album: ", "Listening To: ", "Playlist: "][int(active_song_list_id.left(1))] + GeneralManager.limit_str(list_name, 13)
 	else:
-		%Playlist.text = ["All Songs"][special_ids.find(active_song_list_id)]
+		%Playlist.text = ["All Songs", "Random Songs"][special_ids.find(active_song_list_id)]
 	%Playlist.text += " | " + str(str(active_song_list.find(song_id)+1) + "/" + str(len(active_song_list)))
 	%ProgressBar.max_value = %AudioPlayer.stream.get_length()
 	%ToggleFavourite.set_pressed_no_signal(song_data["favourite"])
 	%Image.texture = ImageTexture.create_from_image(GeneralManager.get_image(GeneralManager.get_data(song_data["album"], "image_file_path")))
-	print("Image texture after load: " + str(%Image.texture))
 	var image_average : Color = GeneralManager.get_image_average(GeneralManager.get_image(GeneralManager.get_data(song_data["album"], "image_file_path")))
 	%Background.color = image_average
 	var stylebox : StyleBoxFlat = %Image.get_parent().get("theme_override_styles/panel").duplicate()
-	#stylebox.border_color = Color(1.0 - image_average.r, 1.0 - image_average.g, 1.0 - image_average.b)
 	if ((image_average.r / 1.5) > 0.1) and ((image_average.g / 1.5) > 0.1) and ((image_average.b / 1.5) > 0.1):
 		stylebox.border_color = Color(image_average.r / 1.5, image_average.g / 1.5, image_average.b / 1.5)
 	else:
@@ -251,11 +264,12 @@ func load_song(song_id : String = active_song_id) -> int:
 		load_song_thread.wait_to_finish()
 	load_song_thread.start(Callable(self, "load_next_song_into_cache"))
 	print("!! Load Song Ran Succesfully !!")
+	GeneralManager.cli_print_callable.call("SYS: Now playing song [u]" + str(active_song_list.find(active_song_id) + 1) + "[/u]/[u]" + str(len(active_song_list)) + "[/u] with the ID of [u]" + active_song_id + "[/u].")
 	return OK
 
 func load_next_song_into_cache() -> void:
 	load_song_mutex.lock()
-	var next_song_path : String = GeneralManager.get_data(change_callable.call(1, false))["song_file_path"]
+	var next_song_path : String = GeneralManager.get_data(next_song_callable.call(1, false))["song_file_path"]
 	if next_song_path not in song_cache.keys():
 		song_cache[next_song_path] = GeneralManager.load_audio_file(next_song_path)
 	while len(song_cache.keys()) > MasterDirectoryManager.user_data_dict["song_cache_size"]:
@@ -301,5 +315,5 @@ func is_pressed(action : StringName) -> bool:
 func set_widgets() -> void:
 	var widgets : Array[Node] = %Background/TopBar/Container.get_children().slice(1, -1)
 	widgets.map(func(node : Node) -> Node: node.visible = MasterDirectoryManager.user_data_dict["player_widgets"][widgets.find(node)]; return node)
-	%Background/TopBar/Container/Void.visible = true in MasterDirectoryManager.user_data_dict["player_widgets"]
+	%Background/TopBar/Container/Void.visible = (true in MasterDirectoryManager.user_data_dict["player_widgets"])
 	return

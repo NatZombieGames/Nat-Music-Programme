@@ -12,14 +12,15 @@ config_version=5
 
 config/name="Nat Music Programme"
 config/description="Nat Music Programme"
-config/version="1.0.0"
+config/version="0.9.0"
 run/main_scene="res://Scenes/MainScreen.tscn"
 config/features=PackedStringArray("4.3", "Mobile")
 run/max_fps=30
 run/low_processor_mode=true
-boot_splash/show_image=false
-config/icon="res://Assets/SoftwareLogoCircle_1.png"
-config/windows_native_icon="res://Assets/SoftwareLogoCircle_1.ico"
+boot_splash/image="res://Assets/NMP_Icon.png"
+boot_splash/use_filter=false
+config/icon="res://Assets/NMP_Icon.ico"
+config/windows_native_icon="res://Assets/NMP_Icon.ico"
 
 [audio]
 
@@ -50,7 +51,14 @@ naming/script_name_casing=1
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/BuildDateSetter/plugin.cfg", "res://addons/NatCustomExporter/plugin.cfg")
+enabled=PackedStringArray("res://addons/ExportDataSetter/plugin.cfg", "res://addons/NatCustomExporter/plugin.cfg")
+
+[global_group]
+
+HatBar=""
+Header=""
+Background=""
+Separator=""
 
 [gui]
 
