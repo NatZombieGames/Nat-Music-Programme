@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://ptvbuuv4wlff"]
 
 [ext_resource type="StyleBox" uid="uid://bvsmn8sm7d00h" path="res://Assets/Styleboxes/DarkBackground.tres" id="1_xw6od"]
-[ext_resource type="Script" path="res://Scripts/PopupNotification.gd" id="2_pucgy"]
+[ext_resource type="Script" uid="uid://d0wng5v0ow4ti" path="res://Scripts/PopupNotification.gd" id="2_pucgy"]
 
 [node name="PopupNotification" type="PanelContainer"]
 custom_minimum_size = Vector2(240, 25)

@@ -1,9 +1,9 @@
 extends Node
 
-@export var artist_id_dict : Dictionary = {}
-@export var album_id_dict : Dictionary = {}
-@export var song_id_dict : Dictionary = {}
-@export var playlist_id_dict : Dictionary = {}
+@export var artist_id_dict : Dictionary[String, Dictionary] = {}
+@export var album_id_dict : Dictionary[String, Dictionary] = {}
+@export var song_id_dict : Dictionary[String, Dictionary] = {}
+@export var playlist_id_dict : Dictionary[String, Dictionary] = {}
 @export var user_data_dict : Dictionary = {}
 @export var finished_loading_data : bool = false
 @export var finished_saving_data : bool = false
@@ -11,8 +11,7 @@ extends Node
 @export var get_data_types : Callable = (func() -> Array: return use_type.keys().map(func(key : String) -> String: return key.to_lower()).filter(func(key : String) -> bool: return key != "unknown"))
 @export var get_object_data : Callable = (func(id : String) -> Dictionary: return self.get(get_data_types.call()[int(id[0])] + "_id_dict")[id])
 @export var new_user : bool = false
-var data_location : String = ""
-#   const after ready
+var data_location : String = "" # read only after ready
 @warning_ignore("unused_signal")
 signal finished_loading_data_signal
 signal finished_saving_data_signal
@@ -40,7 +39,7 @@ const id_chars : PackedStringArray = [
 "8", "9", "!", '"', "`", "¬", "%", "^", "&", "*", "(", ")", "|", "_", "=", "+", "{", "}", ":", ";", 
 "'", "@", "~", "#", ",", "<", ".", ">", "/", "?", "¤", "£", "$", "¥", "¢", "÷", "´", "˄", "˅", "ˆ", 
 ]
-var keybinds : Dictionary = {} # const after ready is finished
+var keybinds : Dictionary[String, Array] = {} # const after ready is finished
 enum use_type {ARTIST, ALBUM, SONG, PLAYLIST, UNKNOWN}
 
 func _ready() -> void:
@@ -143,7 +142,7 @@ func load_data() -> void:
 	var data : ConfigFile = ConfigFile.new()
 	data.load(data_location)
 	for item : String in get_data_types.call():
-		self.set(item + "_id_dict", data.get_value("data", item + "_id_dict", {}))
+		self.get(item + "_id_dict").assign(data.get_value("data", item + "_id_dict", {}))
 	var loaded_user_data : Dictionary = data.get_value("data", "user_data_dict", default_user_data)
 	for key : String in default_user_data.keys():
 		user_data_dict[key] = loaded_user_data.get(key, default_user_data[key])

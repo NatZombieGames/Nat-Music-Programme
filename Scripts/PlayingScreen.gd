@@ -1,6 +1,6 @@
 extends Control
 
-@export var active_song_list : Array = []
+@export var active_song_list : Array[String] = []
 @export var active_song_list_id : String = ""
 @export var active_song_id : String = ""
 @export var sleeping_state : bool = false:
@@ -39,7 +39,7 @@ extends Control
 		if %AudioPlayer.stream != null:
 			return (%ProgressBar.value / %ProgressBar.max_value) * 100
 		return 0
-@export var song_cache : Dictionary
+@export var song_cache : Dictionary[String, AudioStream]
 @export var fullscreen : bool = false:
 	set(value):
 		fullscreen = value
@@ -59,8 +59,7 @@ var load_song_thread : Thread = Thread.new()
 var load_song_mutex : Mutex = Mutex.new()
 var dragging_progress_bar : bool = false
 var volume_indicator_tween : Tween
-var volume_indicator_textures : Array[ImageTexture] = []
-#const after ready
+var volume_indicator_textures : Array[ImageTexture] = [] # read only after ready
 const special_ids : PackedStringArray = ["@all", "@random"]
 const settable_settings : PackedStringArray = ["paused", "shuffle", "mute", "loop", "sleeping_state"]
 
@@ -72,8 +71,11 @@ func _ready() -> void:
 	#
 	reset_playing_screen()
 	if MasterDirectoryManager.user_data_dict["continue_playing"] == true:
-		for item : String in MasterDirectoryManager.user_data_dict["active_song_data"].keys().filter(func(item : String) -> bool: return item != "song_progress"):
-			self.set(item, MasterDirectoryManager.user_data_dict["active_song_data"][item])
+		for key : String in MasterDirectoryManager.user_data_dict["active_song_data"].keys().filter(func(item : String) -> bool: return item != "song_progress"):
+			if key == "active_song_list":
+				active_song_list.assign(MasterDirectoryManager.user_data_dict["active_song_data"]["active_song_list"])
+			else:
+				self.set(key, MasterDirectoryManager.user_data_dict["active_song_data"][key])
 	%TogglePlay.texture_normal = GeneralManager.load_svg_to_img("res://Assets/Icons/Play.svg", MasterDirectoryManager.user_data_dict["special_icon_scale"])
 	%TogglePlay.texture_pressed = GeneralManager.load_svg_to_img("res://Assets/Icons/Pause.svg", MasterDirectoryManager.user_data_dict["special_icon_scale"])
 	%TogglePlay.toggled.connect(func(state : bool) -> void: paused = state; return)
@@ -190,7 +192,9 @@ func load_song_list(list_id : String = active_song_list_id) -> int:
 	if list_id in special_ids:
 		match list_id:
 			"@all":
-				active_song_list = MasterDirectoryManager.song_id_dict.keys()
+				active_song_list.assign(MasterDirectoryManager.song_id_dict.keys())
+				#for key : String in MasterDirectoryManager.song_id_dict.keys():
+				#	active_song_list.append(key)
 			"@random":
 				var songs : Array = MasterDirectoryManager.song_id_dict.keys()
 				for i : int in range(0, 10):
@@ -212,7 +216,7 @@ func load_song_list(list_id : String = active_song_list_id) -> int:
 			MasterDirectoryManager.use_type.PLAYLIST:
 				active_song_list = MasterDirectoryManager.playlist_id_dict[list_id]["songs"]
 	active_song_list.filter(func(item : String) -> bool: return MasterDirectoryManager.song_id_dict.keys().has(item))
-	active_song_list = GeneralManager.get_unique_array(active_song_list)
+	active_song_list.assign(GeneralManager.get_unique_array(active_song_list))
 	if shuffle == true:
 		active_song_list.shuffle()
 	GeneralManager.cli_print_callable.call("SYS: Loaded song list with ID [u]" + list_id + "[/u] with a length of [u]" + str(len(active_song_list)) + "[/u].")

@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://bthj54bhnkv5v"]
 
-[ext_resource type="Script" path="res://Scripts/ToggleLineEdit.gd" id="1_bu73m"]
+[ext_resource type="Script" uid="uid://kbsmlroqxmuf" path="res://Scripts/ToggleLineEdit.gd" id="1_bu73m"]
 [ext_resource type="Texture2D" uid="uid://bib3ce2ocxmme" path="res://Assets/Icons/Missing.svg" id="2_cj2to"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_rwk73"]

@@ -226,9 +226,12 @@ func set_song_upload_style(style : String) -> void:
 	print("-\nsong upload style is " + str(style))
 	var dialog : FileDialog = [%SelectSongDialog, %SelectSongDirectoryDialog][int(style)]
 	dialog.visible = true
-	var selected : String = [dialog.current_file, dialog.current_path.get_slice("/", 1)][int(style)]
+	await [dialog.file_selected, dialog.dir_selected][int(style)]
+	var selected : String = [dialog.current_path, dialog.current_path.get_slice("/", 1)][int(style)]
 	print("selected " + selected)
-	print("selected is valid path: " + str(DirAccess.dir_exists_absolute(selected)))
+	print(dialog.current_path.split("/"))
+	print("selected is valid dir: " + str(DirAccess.dir_exists_absolute(selected)))
+	print("selected is valid file: " + str(FileAccess.file_exists(selected)))
 	if selected != "" and not [FileAccess.file_exists(selected), DirAccess.dir_exists_absolute(selected)][int(style)]:
 		create_popup_notif(" " + ["Unable To Validate File", "Unable To Validate Directory"][int(style)] + ", Please Try Again With A Different Path. ")
 		return
@@ -237,7 +240,7 @@ func set_song_upload_style(style : String) -> void:
 		song_upload_list.append({"name": selected.get_file().get_basename(), "path": selected})
 	elif style == "1":
 		print("adding directory")
-		for item : String in (func() -> Array: var dir : DirAccess = DirAccess.open(selected); print("Dir Access Status: " + str(DirAccess.get_open_error())); return Array(dir.get_files()).filter(func(file : String) -> bool: return file.get_extension() in ["mp3", "ogg"])).call():
+		for item : String in (func() -> Array: var dir : DirAccess = DirAccess.open(selected); print("Dir Access Status: " + str(DirAccess.get_open_error())); return Array(dir.get_files()).filter(func(file : String) -> bool: return file.get_extension() in GeneralManager.valid_audio_types)).call():
 			print("adding into song upload list: " + str({"name": item.get_basename(), "path": selected + "\\"[0] + item}))
 			song_upload_list.append({"name": item.get_basename(), "path": selected + "\\"[0] + item})
 		print("Dir Acess Err: " + str(DirAccess.get_open_error()))

@@ -1,7 +1,7 @@
 [gd_scene load_steps=29 format=3 uid="uid://43inlmvkfr28"]
 
 [ext_resource type="PackedScene" uid="uid://di0ca61w28uio" path="res://Scenes/PlayingScreen.tscn" id="1_kfe6r"]
-[ext_resource type="Script" path="res://Scripts/MainScreen.gd" id="1_paqbq"]
+[ext_resource type="Script" uid="uid://cwh22cgpk5b40" path="res://Scripts/MainScreen.gd" id="1_paqbq"]
 [ext_resource type="StyleBox" uid="uid://dydjfep1b7fhc" path="res://Assets/Styleboxes/DefaultStylebox.tres" id="1_yp0eq"]
 [ext_resource type="Texture2D" uid="uid://dpbr0cmii1bvf" path="res://Assets/NMP_Icon.png" id="2_i2mec"]
 [ext_resource type="PackedScene" uid="uid://cexj0b2hdd4k3" path="res://Scenes/CustomTextureButton.tscn" id="3_qykjb"]
@@ -23,7 +23,7 @@
 [ext_resource type="StyleBox" uid="uid://chijk7dtw7my" path="res://Assets/Styleboxes/DefaultStyleboxFilled.tres" id="18_put2v"]
 [ext_resource type="PackedScene" uid="uid://cggfq5ldfu5yj" path="res://Scenes/CustomToggleButton.tscn" id="19_g648t"]
 [ext_resource type="StyleBox" uid="uid://cvlx7sgwyg4ft" path="res://Assets/Styleboxes/CustomButtonHovered.tres" id="23_7ubo8"]
-[ext_resource type="Script" path="res://Scripts/RichTextScript.gd" id="23_tcvtk"]
+[ext_resource type="Script" uid="uid://bqkccpjb42fj0" path="res://Scripts/RichTextScript.gd" id="23_tcvtk"]
 [ext_resource type="PackedScene" uid="uid://bmc50mv2rgkwt" path="res://Scenes/CommandLineInterface.tscn" id="24_khgiu"]
 [ext_resource type="StyleBox" uid="uid://cyk1k4nde07k7" path="res://Assets/Styleboxes/CustomButtonPressed.tres" id="24_sc56p"]
 [ext_resource type="StyleBox" uid="uid://dvt0bb3h5ar54" path="res://Assets/Styleboxes/CustomButtonNormal.tres" id="25_vcar7"]
@@ -1948,7 +1948,7 @@ dialog_hide_on_ok = true
 mode_overrides_title = false
 file_mode = 0
 access = 2
-filters = PackedStringArray("*.mp3", "*.ogg")
+filters = PackedStringArray("*.mp3", "*.ogg", "*.wav")
 use_native_dialog = true
 
 [node name="SelectSongDirectoryDialog" type="FileDialog" parent="Camera/AspectRatioContainer"]

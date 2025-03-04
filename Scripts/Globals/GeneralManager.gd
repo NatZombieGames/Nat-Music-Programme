@@ -2,8 +2,8 @@ extends Node
 
 @export var icons : Dictionary = {}
 @export var is_valid_image : Callable = (func(path : String) -> bool: return path != "" and (path.is_absolute_path() or path.is_relative_path()) and path.get_extension() in ["jpg", "jpeg", "ktx", "png", "svg", "tga", "webp"])
-@export var image_cache : Dictionary = {}
-@export var image_average_cache : Dictionary = {}
+@export var image_cache : Dictionary[String, Image] = {}
+@export var image_average_cache : Dictionary[String, Color] = {}
 @export var set_mouse_busy_state : Callable = (func(busy : bool) -> void: DisplayServer.cursor_set_shape([DisplayServer.CURSOR_ARROW, DisplayServer.CURSOR_BUSY][int(busy)]); return)
 @export var is_valid_keybind : Callable = (func(event : InputEvent) -> bool: return ((event.get_class() != "InputEventMouseMotion") and (event.is_pressed()) and (get_event_code(event) not in banned_keycodes)))
 @export var is_in_debug : bool = true
@@ -25,6 +25,7 @@ const key_modifiers : PackedStringArray = ["alt_pressed", "shift_pressed", "ctrl
 const settable_settings : PackedStringArray = ["rng_seed"]
 const export_data_names : PackedStringArray = ["build_date", "engine_build_version", "license", "architecture"]
 const repo_url : String = "https://github.com/NatZombieGames/Nat-Music-Programme"
+const valid_audio_types : PackedStringArray = ["mp3", "ogg", "wav"]
 @warning_ignore("unused_signal")
 signal finished_loading_icons_signal
 
@@ -130,12 +131,15 @@ func get_image(path : String) -> Image:
 func load_audio_file(path : String) -> AudioStream:
 	var file : FileAccess = FileAccess.open(path, FileAccess.READ)
 	var sound : AudioStream
-	match path.get_extension():
-		"mp3":
-			sound = AudioStreamMP3.new()
-			sound.data = file.get_buffer(file.get_length())
-		"ogg":
-			sound = AudioStreamOggVorbis.load_from_file(path)
+	if path.get_extension() in valid_audio_types:
+		match path.get_extension():
+			"mp3":
+				sound = AudioStreamMP3.new()
+				sound.data = file.get_buffer(file.get_length())
+			"ogg":
+				sound = AudioStreamOggVorbis.load_from_file(path)
+			"wav":
+				sound = AudioStreamWAV.load_from_file(path)
 	return sound
 
 func get_id_type(id : String) -> MasterDirectoryManager.use_type:

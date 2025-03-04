@@ -57,7 +57,7 @@ const special_commands : PackedStringArray = [
 	"get_callables", "get_commands"
 	]
 const debug_commands : PackedStringArray = ["print_id_dict", "push"]
-const callables : Dictionary = {
+const callables : Dictionary[String, Array] = {
 	"MasterDirectoryManager": ["save_data", "set_user_settings", "get_user_settings"], 
 	"GeneralManager": ["set_general_settings", "get_general_settings"], 
 	"CommandLineInterface": ["print_to_output", "run_command", "get_cli_settings", "set_cli_settings"], 
@@ -67,7 +67,7 @@ const callables : Dictionary = {
 		]
 	}
 const boolean_strings : PackedStringArray = ["1", "true", "enabled", "yes", "on"]
-const keyword_to_text : Dictionary = {
+const keyword_to_text : Dictionary[String, String] = {
 		"DEBUG_ERROR:": "[color=medium_violet_red]DEBUG ERROR |>[/color]", 
 		"SYS_ERROR:": "[color=orange_red]SYSTEM ERROR |>[/color]", 
 		"ERROR:": "[color=red]ERROR |>[/color]", 
@@ -76,8 +76,7 @@ const keyword_to_text : Dictionary = {
 		"ALERT:": "[color=gold]ALERT |>[/color]", 
 		}
 const settable_settings : PackedStringArray = ["auto_clear", "clear_input"]
-var callables_commands : Array[String] = []
-#   const after ready
+var callables_commands : Array[String] = [] # read only after ready
 
 func _ready() -> void:
 	callables.values().map(func(item : Array) -> Array: callables_commands.append_array(item); return item)

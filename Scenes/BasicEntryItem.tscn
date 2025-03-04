@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://bm5cugnlmwqah"]
 
-[ext_resource type="Script" path="res://Scripts/BasicEntryItem.gd" id="1_1uaux"]
+[ext_resource type="Script" uid="uid://n57vvvtg2yxu" path="res://Scripts/BasicEntryItem.gd" id="1_1uaux"]
 [ext_resource type="PackedScene" uid="uid://cexj0b2hdd4k3" path="res://Scenes/CustomTextureButton.tscn" id="2_mxhp3"]
 [ext_resource type="PackedScene" uid="uid://bthj54bhnkv5v" path="res://Scenes/ToggleLineEdit.tscn" id="3_wekom"]
 

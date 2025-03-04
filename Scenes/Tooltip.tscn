@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://c5nvc515qh0qf"]
 
 [ext_resource type="StyleBox" uid="uid://clgq8tdj1k4on" path="res://Assets/Styleboxes/DarkerStylebox.tres" id="1_42cf6"]
-[ext_resource type="Script" path="res://Scripts/Tooltip.gd" id="2_d7mlc"]
+[ext_resource type="Script" uid="uid://b57jfxgb0w6w8" path="res://Scripts/Tooltip.gd" id="2_d7mlc"]
 
 [node name="Tooltip" type="PanelContainer"]
 top_level = true

@@ -12,13 +12,13 @@ config_version=5
 
 config/name="Nat Music Programme"
 config/description="Nat Music Programme"
-config/version="0.9.0"
+config/version="0.9.1"
 run/main_scene="res://Scenes/MainScreen.tscn"
-config/features=PackedStringArray("4.3", "Mobile")
+config/features=PackedStringArray("4.4", "Mobile")
 run/max_fps=30
 run/low_processor_mode=true
-boot_splash/image="res://Assets/NMP_Icon.png"
 boot_splash/use_filter=false
+boot_splash/image="res://Assets/NMP_Icon.png"
 config/icon="res://Assets/NMP_Icon.ico"
 config/windows_native_icon="res://Assets/NMP_Icon.ico"
 
