@@ -70,12 +70,6 @@ func _ready() -> void:
 		await GeneralManager.finished_loading_icons_signal
 	#
 	reset_playing_screen()
-	if MasterDirectoryManager.user_data_dict["continue_playing"] == true:
-		for key : String in MasterDirectoryManager.user_data_dict["active_song_data"].keys().filter(func(item : String) -> bool: return item != "song_progress"):
-			if key == "active_song_list":
-				active_song_list.assign(MasterDirectoryManager.user_data_dict["active_song_data"]["active_song_list"])
-			else:
-				self.set(key, MasterDirectoryManager.user_data_dict["active_song_data"][key])
 	%TogglePlay.texture_normal = GeneralManager.load_svg_to_img("res://Assets/Icons/Play.svg", MasterDirectoryManager.user_data_dict["special_icon_scale"])
 	%TogglePlay.texture_pressed = GeneralManager.load_svg_to_img("res://Assets/Icons/Pause.svg", MasterDirectoryManager.user_data_dict["special_icon_scale"])
 	%TogglePlay.toggled.connect(func(state : bool) -> void: paused = state; return)
@@ -117,6 +111,14 @@ func _ready() -> void:
 	%AudioPlayer.finished.connect(func() -> void: load_song(next_song_callable.call(1, loop)); return)
 	%AudioPlayer.volume_db = MasterDirectoryManager.user_data_dict["volume"]
 	shuffle = MasterDirectoryManager.user_data_dict["shuffle"]
+	if not get_node("/root/MainScreen").primary_initialization_finished:
+		await get_node("/root/MainScreen").primary_initialization_finished_signal
+	if MasterDirectoryManager.user_data_dict["continue_playing"] == true:
+		for key : String in MasterDirectoryManager.user_data_dict["active_song_data"].keys().filter(func(item : String) -> bool: return item != "song_progress"):
+			if key == "active_song_list":
+				active_song_list.assign(MasterDirectoryManager.user_data_dict["active_song_data"]["active_song_list"])
+			else:
+				self.set(key, MasterDirectoryManager.user_data_dict["active_song_data"][key])
 	#
 	set_widgets()
 	await get_tree().process_frame
@@ -145,7 +147,13 @@ func _process(_delta : float) -> void:
 	return
 
 func _input(_event : InputEvent) -> void:
-	if is_pressed("VolumeDown") or is_pressed("VolumeUp"):
+	if is_pressed("TogglePause"):
+		paused = !paused
+	elif is_pressed("ToggleLargePlayer"):
+		fullscreen = !fullscreen
+	elif not fullscreen:
+		return
+	elif is_pressed("VolumeDown") or is_pressed("VolumeUp"):
 		if is_pressed("VolumeUp"):
 			%AudioPlayer.volume_db += 1
 			%VolumeIndicator.texture = volume_indicator_textures[0]
@@ -171,10 +179,6 @@ func _input(_event : InputEvent) -> void:
 			%AudioPlayer.seek(%AudioPlayer.get_playback_position() - (%AudioPlayer.stream.get_length() / 100))
 		else:
 			%AudioPlayer.seek(%AudioPlayer.get_playback_position() + (%AudioPlayer.stream.get_length() / 100))
-	elif is_pressed("TogglePause"):
-		paused = !paused
-	elif is_pressed("ToggleLargePlayer"):
-		fullscreen = !fullscreen
 	return
 
 func _exit_tree() -> void:
@@ -193,12 +197,11 @@ func load_song_list(list_id : String = active_song_list_id) -> int:
 		match list_id:
 			"@all":
 				active_song_list.assign(MasterDirectoryManager.song_id_dict.keys())
-				#for key : String in MasterDirectoryManager.song_id_dict.keys():
-				#	active_song_list.append(key)
 			"@random":
-				var songs : Array = MasterDirectoryManager.song_id_dict.keys()
-				for i : int in range(0, 10):
-					active_song_list.append(songs.pick_random())
+				var songs : Array[String] = MasterDirectoryManager.song_id_dict.keys()
+				if len(songs) > 0:
+					for i : int in range(0, min(len(songs), 10)):
+						active_song_list.append(songs.pick_random())
 	else:
 		if (GeneralManager.get_id_type(list_id) == MasterDirectoryManager.use_type.UNKNOWN) or GeneralManager.get_data(list_id) in ["", "Unknown"]:
 			print("Invalid Song List ID, type is " + str(GeneralManager.get_id_type(list_id)) + ", data is invalid: " + str(GeneralManager.get_data(list_id) in ["", "Unknown"]))
@@ -210,15 +213,18 @@ func load_song_list(list_id : String = active_song_list_id) -> int:
 				for item : String in GeneralManager.get_data(list_id, "albums"):
 					active_song_list.append_array(GeneralManager.get_data(item, "songs"))
 			MasterDirectoryManager.use_type.ALBUM, MasterDirectoryManager.use_type.PLAYLIST:
-				active_song_list = GeneralManager.get_data(list_id, "songs")
+				active_song_list.assign(GeneralManager.get_data(list_id, "songs"))
 			MasterDirectoryManager.use_type.SONG:
-				active_song_list = [list_id]
+				active_song_list.assign([list_id])
 			MasterDirectoryManager.use_type.PLAYLIST:
-				active_song_list = MasterDirectoryManager.playlist_id_dict[list_id]["songs"]
+				active_song_list.assign(MasterDirectoryManager.playlist_id_dict[list_id]["songs"])
 	active_song_list.filter(func(item : String) -> bool: return MasterDirectoryManager.song_id_dict.keys().has(item))
 	active_song_list.assign(GeneralManager.get_unique_array(active_song_list))
 	if shuffle == true:
 		active_song_list.shuffle()
+	if len(active_song_list) == 0:
+		GeneralManager.cli_print_callable.call("ALERT: Tried to long song list with ID [u]" + list_id + "[/u], but it has no songs so is unable to be loaded.")
+		return ERR_QUERY_FAILED
 	GeneralManager.cli_print_callable.call("SYS: Loaded song list with ID [u]" + list_id + "[/u] with a length of [u]" + str(len(active_song_list)) + "[/u].")
 	load_song(GeneralManager.arr_get(active_song_list, 0, ""))
 	print("Load Song List Ran Succesfully")
@@ -287,9 +293,9 @@ func set_player_settings(setting : StringName, value : Variant) -> int:
 		self.set(setting, value)
 		return OK
 	if typeof(self.get(setting)) != typeof(value):
-		GeneralManager.cli_print_callable.call("ERROR: Tried to set [u]" + setting + "[/u] whos value is of type [u]" + type_string(typeof(self.get(setting))) + "[/u] to [u]" + value + "[/u] which is of type [u]" + type_string(typeof(value)) + "[/u].")
+		GeneralManager.cli_print_callable.call("ERROR: Tried to set [u]" + setting + "[/u] whos value is of type [u]" + type_string(typeof(self.get(setting))) + "[/u] to [u]" + str(value) + "[/u] which is of type [u]" + type_string(typeof(value)) + "[/u].")
 	else:
-		GeneralManager.cli_print_callable.call("ERROR: Setting [u]" + setting + "[/u] does not exist in Player Settings.")
+		GeneralManager.cli_print_callable.call("ERROR: Setting [u]" + setting + "[/u] does not exist in Player Settings or is unable to be set.")
 	return ERR_INVALID_PARAMETER
 
 func get_player_settings() -> Dictionary:

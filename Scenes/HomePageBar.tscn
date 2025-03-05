@@ -1,0 +1,29 @@
+[gd_scene load_steps=2 format=3 uid="uid://pd5fcylkrkcn"]
+
+[ext_resource type="Script" uid="uid://duhfg86cqyayi" path="res://Scripts/HomePageBar.gd" id="1_qa04v"]
+
+[node name="HomePageBar" type="VBoxContainer"]
+offset_right = 105.0
+offset_bottom = 63.0
+script = ExtResource("1_qa04v")
+
+[node name="Title" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 35
+text = "Title"
+vertical_alignment = 1
+
+[node name="Separator" type="ColorRect" parent="." groups=["Separator"]]
+custom_minimum_size = Vector2(0, 5)
+layout_mode = 2
+color = Color(0.235294, 0.235294, 0.235294, 1)
+
+[node name="ScrollContainer" type="ScrollContainer" parent="." groups=["ScrollContainer"]]
+layout_mode = 2
+mouse_filter = 2
+vertical_scroll_mode = 0
+
+[node name="List" type="HBoxContainer" parent="ScrollContainer"]
+unique_name_in_owner = true
+layout_mode = 2

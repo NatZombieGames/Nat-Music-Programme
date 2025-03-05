@@ -15,7 +15,7 @@ Other smaller efforts have been made to make the app able to handle itself despi
 
 ## Project Details ##
 
-This is made entirely using Godot 4.4, which GDScript (all statically-typed) as the language. The project is organized into the following folders:
+This is made entirely using Godot 4.4, with GDScript (all statically-typed) as the language. The project is organized into the following folders:
 - addons:
   - BuildDateSetter: Addon folder for the export plugin used to set the build date for any exported builds.
   - NatCustomExporter: Used to keep integrity of .svg files when exporting the project.
@@ -27,12 +27,12 @@ This is made entirely using Godot 4.4, which GDScript (all statically-typed) as 
   - Tutorial Images: The unique images used during the tutorial.
   - Everything else is misc. assets including the AudioBusLayout and Icon.
 - Exported, All of the builds for the app, the names are structed; 'NatMusicProgramme_{architecture}', for example the main 64Bit builds for both versions are called 'NatMusicProgramme_x64':
-  - Windows: Folder containing all the Windows builds
-    - Other Builds: Folder with all the other builds for Windows, including 32Bit and Arm64Bit
-    - The main build for Windows, being 64Bit
-  - Linux: Folder containing all the Linux builds, the Linux names are structed; 'NatMusicProgramme_{architecture}', for example the main 64Bit build is called 'NatMusicProgramme_x64'.
-    - Other Builds: Folder with all the other builds for Linux, including 32Bit, Arm64Bit and Arm32Bit
-    - The main build for Linux, being 64Bit
+  - Windows: Folder containing all the Windows builds.
+    - Other Builds: Folder where all other Windows builds are exported to.
+    - The main build for Windows, being 64Bit.
+  - Linux: Folder containing all the Linux builds
+    - Other Builds: Folder with all other Linux builds are exported to.
+    - The main build for Linux, being 64Bit.
 - Scenes:
   - All the scene files.
 - Scripts:

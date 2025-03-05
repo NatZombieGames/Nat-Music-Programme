@@ -1,0 +1,16 @@
+[gd_scene load_steps=2 format=3 uid="uid://0ed03tbuj1y6"]
+
+[ext_resource type="PackedScene" uid="uid://cexj0b2hdd4k3" path="res://Scenes/CustomTextureButton.tscn" id="1_0gkuy"]
+
+[node name="HomePageFooter" type="VBoxContainer"]
+
+[node name="Text" type="Label" parent="."]
+layout_mode = 2
+text = "We don't have any more reccomendations for you
+Want more? Try listening to a random playlist
+"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RandomButton" parent="." instance=ExtResource("1_0gkuy")]
+layout_mode = 2

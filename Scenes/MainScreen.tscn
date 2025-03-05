@@ -1,4 +1,4 @@
-[gd_scene load_steps=29 format=3 uid="uid://43inlmvkfr28"]
+[gd_scene load_steps=30 format=3 uid="uid://43inlmvkfr28"]
 
 [ext_resource type="PackedScene" uid="uid://di0ca61w28uio" path="res://Scenes/PlayingScreen.tscn" id="1_kfe6r"]
 [ext_resource type="Script" uid="uid://cwh22cgpk5b40" path="res://Scripts/MainScreen.gd" id="1_paqbq"]
@@ -27,6 +27,13 @@
 [ext_resource type="PackedScene" uid="uid://bmc50mv2rgkwt" path="res://Scenes/CommandLineInterface.tscn" id="24_khgiu"]
 [ext_resource type="StyleBox" uid="uid://cyk1k4nde07k7" path="res://Assets/Styleboxes/CustomButtonPressed.tres" id="24_sc56p"]
 [ext_resource type="StyleBox" uid="uid://dvt0bb3h5ar54" path="res://Assets/Styleboxes/CustomButtonNormal.tres" id="25_vcar7"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_s6y4c"]
+content_margin_left = 10.0
+content_margin_top = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
+bg_color = Color(0.6, 0.6, 0.6, 0)
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_srsng"]
 
@@ -207,6 +214,7 @@ size_flags_vertical = 3
 color = Color(0.156863, 0.156863, 0.156863, 1)
 
 [node name="Home" type="Control" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer"]
+visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -214,6 +222,38 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+
+[node name="MarginGiver" type="PanelContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Home"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_s6y4c")
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Home/MarginGiver" groups=["ScrollContainer"]]
+layout_mode = 2
+follow_focus = true
+horizontal_scroll_mode = 0
+
+[node name="Container" type="VBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Home/MarginGiver/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 20
+
+[node name="MissingLabel" type="Label" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Home/MarginGiver/ScrollContainer/Container"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 35
+text = "
+This is the Home screen
+
+To see reccomendations here please enable 
+'Generate Home Screen' in the settings
+before restarting the programme."
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="New" type="Control" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer"]
 visible = false
@@ -585,7 +625,7 @@ custom_minimum_size = Vector2(0, 5)
 layout_mode = 2
 color = Color(0.137255, 0.137255, 0.137255, 1)
 
-[node name="ScrollContainer" type="ScrollContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/New/Container/Body/Container/Container/DataList/Container"]
+[node name="ScrollContainer" type="ScrollContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/New/Container/Body/Container/Container/DataList/Container" groups=["ScrollContainer"]]
 custom_minimum_size = Vector2(0, 300)
 layout_mode = 2
 size_flags_vertical = 3
@@ -613,7 +653,7 @@ offset_bottom = 423.0
 mouse_filter = 1
 theme_override_styles/panel = ExtResource("9_ejiiw")
 
-[node name="ScrollContainer" type="ScrollContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/New/Container/Body/SelectList"]
+[node name="ScrollContainer" type="ScrollContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/New/Container/Body/SelectList" groups=["ScrollContainer"]]
 custom_minimum_size = Vector2(350, 225)
 layout_mode = 2
 follow_focus = true
@@ -741,7 +781,7 @@ custom_minimum_size = Vector2(0, 10)
 layout_mode = 2
 color = Color(0.235294, 0.235294, 0.235294, 1)
 
-[node name="ScrollContainer" type="ScrollContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container"]
+[node name="ScrollContainer" type="ScrollContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container" groups=["ScrollContainer"]]
 visible = false
 layout_mode = 2
 size_flags_vertical = 3
@@ -958,7 +998,7 @@ custom_minimum_size = Vector2(0, 5)
 layout_mode = 2
 color = Color(0.137255, 0.137255, 0.137255, 1)
 
-[node name="ScrollContainer" type="ScrollContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Artist/DataList/Container"]
+[node name="ScrollContainer" type="ScrollContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Artist/DataList/Container" groups=["ScrollContainer"]]
 custom_minimum_size = Vector2(0, 300)
 layout_mode = 2
 
@@ -1000,7 +1040,7 @@ custom_minimum_size = Vector2(0, 5)
 layout_mode = 2
 color = Color(0.137255, 0.137255, 0.137255, 1)
 
-[node name="ScrollContainer" type="ScrollContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Album/DataList/Container"]
+[node name="ScrollContainer" type="ScrollContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Album/DataList/Container" groups=["ScrollContainer"]]
 custom_minimum_size = Vector2(0, 300)
 layout_mode = 2
 
@@ -1079,7 +1119,7 @@ custom_minimum_size = Vector2(0, 5)
 layout_mode = 2
 color = Color(0.137255, 0.137255, 0.137255, 1)
 
-[node name="ScrollContainer" type="ScrollContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Playlist/DataList/Container"]
+[node name="ScrollContainer" type="ScrollContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Playlist/DataList/Container" groups=["ScrollContainer"]]
 custom_minimum_size = Vector2(0, 300)
 layout_mode = 2
 size_flags_vertical = 3
@@ -1107,7 +1147,7 @@ offset_bottom = 424.0
 mouse_filter = 1
 theme_override_styles/panel = ExtResource("9_ejiiw")
 
-[node name="ScrollContainer" type="ScrollContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/SelectList"]
+[node name="ScrollContainer" type="ScrollContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/SelectList" groups=["ScrollContainer"]]
 custom_minimum_size = Vector2(350, 200)
 layout_mode = 2
 follow_focus = true
@@ -1119,7 +1159,6 @@ size_flags_horizontal = 3
 size_flags_vertical = 2
 
 [node name="Profile" type="Control" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer"]
-visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -1240,7 +1279,6 @@ layout_mode = 2
 size_flags_vertical = 3
 
 [node name="Data" type="ScrollContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body"]
-visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -1451,11 +1489,12 @@ bbcode_enabled = true
 text = "[center][b]Programme Settings[/b]
 Below are some of the modifiable settings for the programme; These options are saved in the 'User Data' portion of the 'NMP_Data.dat' file used by the programme, for more info on data storage please see the data page.
 For changing all of the settings used by the programme instead of the few below please use the CLI (Command Line Interface) provided.
-(See the 'Keybinds' screen for the shortcut to open the CLI)
+(See the 'CommandLineInterface' screen for more information)
 
 [i][u]Save On Quit:[/u][/i] If enabled, when the programme is quit in a safe way (not by either force-closing the programme, hard-reloading the programme or something uncontrolled like system crashing), then your data will first be saved before quiting.
 [i][u]Continue Playing:[/u][/i] If enabled, when saving your data your active song and song list (Playlist, Album, etc.) will be saved and automatically reloaded upon opening in the future. Note this will not save where in the song you where and if it was paused. 
 [i][u]Continue Playing Exact:[/u][/i] If this and [u]Continue Playing[/u] are enabled; when saving your active song data it will save the percentage of your progress through the song.
+[i][u]Generate Home Screen:[/u][/i] If enabled when opening the programme the Home screen will be populated with reccomendations of things to listen to, though this will increase loading time. If you don't want to use the Home screen you can disable it to make the app load faster.
 
 To manage these options, please see the buttons below.
 
@@ -1491,6 +1530,14 @@ pressed_signal_sender = NodePath("../../../../../../../../../../../../..")
 pressed_signal_name = "user_setting_changed"
 argument = "2"
 
+[node name="Button4" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Settings/Container/SettingsPanel/Container/Buttons" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("19_g648t")]
+layout_mode = 2
+button_text = "Generate Home Screen"
+pressed = true
+pressed_signal_sender = NodePath("../../../../../../../../../../../../..")
+pressed_signal_name = "user_setting_changed"
+argument = "3"
+
 [node name="WidgetPanel" type="PanelContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Settings/Container"]
 custom_minimum_size = Vector2(775, 400)
 layout_mode = 2
@@ -1507,6 +1554,7 @@ bbcode_enabled = true
 text = "[center][b]Player Widget Settings[/b]
 Below are all the toggleable widgets for the music player; These options are saved in the 'User Data' portion of the 'NMP_Data.dat' file used by the programme, for more info on data storage please see the data page.
 
+[i][u]Save And Quit Button:[/u][/i] If enabled, shows a button which will save before exiting the programme.
 [i][u]Mute Toggle:[/u][/i] If enabled, shows a button which can switch the music player between being muted or unmuted. The music player will not remain muted when the programme is closed and re-opened
 [i][u]Time Display:[/u][/i] If enabled, shows the time according to your system in the format HH:MM.
 
@@ -1588,6 +1636,7 @@ layout_mode = 2
 alignment = 1
 
 [node name="Command Line Interface" type="ScrollContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body"]
+visible = false
 layout_mode = 2
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -1622,7 +1671,7 @@ layout_mode = 2
 size_flags_vertical = 3
 bbcode_enabled = true
 text = "[center][b]Command Line Interface (CLI)[/b]
-The CLI can be opened using the 'ToggleCLI' keybind found inside the Keybinds screen or the button below, when open you are given the Input field which is where you will input your commands, and above that is the Output Histroy where everything that is outputed/printed goes.
+The CLI can be opened using the 'ToggleCLI' keybind found inside the Keybinds screen or the button below, when open you are given the Input field which is where you will input your commands, and above that is the Output History where everything that is outputed/printed goes.
 For assistance you can use the 'help' special-command to get information about how to use the CLI.
 [/center]"
 fit_content = true
@@ -1844,7 +1893,7 @@ layout_mode = 2
 color = Color(0, 0, 0, 0)
 
 [node name="ShadedArea" type="ColorRect" parent="Camera/AspectRatioContainer/SoftLoadingScreen"]
-custom_minimum_size = Vector2(620, 70)
+custom_minimum_size = Vector2(660, 70)
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -1881,7 +1930,7 @@ theme_override_constants/shadow_offset_x = 0
 theme_override_constants/shadow_offset_y = 0
 theme_override_constants/shadow_outline_size = 15
 theme_override_font_sizes/font_size = 30
-text = "Something Is Loading, Please Wait."
+text = "Something Is Loading, Please Wait..."
 horizontal_alignment = 1
 vertical_alignment = 1
 

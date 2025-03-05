@@ -24,13 +24,13 @@ const default_user_data : Dictionary = {
 "window_screen": 0, "window_size": Vector2(960, 540), "save_on_quit": true, 
 "continue_playing": true, "continue_playing_exact": true, 
 "active_song_data": {"active_song_list": [], "active_song_list_id": "", "active_song_id": "", "song_progress": 0}, 
-"keybinds": {}, "sleep_when_unfocused": false
+"keybinds": {}, "sleep_when_unfocused": false, "generate_home_screen": true
 }
 const settable_settings : PackedStringArray = [
 "volume", "player_fullscreen", "special_icon_scale", "icon_scale", "song_cache_size", 
 "image_cache_size", "player_widgets", "auto_clear", "clear_input", "shuffle", 
 "command_on_startup", "window_position", "window_mode", "window_screen", "window_size", 
-"save_on_quit", "continue_playing", "continue_playing_exact", "sleep_when_unfocused", "theme"
+"save_on_quit", "continue_playing", "continue_playing_exact", "sleep_when_unfocused", "generate_home_screen"
 ]
 const id_chars : PackedStringArray = [
 "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", 
@@ -189,10 +189,10 @@ func set_user_settings(setting : StringName, value : Variant) -> int:
 					user_data_dict[setting] = 1
 					GeneralManager.cli_print_callable.call("User Settings: Tried to set [u]" + setting + "[/u] to [u]" + str(value) + "[/u], which is lower than 1, setting was set to 1 instead.")
 		return OK
-	if typeof(self.get(setting)) != typeof(value):
-		GeneralManager.cli_print_callable.call("ERROR: Tried to set [u]" + setting + "[/u] whos value is of type [u]" + type_string(typeof(self.get(setting))) + "[/u] to [u]" + value + "[/u] which is of type [u]" + type_string(typeof(value)) + "[/u].")
+	if typeof(user_data_dict[setting]) != typeof(value):
+		GeneralManager.cli_print_callable.call("ERROR: Tried to set [u]" + setting + "[/u] whos value is of type [u]" + type_string(typeof(user_data_dict[setting])) + "[/u] to [u]" + str(value) + "[/u] which is of type [u]" + type_string(typeof(value)) + "[/u].")
 	else:
-		GeneralManager.cli_print_callable.call("ERROR: Setting [u]" + setting + "[/u] does not exist in User Settings.")
+		GeneralManager.cli_print_callable.call("ERROR: Setting [u]" + setting + "[/u] does not exist in User Settings or is unable to be set.")
 	return ERR_INVALID_PARAMETER
 
 func get_user_settings() -> Dictionary:
@@ -220,6 +220,18 @@ func get_artist_discography_data(id : String) -> Dictionary:
 			data[album] = album_id_dict[album]
 		return data
 	return {}
+
+func get_random_artist_songs(id : String, song_count : int = 15) -> PackedStringArray:
+	if GeneralManager.get_id_type(id) == use_type.ARTIST:
+		var songs : Array[String]
+		for album : String in get_artist_discography_data(id):
+			for song : String in get_album_tracklist_data(album):
+				songs.append(song)
+		songs.shuffle()
+		if len(songs) > song_count:
+			songs.resize(song_count)
+		return PackedStringArray(songs)
+	return []
 
 func get_album_tracklist_data(id : String) -> Dictionary:
 	if GeneralManager.get_id_type(id) == use_type.ALBUM:

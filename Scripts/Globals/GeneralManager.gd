@@ -26,6 +26,8 @@ const settable_settings : PackedStringArray = ["rng_seed"]
 const export_data_names : PackedStringArray = ["build_date", "engine_build_version", "license", "architecture"]
 const repo_url : String = "https://github.com/NatZombieGames/Nat-Music-Programme"
 const valid_audio_types : PackedStringArray = ["mp3", "ogg", "wav"]
+const weekday_names : PackedStringArray = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+const month_names : PackedStringArray = ["Janauary", "Febuary", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 @warning_ignore("unused_signal")
 signal finished_loading_icons_signal
 
@@ -72,9 +74,9 @@ func set_general_settings(setting : StringName, value : Variant) -> int:
 		cli_print_callable.call("General Settings: Set [u]" + setting + "[/u] from [u]" + str(self.get(setting)) + "[/u] > [u]" + str(value) + "[/u].")
 		self.set(setting, value)
 	if typeof(self.get(setting)) != typeof(value):
-		GeneralManager.cli_print_callable.call("ERROR: Tried to set [u]" + setting + "[/u] whos value is of type [u]" + type_string(typeof(self.get(setting))) + "[/u] to [u]" + value + "[/u] which is of type [u]" + type_string(typeof(value)) + "[/u].")
+		GeneralManager.cli_print_callable.call("ERROR: Tried to set [u]" + setting + "[/u] whos value is of type [u]" + type_string(typeof(self.get(setting))) + "[/u] to [u]" + str(value) + "[/u] which is of type [u]" + type_string(typeof(value)) + "[/u].")
 	else:
-		GeneralManager.cli_print_callable.call("ERROR: Setting [u]" + setting + "[/u] does not exist in General Settings.")
+		GeneralManager.cli_print_callable.call("ERROR: Setting [u]" + setting + "[/u] does not exist in General Settings or is unable to be set.")
 	return ERR_INVALID_PARAMETER
 
 func get_general_settings() -> Dictionary:
@@ -172,7 +174,7 @@ func get_date(include_date : bool = true, include_weekday : bool = true, include
 		date_dict[item] = str(date_dict[item])
 	date_dict = {
 		"date": date_dict["year"] + "-" + date_dict["month"] + "-" + date_dict["day"], 
-		"weekday": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"][int(date_dict["weekday"])], 
+		"weekday": weekday_names[int(date_dict["weekday"])-1], 
 		"time": date_dict["hour"] + ":" + date_dict["minute"]}
 	if include_date and include_weekday and include_time:
 		return date_dict["date"] + " (" + date_dict["weekday"] + ") | " + date_dict["time"]
