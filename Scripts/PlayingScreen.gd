@@ -1,5 +1,6 @@
 extends Control
 
+const tooltip_scene : PackedScene = preload("res://Scenes/Tooltip.tscn")
 @export var active_song_list : Array[String] = []
 @export var active_song_list_id : String = ""
 @export var active_song_id : String = ""
@@ -142,6 +143,7 @@ func _process(_delta : float) -> void:
 	if ((%AudioPlayer.stream != null) and (not dragging_progress_bar)):
 		%ProgressBar.value = %AudioPlayer.get_playback_position()
 		%Percentage.text = str(int((%ProgressBar.value / %ProgressBar.max_value) * 100)) + "%"
+		#%Percentage.tooltip_text = str(GeneralManager.seconds_to_readable_time(%ProgressBar.value) + " / " + GeneralManager.seconds_to_readable_time(%ProgressBar.max_value))
 	if %TimeWidget.visible:
 		%TimeWidget.text = Time.get_time_string_from_system().left(-3)
 	return
@@ -204,7 +206,6 @@ func load_song_list(list_id : String = active_song_list_id) -> int:
 						active_song_list.append(songs.pick_random())
 	else:
 		if (GeneralManager.get_id_type(list_id) == MasterDirectoryManager.use_type.UNKNOWN) or GeneralManager.get_data(list_id) in ["", "Unknown"]:
-			print("Invalid Song List ID, type is " + str(GeneralManager.get_id_type(list_id)) + ", data is invalid: " + str(GeneralManager.get_data(list_id) in ["", "Unknown"]))
 			GeneralManager.cli_print_callable.call("[i]SYS_ERROR: Attempted to load song list with an ID of [u]" + list_id + "[/u], which isn't valid. Please check it and try again.[/i]")
 			reset_playing_screen()
 			return ERR_INVALID_PARAMETER
@@ -220,7 +221,7 @@ func load_song_list(list_id : String = active_song_list_id) -> int:
 				active_song_list.assign(MasterDirectoryManager.playlist_id_dict[list_id]["songs"])
 	active_song_list.filter(func(item : String) -> bool: return MasterDirectoryManager.song_id_dict.keys().has(item))
 	active_song_list.assign(GeneralManager.get_unique_array(active_song_list))
-	if shuffle == true:
+	if shuffle:
 		active_song_list.shuffle()
 	if len(active_song_list) == 0:
 		GeneralManager.cli_print_callable.call("ALERT: Tried to long song list with ID [u]" + list_id + "[/u], but it has no songs so is unable to be loaded.")
@@ -250,9 +251,13 @@ func load_song(song_id : String = active_song_id) -> int:
 		reset_playing_screen()
 		return ERR_INVALID_DATA
 	%Title.text = GeneralManager.limit_str(song_data["name"], 30)
-	%"Album&Band".text = GeneralManager.limit_str(GeneralManager.get_data(song_data["album"], "name"), 10) + " | " + GeneralManager.limit_str(GeneralManager.get_data(GeneralManager.get_data(song_data["album"], "artist"), "name"), 10)
-	var list_name : String = GeneralManager.get_data(active_song_list_id, "name")
+	%"Album&Band".text = GeneralManager.smart_limit_str([
+		GeneralManager.get_data(song_data["album"], "name"), 
+		" | ", 
+		GeneralManager.get_data(GeneralManager.get_data(song_data["album"], "artist"), "name")]
+		, 27)
 	if not active_song_list_id in special_ids:
+		var list_name : String = GeneralManager.get_data(active_song_list_id, "name")
 		%Playlist.text = ["All Of: ", "Album: ", "Listening To: ", "Playlist: "][int(active_song_list_id.left(1))] + GeneralManager.limit_str(list_name, 13)
 	else:
 		%Playlist.text = ["All Songs", "Random Songs"][special_ids.find(active_song_list_id)]
@@ -289,7 +294,7 @@ func load_next_song_into_cache() -> void:
 
 func set_player_settings(setting : StringName, value : Variant) -> int:
 	if setting in settable_settings and typeof(self.get(setting)) == typeof(value):
-		GeneralManager.cli_print_callable.call("Player Settings: Set [u]" + setting + "[/u] from [u]" + str(self.get(setting)) + "[/u] > [u]" + str(value) + "[/u].")
+		GeneralManager.cli_print_callable.call("NOTIF: Player Settings: Set [u]" + setting + "[/u] from [u]" + str(self.get(setting)) + "[/u] > [u]" + str(value) + "[/u].")
 		self.set(setting, value)
 		return OK
 	if typeof(self.get(setting)) != typeof(value):
@@ -312,6 +317,8 @@ func reset_playing_screen() -> void:
 	%Title.text = "Title"
 	%"Album&Band".text = "Album | Band"
 	%Percentage.text = "0%"
+	#%Percentage.tooltip_text = "0s / 0s"
+	%Percentage.tooltip_text = ""
 	%ProgressBar.value = 0
 	%Image.texture = GeneralManager.load_svg_to_img("res://Assets/Icons/Missing.svg", 5)
 	%Background.color = Color8(50, 50, 50)
@@ -326,4 +333,11 @@ func set_widgets() -> void:
 	var widgets : Array[Node] = %Background/TopBar/Container.get_children().slice(1, -1)
 	widgets.map(func(node : Node) -> Node: node.visible = MasterDirectoryManager.user_data_dict["player_widgets"][widgets.find(node)]; return node)
 	%Background/TopBar/Container/Void.visible = (true in MasterDirectoryManager.user_data_dict["player_widgets"])
+	return
+
+func create_tooltip(text : String, text_size : int = 16) -> void:
+	if fullscreen and len(%TooltipContainer.get_children()) < 1:
+		%TooltipContainer.add_child(tooltip_scene.instantiate())
+		%TooltipContainer.get_child(-1).text_size = text_size
+		%TooltipContainer.get_child(-1).text = text
 	return

@@ -1,9 +1,10 @@
-[gd_scene load_steps=5 format=3 uid="uid://b5n1vjgghwt10"]
+[gd_scene load_steps=6 format=3 uid="uid://b5n1vjgghwt10"]
 
 [ext_resource type="StyleBox" uid="uid://bvsmn8sm7d00h" path="res://Assets/Styleboxes/DarkBackground.tres" id="1_0rqud"]
 [ext_resource type="StyleBox" uid="uid://dydjfep1b7fhc" path="res://Assets/Styleboxes/DefaultStylebox.tres" id="2_6y7dr"]
 [ext_resource type="Script" uid="uid://d14r00kd8etbo" path="res://Scripts/ListItem.gd" id="2_hh4tj"]
 [ext_resource type="Texture2D" uid="uid://bib3ce2ocxmme" path="res://Assets/Icons/Missing.svg" id="3_78lpw"]
+[ext_resource type="PackedScene" uid="uid://cexj0b2hdd4k3" path="res://Scenes/CustomTextureButton.tscn" id="5_js251"]
 
 [node name="ListItem" type="PanelContainer"]
 theme_override_styles/panel = ExtResource("1_0rqud")
@@ -50,8 +51,22 @@ layout_mode = 2
 custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
 
+[node name="CustomTextureButton" parent="GreaterContainer/Container/ActionsContainer" instance=ExtResource("5_js251")]
+layout_mode = 2
+
+[node name="CustomTextureButton2" parent="GreaterContainer/Container/ActionsContainer" instance=ExtResource("5_js251")]
+layout_mode = 2
+
+[node name="CustomTextureButton3" parent="GreaterContainer/Container/ActionsContainer" instance=ExtResource("5_js251")]
+layout_mode = 2
+
+[node name="CustomTextureButton4" parent="GreaterContainer/Container/ActionsContainer" instance=ExtResource("5_js251")]
+layout_mode = 2
+
 [node name="InfoContainer" type="HBoxContainer" parent="GreaterContainer/Container"]
 layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 10
 
 [node name="Title" type="Label" parent="GreaterContainer/Container/InfoContainer"]
 layout_mode = 2

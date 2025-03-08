@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://di0ca61w28uio"]
+[gd_scene load_steps=11 format=3 uid="uid://di0ca61w28uio"]
 
 [ext_resource type="Script" uid="uid://b87h87savmdfp" path="res://Scripts/PlayingScreen.gd" id="1_7klv3"]
 [ext_resource type="StyleBox" uid="uid://dydjfep1b7fhc" path="res://Assets/Styleboxes/DefaultStylebox.tres" id="2_i1rv6"]
@@ -9,6 +9,7 @@
 [ext_resource type="Texture2D" uid="uid://cal4jupkype3e" path="res://Assets/Icons/VolumeDisabled.svg" id="4_v4ack"]
 [ext_resource type="Texture2D" uid="uid://bclb1eihlj361" path="res://Assets/Icons/Exit.svg" id="4_wrr56"]
 [ext_resource type="Texture2D" uid="uid://d1mkxnwgk6m7y" path="res://Assets/Icons/VolumeUp.svg" id="5_ey3hu"]
+[ext_resource type="Script" uid="uid://q35bkn7timht" path="res://Scripts/PlayingProgressLabel.gd" id="10_rnv2i"]
 
 [node name="PlayingScreen" type="Control"]
 custom_minimum_size = Vector2(480, 270)
@@ -163,6 +164,7 @@ custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 15
 text = "Album | Band"
+vertical_alignment = 1
 
 [node name="ProgressContainer" type="HBoxContainer" parent="Camera/ScreenContainer/MasterContainer/InfoPanel/InfoContainer"]
 custom_minimum_size = Vector2(0, 16)
@@ -172,10 +174,14 @@ layout_mode = 2
 unique_name_in_owner = true
 custom_minimum_size = Vector2(42, 0)
 layout_mode = 2
+tooltip_text = "0s / 0s"
+mouse_filter = 0
+mouse_default_cursor_shape = 16
 theme_override_font_sizes/font_size = 17
 text = "0%"
 horizontal_alignment = 1
 vertical_alignment = 1
+script = ExtResource("10_rnv2i")
 
 [node name="ProgressBar" type="HSlider" parent="Camera/ScreenContainer/MasterContainer/InfoPanel/InfoContainer/ProgressContainer"]
 unique_name_in_owner = true
@@ -239,6 +245,14 @@ layout_mode = 2
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
+
+[node name="TooltipContainer" type="Control" parent="Camera/ScreenContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(480, 270)
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 8
+mouse_filter = 2
 
 [node name="SleepScreen" type="ColorRect" parent="Camera"]
 visible = false

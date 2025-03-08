@@ -3,6 +3,8 @@ extends PanelContainer
 const action_button : PackedScene = preload("res://Scenes/CustomTextureButton.tscn")
 @export var title : String = "Placeholder"
 @export var subtitle : String = "Placeholder"
+@export var active : bool = false
+static var size_mod : float = 1.0
 @export var copy_subtitle_button : bool = true
 @export var copy_subtitle_text : String = "[i] ID '[u]" + subtitle + "[/u]' Was Copied To Clipboard. [/i]"
 @export var image : ImageTexture
@@ -13,6 +15,8 @@ const action_button : PackedScene = preload("res://Scenes/CustomTextureButton.ts
 @export var action_button_arguments : Array = []
 
 func _ready() -> void:
+	if not GeneralManager.finished_loading_icons:
+		await GeneralManager.finished_loading_icons_signal
 	image = GeneralManager.get_icon_texture()
 	update()
 	return
@@ -30,6 +34,12 @@ func update(data : Dictionary = {}) -> void:
 		if len(%Container/ActionsContainer.get_children()) < (i + 1):
 			%Container/ActionsContainer.add_child(action_button.instantiate())
 		%Container/ActionsContainer.get_child(i).update({"texture_icon_name": action_button_images[i], "pressed_signal_sender": self, "pressed_signal_name": "action_button_pressed", "argument": str(i)})
+	size_mod = MasterDirectoryManager.user_data_dict["library_size_modifier"]
+	%Image.custom_minimum_size.x = 55.0 * size_mod
+	%Image.custom_minimum_size.y = 55.0 * size_mod
+	$GreaterContainer/Container/InfoContainer/Title.add_theme_font_size_override("font_size", 16 * size_mod)
+	$GreaterContainer/Container/InfoContainer/Subtitle.add_theme_font_size_override("font_size", 12 * size_mod)
+	$GreaterContainer/Container/InfoContainer.set("theme_override_constants/separation", 10 / (size_mod / 2.0))
 	return
 
 func action_button_pressed(index : String) -> void:

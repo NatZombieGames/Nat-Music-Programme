@@ -61,8 +61,8 @@ func _load_icons() -> void:
 	return
 
 func load_svg_to_img(svg_path : String, scale : float = 1.0) -> ImageTexture:
-	#Code inspired from https://forum.godotengine.org/t/how-to-leverage-the-scalability-of-svg-in-godot/82292
-	#But made for single-use instead.
+	# Code inspired from https://forum.godotengine.org/t/how-to-leverage-the-scalability-of-svg-in-godot/82292
+	# But made for single-use instead.
 	var bitmap : Image = Image.new()
 	bitmap.load_svg_from_buffer(FileAccess.get_file_as_bytes(svg_path), scale)
 	var texture : ImageTexture = ImageTexture.create_from_image(bitmap)
@@ -71,7 +71,7 @@ func load_svg_to_img(svg_path : String, scale : float = 1.0) -> ImageTexture:
 
 func set_general_settings(setting : StringName, value : Variant) -> int:
 	if setting in settable_settings and typeof(value) == typeof(self.get(setting)):
-		cli_print_callable.call("General Settings: Set [u]" + setting + "[/u] from [u]" + str(self.get(setting)) + "[/u] > [u]" + str(value) + "[/u].")
+		cli_print_callable.call("NOTIF: General Settings: Set [u]" + setting + "[/u] from [u]" + str(self.get(setting)) + "[/u] > [u]" + str(value) + "[/u].")
 		self.set(setting, value)
 	if typeof(self.get(setting)) != typeof(value):
 		GeneralManager.cli_print_callable.call("ERROR: Tried to set [u]" + setting + "[/u] whos value is of type [u]" + type_string(typeof(self.get(setting))) + "[/u] to [u]" + str(value) + "[/u] which is of type [u]" + type_string(typeof(value)) + "[/u].")
@@ -113,7 +113,7 @@ func get_other_list_item(array : Array, item : Variant) -> Variant:
 		return array[int(!bool(array.find(item)))]
 	return item
 
-func get_icon_texture(icon_name : StringName = "Missing") -> ImageTexture:
+func get_icon_texture(icon_name : StringName = &"Missing") -> ImageTexture:
 	return (func(icons_name : String) -> ImageTexture: var image : ImageTexture = ImageTexture.create_from_image(icons[icons_name]); image.resource_name = icons_name; return image).call(icon_name)
 
 func get_image(path : String) -> Image:
@@ -145,7 +145,7 @@ func load_audio_file(path : String) -> AudioStream:
 	return sound
 
 func get_id_type(id : String) -> MasterDirectoryManager.use_type:
-	print("Get id is running with an id of; " + id + ", which is " + str(len(id)) + " long and starts with " + id.left(1) + " and " + ["isnt", "is"][int(int(id.left(1)) > -1 and int(id.left(1)) < len(MasterDirectoryManager.get_data_types.call())-1)] + " inside the use type enum")
+	#print("Get id is running with an id of; " + id + ", which is " + str(len(id)) + " long and starts with " + id.left(1) + " and " + ["isnt", "is"][int(int(id.left(1)) > -1 and int(id.left(1)) < len(MasterDirectoryManager.get_data_types.call())-1)] + " inside the use type enum")
 	if (len(id) == 17) and (int(id.left(1)) > -1) and (int(id.left(1)) < (len(MasterDirectoryManager.use_type.keys()) - 1)):
 		return MasterDirectoryManager.use_type.get(MasterDirectoryManager.use_type.keys()[int(id.left(1))])
 	return MasterDirectoryManager.use_type.UNKNOWN
@@ -165,6 +165,23 @@ func limit_str(string : String, size : int, limiter : String = "…") -> String:
 		return string.left((len(string) - size) * -1) + limiter
 	return string
 
+func smart_limit_str(strings : Array[String], size : int, limiter : String = "…") -> String:
+	var strings_len : int = strings.reduce(func(total : int, item : String) -> int: return total + len(item), 0)
+	if strings_len <= size:
+		return strings.reduce(func(total : String, item : String) -> String: return total + item, "")
+	var len_remaining : int = size - strings_len
+	var to_return : String = ""
+	var string_lengths : Array[int] = []
+	var index : int = 0
+	string_lengths.assign(strings.map(func(item : String) -> int: return len(item)))
+	while len_remaining < 0:
+		index = string_lengths.find(string_lengths.max())
+		string_lengths[index] -= 1
+		strings[index] = strings[index].left(-2) + limiter
+		len_remaining += 1
+	to_return = strings.reduce(func(total : String, item : String) -> String: return total + item, "")
+	return to_return
+
 func get_date(include_date : bool = true, include_weekday : bool = true, include_time : bool = true) -> String:
 	if not include_date and not include_weekday and not include_time:
 		return ""
@@ -179,6 +196,15 @@ func get_date(include_date : bool = true, include_weekday : bool = true, include
 	if include_date and include_weekday and include_time:
 		return date_dict["date"] + " (" + date_dict["weekday"] + ") | " + date_dict["time"]
 	return [date_dict["date"], ""][int(!include_date)] + ["", " "][int(include_weekday and include_date)] + [["", "("][int(include_date)] + date_dict["weekday"] + ["", ")"][int(include_date)], ""][int(!include_weekday)] + ["", " | "][int(include_time and (include_date or include_weekday))] + [date_dict["time"], ""][int(!include_time)]
+
+func seconds_to_readable_time(seconds : int) -> String:
+	if seconds < 60:
+		return str(seconds) + "s"
+	elif seconds < 3600:
+		@warning_ignore("integer_division")
+		return str(seconds / 60) + "m" + str(seconds % 60) + "s"
+	@warning_ignore("integer_division")
+	return str(seconds / 3600) + "h" + str((seconds % 3600) / 60) + "m" + str((seconds % 3600) % 60) + "s"
 
 func sort_alphabetically(arr : Array) -> PackedStringArray:
 	arr.sort_custom(func(item1 : String, item2 : String) -> bool: return item2 > item1)

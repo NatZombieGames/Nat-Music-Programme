@@ -24,13 +24,15 @@ const default_user_data : Dictionary = {
 "window_screen": 0, "window_size": Vector2(960, 540), "save_on_quit": true, 
 "continue_playing": true, "continue_playing_exact": true, 
 "active_song_data": {"active_song_list": [], "active_song_list_id": "", "active_song_id": "", "song_progress": 0}, 
-"keybinds": {}, "sleep_when_unfocused": false, "generate_home_screen": true
+"keybinds": {}, "sleep_when_unfocused": false, "generate_home_screen": true, 
+"library_size_modifier": 1.0, "cli_size_modifier": 1.0, "profile_size_modifier": 1.0
 }
 const settable_settings : PackedStringArray = [
 "volume", "player_fullscreen", "special_icon_scale", "icon_scale", "song_cache_size", 
 "image_cache_size", "player_widgets", "auto_clear", "clear_input", "shuffle", 
 "command_on_startup", "window_position", "window_mode", "window_screen", "window_size", 
-"save_on_quit", "continue_playing", "continue_playing_exact", "sleep_when_unfocused", "generate_home_screen"
+"save_on_quit", "continue_playing", "continue_playing_exact", "sleep_when_unfocused", 
+"generate_home_screen", "library_size_modifier", "cli_size_modifier", "profile_size_modifier"
 ]
 const id_chars : PackedStringArray = [
 "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", 
@@ -162,7 +164,7 @@ func load_data() -> void:
 
 func set_user_settings(setting : StringName, value : Variant) -> int:
 	if setting in settable_settings and typeof(value) == typeof(user_data_dict[setting]):
-		GeneralManager.cli_print_callable.call("User Settings: Set [u]" + setting + "[/u] from [u]" + str(user_data_dict[setting]) + "[/u] > [u]" + str(value) + "[/u].")
+		GeneralManager.cli_print_callable.call("NOTIF: User Settings: Set [u]" + setting + "[/u] from [u]" + str(user_data_dict[setting]) + "[/u] > [u]" + str(value) + "[/u].")
 		user_data_dict[setting] = value
 		match setting:
 			"volume":
@@ -188,6 +190,10 @@ func set_user_settings(setting : StringName, value : Variant) -> int:
 				if value < 1:
 					user_data_dict[setting] = 1
 					GeneralManager.cli_print_callable.call("User Settings: Tried to set [u]" + setting + "[/u] to [u]" + str(value) + "[/u], which is lower than 1, setting was set to 1 instead.")
+			"cli_size_modifier":
+				get_node("/root/MainScreen")._apply_cli_size_mod()
+			"profile_size_modifier":
+				get_node("/root/MainScreen")._apply_profile_size_mod()
 		return OK
 	if typeof(user_data_dict[setting]) != typeof(value):
 		GeneralManager.cli_print_callable.call("ERROR: Tried to set [u]" + setting + "[/u] whos value is of type [u]" + type_string(typeof(user_data_dict[setting])) + "[/u] to [u]" + str(value) + "[/u] which is of type [u]" + type_string(typeof(value)) + "[/u].")

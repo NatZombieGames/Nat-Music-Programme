@@ -14,3 +14,8 @@ vertical_alignment = 1
 
 [node name="RandomButton" parent="." instance=ExtResource("1_0gkuy")]
 layout_mode = 2
+
+[node name="Void" type="Panel" parent="."]
+self_modulate = Color(1, 1, 1, 0)
+custom_minimum_size = Vector2(1.45519e-11, 200)
+layout_mode = 2

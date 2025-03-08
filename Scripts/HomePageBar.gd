@@ -1,6 +1,6 @@
 extends VBoxContainer
 
-const bar_item : PackedScene = preload("res://Scenes/HomePageBarItem.tscn")
+const bar_item : PackedScene = preload("res://Scenes/GridItem.tscn")
 @export var list_ids : PackedStringArray
 @export var title : String = "Title"
 var update_data : Dictionary

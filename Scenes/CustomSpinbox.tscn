@@ -1,0 +1,51 @@
+[gd_scene load_steps=6 format=3 uid="uid://dkb3dwjs5dx0h"]
+
+[ext_resource type="Texture2D" uid="uid://d3doteorc4jj" path="res://Assets/Icons/Up.svg" id="1_ff27e"]
+[ext_resource type="Script" uid="uid://dkhl36u4h0ead" path="res://Scripts/CustomSpinbox.gd" id="1_i0djm"]
+[ext_resource type="Texture2D" uid="uid://bhwmumksjv1hw" path="res://Assets/Icons/Down.svg" id="1_tgd5y"]
+[ext_resource type="StyleBox" uid="uid://dvt0bb3h5ar54" path="res://Assets/Styleboxes/CustomButtonNormal.tres" id="1_xpa2d"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ff27e"]
+
+[node name="CustomSpinbox" type="PanelContainer"]
+theme_override_styles/panel = ExtResource("1_xpa2d")
+script = ExtResource("1_i0djm")
+
+[node name="Container" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Prefix" type="Label" parent="Container"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+
+[node name="Value" type="LineEdit" parent="Container"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_ff27e")
+text = "1.0"
+context_menu_enabled = false
+emoji_menu_enabled = false
+virtual_keyboard_enabled = false
+caret_blink = true
+caret_blink_interval = 0.5
+
+[node name="ButtonContainer" type="VBoxContainer" parent="Container"]
+layout_mode = 2
+
+[node name="IncrementButton" type="TextureButton" parent="Container/ButtonContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(15, 15)
+layout_mode = 2
+texture_normal = ExtResource("1_ff27e")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="DecrementButton" type="TextureButton" parent="Container/ButtonContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(15, 15)
+layout_mode = 2
+texture_normal = ExtResource("1_tgd5y")
+ignore_texture_size = true
+stretch_mode = 5

@@ -36,6 +36,8 @@ var set_arg_type_callable : Callable = (
 		match check_call_arg_type.call(arg):
 			"int":
 				return int(arg.right(-4))
+			"float":
+				return float(arg.right(-6))
 			"bool":
 				return bool(arg.right(-5).to_lower() in boolean_strings)
 			"vec2":
@@ -61,7 +63,9 @@ const callables : Dictionary[String, Array] = {
 	"MasterDirectoryManager": ["save_data", "set_user_settings", "get_user_settings"], 
 	"GeneralManager": ["set_general_settings", "get_general_settings"], 
 	"CommandLineInterface": ["print_to_output", "run_command", "get_cli_settings", "set_cli_settings"], 
-	"MainScreen": ["play", "set_favourite", "toggle_cli", "open_tutorial"], 
+	"MainScreen": [
+		"play", "set_favourite", "toggle_cli", "open_tutorial", 
+		"_create_home_screen", "_search_library"], 
 	"PlayingScreen": [
 		"reset_playing_screen", "set_player_settings", "get_player_settings", 
 		]
@@ -73,7 +77,8 @@ const keyword_to_text : Dictionary[String, String] = {
 		"ERROR:": "[color=red]ERROR |>[/color]", 
 		"DEBUG:": "[color=rebecca_purple]DEBUG |>[/color]", 
 		"SYS:": "[color=silver]SYSTEM |>[/color]", 
-		"ALERT:": "[color=gold]ALERT |>[/color]", 
+		"ALERT:": "[color=yellow]ALERT |>[/color]", 
+		"NOTIF:": "[color=gold]NOTIFICATION |>[/color]"
 		}
 const settable_settings : PackedStringArray = ["auto_clear", "clear_input"]
 var callables_commands : Array[String] = [] # read only after ready
@@ -128,7 +133,7 @@ func run_command(command : String, bypass_active : bool = false) -> int:
 					 Welcome to the Nat Music Programme CLI (Command Line Interface) Help Page! Please look below for information on how it works.
 					
 					[i]Command Structure:[/i]
-					 When writing a command, you must seperate each argument with a hiphon (-), unless it does not have any arguments, in which case only the name is neaded.
+					 When writing a command, you must seperate each argument with a hyphon (-), unless it does not have any arguments, in which case only the name is neaded.
 					 For example, writing a command to print 'Hello World!' to the output could look like; [u]echo-Hello World![/u]
 					 For available commands and their possible arguments, please see the 'Commands' section below.
 					
@@ -157,8 +162,8 @@ func run_command(command : String, bypass_active : bool = false) -> int:
 					
 					[i]Commands.[/i]
 					- [color=green]echo[/color] (1+)
-					  - Prints the first argument. If the first argument is the 'call' command, can be used to print the output/returned values of the command, 
-					    can be used to see the return values of certain functions.
+					  - Prints the first argument. If the first argument is the 'call' command, can be used to print the output/returned values of the command.
+					    If the first argument is 'type' it will print the type of the rest of the command, for example '[u]echo-type-vec2/1,5[/u]' prints '[u][b]Vector2[/b]: (1.0, 5.0)[/u]'
 					- [color=green]call[/color] (2+)
 					  - Calls the given function (argument 1), with all other arguments being given to the called function.
 					    The available functions to call can be checked using the 'get_callables' special command.
@@ -185,14 +190,16 @@ func run_command(command : String, bypass_active : bool = false) -> int:
 					   - This will return a Boolean (true or false) depending on the argument, it will return True if the argument is either '1', 'true', 'enabled', 'on' or 'yes', and will return false otherwise.
 					     (case insensetive)
 					 - [color=web_green]int[/color]/[color=green]{argument}[/color]
-					   - This will return an Integer (whole number) depending on the argument, for example a value of 'int/15' would return the number 15.
+					   - This will return an Integer (Whole number) depending on the argument, for example a value of 'int/15' would return the number 15.
+					 - [color=web_green]float[/color]/[color=green]{argument}[/color]
+					   - This will return a Floating-Point Number (Decimalized number) depending on the argument, for example a value of 'float/1.5' would return the number 1.5. 
 					 - [color=web_green]arr[/color]/[color=green]{argument}[/color]
-					   - This will return an Array (list) of the contents of the argument as seperated by commas (,), the contents can also be type-cast.
+					   - This will return an Array (List) of the contents of the argument as seperated by commas (,), the contents can also be type-cast.
 					     For example 'arr/int/5,hello,bool/1' would return an array containing [5, \"hello\", True].
 					 - [color=web_green]vec2[/color]/[color=green]{argument}[/color]
-					   - This will return a Vector 2 (two Integers) of the contents of the argument as seperated by commans (,)
-					     The contents can't and should not be type-cast as they will always be turned into numbers.
-					     For example 'vec2/2,91' would return 'Vector2(2, 91)', but 'vec2/hello,5' would return 'Vector2(0, 5)' as any non-numerical String when turned into a number is 0.
+					   - This will return a Vector 2 (Two Floating-Point Numbers) of the contents of the argument as seperated by commans (,)
+					     The contents can't and should not be type-cast as they will always be turned into Floats.
+					     For example 'vec2/2,91' would return 'Vector2(2.0, 91.0)', but 'vec2/hello,5' would return 'Vector2(0.0, 5.0)' as any non-numerical String when turned into a number is 0.
 					     Vectors are used rarely for settings such as positions and sizes for the app's Window.").replace("\t", "").replace("(argument 1)", "[color=lawn_green][u]argument 1[/u][/color]").replace("(argument 2)", "[color=lime_green][u]argument 2[/u][/color]").replace("(argument 3)", "[color=forest_green][u]argument 3[/u][/color]"))
 			"clear":
 				%OutputContainer.get_children().map(func(node : Node) -> Node: node.queue_free(); return node)
@@ -269,7 +276,6 @@ func run_command(command : String, bypass_active : bool = false) -> int:
 						to_print += "\n[color=lime_green]-[/color] [color=orange]-[/color] " + str(debug_commands.find(cmd) + 1) + " [color=yellow]-[/color] " + cmd
 				print_to_output(to_print)
 	elif ((command_chunks[0].to_lower() == "debug") and (len(command_chunks) > 1) and (command_chunks[1] in debug_commands) and (GeneralManager.is_in_debug)):
-		print("command is a debug command")
 		match command_chunks[1]:
 			"print_id_dict":
 				if len(command_chunks) < 3:
@@ -286,6 +292,8 @@ func run_command(command : String, bypass_active : bool = false) -> int:
 							print_to_output("[b]" + command_chunks[2].capitalize() + " ID Dict Keys:[/b]\n" + str(MasterDirectoryManager.get(command_chunks[2] + ["_id_dict", "_data_dict"][int(command_chunks[2] == "user")]).keys()))
 						"values":
 							print_to_output("[b]" + command_chunks[2].capitalize() + " ID Dict Values:[/b]\n" + str(MasterDirectoryManager.get(command_chunks[2] + ["_id_dict", "_data_dict"][int(command_chunks[2] == "user")]).values()))
+						"types":
+							print_to_output("[b]" + command_chunks[2].capitalize() + " ID Dict Types:[/b]\n" + str(MasterDirectoryManager.get(command_chunks[2] + ["_id_dict", "_data_dict"][int(command_chunks[2] == "user")]).values().map(func(item : Variant) -> String: return type_string(typeof(item)))))
 						_:
 							print_to_output("DEBUG_ERROR: Not a valid argument, please give a valid argument.")
 							return ERR_INVALID_PARAMETER
@@ -311,6 +319,8 @@ func run_command(command : String, bypass_active : bool = false) -> int:
 							return ERR_INVALID_PARAMETER
 						print("trying to echo the call of '" + command_chunks[2] + "' with the args: " + str([command.right((11 + len(command_chunks[2])) * -1)]))
 						print_to_output(str(_run(command_chunks[2], (func(arr : PackedStringArray) -> PackedStringArray: arr.remove_at(0); arr.remove_at(0); arr.remove_at(0); return arr).call(command_chunks))))
+					"type":
+						print_to_output("[b]" + type_string(typeof(set_arg_type_callable.call(command.right(-10)))).capitalize().replace(" ", "") + "[/b]: " + str(set_arg_type_callable.call(command.right(-10))), false)
 					_:
 						print_to_output(command.right(-5), false)
 			"call":
@@ -426,7 +436,7 @@ func get_cli_settings() -> Dictionary:
 
 func set_cli_settings(setting : String, value : Variant) -> int:
 	if setting in settable_settings and typeof(value) == typeof(self.get(setting)):
-		print_to_output("Command Line Interface Settings: Set [u]" + setting + "[/u] from [u]" + str(self.get(setting)) + "[/u] > [u]" + str(value) + "[/u].")
+		print_to_output("NOTIF: Command Line Interface Settings: Set [u]" + setting + "[/u] from [u]" + str(self.get(setting)) + "[/u] > [u]" + str(value) + "[/u].")
 		self.set(setting, value)
 		return OK
 	if typeof(self.get(setting)) != typeof(value):

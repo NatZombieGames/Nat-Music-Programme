@@ -32,7 +32,7 @@ var tutorial_page : int = 0:
 		return tutorial_page
 signal popup_responded
 signal primary_initialization_finished_signal
-const user_setting_keys : PackedStringArray = ["save_on_quit", "continue_playing", "continue_playing_exact", "generate_home_screen"]
+const user_setting_keys : PackedStringArray = ["save_on_quit", "continue_playing", "continue_playing_exact", "generate_home_screen", "library_size_modifier"]
 const tutorial_pages_text : PackedStringArray = [
 	"[img]res://Assets/NMP_Icon.png[/img]\n\nThis is a short guide on how to use the app, if you would like to\nskip this, simply hit the Close button below.\n\nOtherwise, please use the Previous/Next Page buttons respectively to navigate.", 
 	"[img]res://Assets/Tutorial Images/Image_1.png[/img]\n\nIn the top right of the screen you can see buttons for every page of the app, left to right these are:\nHome, New, Library and Profile, with the last button being an exit button.", 
@@ -44,6 +44,7 @@ const tutorial_pages_text : PackedStringArray = [
 	"[img=175x175]res://Assets/Tutorial Images/Image_6.png[/img]\n\nThe app also features a built-in CLI, or Command Line Interface\nwhich can be oppened using Ctrl+O or in the respective Profile page.\n\nThe CLI can be used for more granular control of the app and its data\nfor more help using it, open it and run 'help'.", 
 	"[img]res://Assets/NMP_Icon.png[/img]\n\nThat is all you need to know to get started using the NMP\n(Nat Music Programme)!\n\nNow you can get started by going to the New page and uploading your first songs!\nIf you have any feedback or suggestions or want to get the latest version; go to the [url=" + GeneralManager.repo_url + "][i]Project's Github[/i][/url]."
 	]
+const rich_text_font_size_types : PackedStringArray = ["bold_italics", "italics", "mono", "normal", "bold"]
 
 func _ready() -> void:
 	%LoadingScreen.visible = true
@@ -62,6 +63,7 @@ func _ready() -> void:
 	%MainContainer/New/Container/Body/Container/Container/ParentContainer/Container/ClearBtn.pressed.connect(Callable(self, "create_button_pressed").bind("3"))
 	%MainContainer/New/Container/Body/Container/Container/ParentContainer/Container/SelectBtn.texture_normal = GeneralManager.get_icon_texture("Upload")
 	%MainContainer/New/Container/Body/Container/Container/ParentContainer/Container/SelectBtn.pressed.connect(Callable(self, "create_button_pressed").bind("4"))
+	%MainContainer/Library/Container/Header/TabContainer/Searchbox.text_submitted.connect(Callable(self, "search_library"))
 	%MainContainer/Library/Container/Profile/Container/Container/HeaderContainer/CloseBtn.texture_normal = GeneralManager.get_icon_texture("Close")
 	%MainContainer/Library/Container/Profile/Container/Container/HeaderContainer/CloseBtn.pressed.connect(func() -> void: %MainContainer/Library/Container/Profile.visible = false; %MainContainer/Library/Container/ScrollContainer.visible = true; return)
 	%MainContainer/Library/Container/Profile/Container/Container/ParentContainer/Container/RefreshBtn.texture_normal = GeneralManager.get_icon_texture("Refresh")
@@ -101,10 +103,11 @@ func _ready() -> void:
 	%NewUserScreen.visible = MasterDirectoryManager.new_user
 	if MasterDirectoryManager.user_data_dict["generate_home_screen"]:
 		await create_home_screen()
+	else:
+		_apply_scroll_cursors()
 	await get_tree().process_frame
-	for scroll_container : ScrollContainer in get_tree().get_nodes_in_group("ScrollContainer"):
-		scroll_container.get_v_scroll_bar().set("mouse_default_cursor_shape", CURSOR_VSIZE)
-		scroll_container.get_h_scroll_bar().set("mouse_default_cursor_shape", CURSOR_HSIZE)
+	_apply_cli_size_mod()
+	_apply_profile_size_mod()
 	primary_initialization_finished = true
 	self.emit_signal("primary_initialization_finished_signal")
 	#
@@ -154,7 +157,9 @@ func _input(event : InputEvent) -> void:
 	return
 
 func create_home_screen() -> void:
-	var to_create : Dictionary = {}
+	await _set_soft_loading(true)
+	#
+	var to_create : Dictionary[String, PackedStringArray] = {}
 	var time_dict : Dictionary = Time.get_datetime_dict_from_system()
 	var weekday : String = GeneralManager.weekday_names[time_dict["weekday"]-1]
 	var month : String = GeneralManager.month_names[time_dict["month"]-1]
@@ -169,8 +174,6 @@ func create_home_screen() -> void:
 		temp_dict = MasterDirectoryManager.song_id_dict[temp_str]
 		if temp_dict["album"] != "" and MasterDirectoryManager.album_id_dict[temp_dict["album"]]["artist"] != "":
 			to_create["More From " + MasterDirectoryManager.artist_id_dict[MasterDirectoryManager.album_id_dict[temp_dict["album"]]["artist"]]["name"] + ":"] = MasterDirectoryManager.get_random_artist_songs(MasterDirectoryManager.album_id_dict[temp_dict["album"]]["artist"])
-		if temp_str in to_create["More From " + MasterDirectoryManager.artist_id_dict[MasterDirectoryManager.album_id_dict[temp_dict["album"]]["artist"]]["name"] + ":"]:
-			pass
 		temp_arr = []
 	for artist : String in MasterDirectoryManager.artist_id_dict.keys():
 		if MasterDirectoryManager.artist_id_dict[artist]["name"].left(1) == weekday.left(1):
@@ -192,7 +195,7 @@ func create_home_screen() -> void:
 			temp_arr.append(songs[randi_range(0, len(songs)-1)])
 			songs.remove_at(songs.find(temp_arr[-1]))
 		seed(GeneralManager.rng_seed)
-		to_create["Top 10 Songs Today:"] = temp_arr
+		to_create["Songs Trending Today:"] = temp_arr
 		temp_arr = []
 	await get_tree().process_frame
 	for artist : String in MasterDirectoryManager.artist_id_dict.keys():
@@ -201,8 +204,8 @@ func create_home_screen() -> void:
 	if len(temp_arr) > 0:
 		seed(0)
 		temp_str = temp_arr[randi_range(0, len(temp_arr)-1)]
-		seed(GeneralManager.rng_seed)
 		to_create[MasterDirectoryManager.artist_id_dict[temp_str]["name"] + " " + weekday + ":"] = MasterDirectoryManager.get_random_artist_songs(temp_str)
+		seed(GeneralManager.rng_seed)
 	await get_tree().process_frame
 	temp_arr = []
 	for artist : String in MasterDirectoryManager.artist_id_dict.keys():
@@ -211,16 +214,37 @@ func create_home_screen() -> void:
 	if len(temp_arr) > 0:
 		seed(0)
 		temp_str = temp_arr[randi_range(0, len(temp_arr)-1)]
-		seed(GeneralManager.rng_seed)
 		to_create[month + " For " + MasterDirectoryManager.artist_id_dict[temp_str]["name"] + ":"] = MasterDirectoryManager.get_random_artist_songs(temp_str)
+		seed(GeneralManager.rng_seed)
 	await get_tree().process_frame
+	temp_arr = []
+	if len(songs) > 0:
+		var temp_arr_2 : PackedStringArray = (func() -> PackedStringArray: return MasterDirectoryManager.song_id_dict.keys().filter(func(item : String) -> bool: return MasterDirectoryManager.song_id_dict[item]["favourite"])).call()
+		if len(temp_arr_2) < 15:
+			temp_arr = temp_arr_2
+		else:
+			seed((time_dict["day"] * time_dict["month"]) / time_dict["year"])
+			for i : int in range(0, 15):
+				temp_arr.append(temp_arr_2[randi_range(0, len(temp_arr_2)-1)])
+				temp_arr_2.remove_at(temp_arr_2.find(temp_arr[-1]))
+			seed(GeneralManager.rng_seed)
+		to_create["Revisit Old Favourites:"] = temp_arr
+		temp_arr = []
 	for key : String in to_create.keys():
 		%MainContainer/Home/MarginGiver/ScrollContainer/Container.add_child(home_page_bar_scene.instantiate())
 		%MainContainer/Home/MarginGiver/ScrollContainer/Container.get_child(-1).update(to_create[key], key)
 	%MainContainer/Home/MarginGiver/ScrollContainer/Container.add_child(home_page_footer.instantiate())
 	%MainContainer/Home/MarginGiver/ScrollContainer/Container.get_child(-1).get_child(1).update({"button_custom_minimum_size": Vector2i(35, 35), "texture_icon_name": "Random", "pressed_signal_sender": self, "pressed_signal_name": "play", "argument": "@random"})
 	await get_tree().process_frame
+	_apply_scroll_cursors()
+	#
+	await _set_soft_loading(false)
 	return
+
+## For the CLI to call since the real one is async.
+func _create_home_screen() -> int:
+	create_home_screen()
+	return OK
 
 func update_keybinds_screen() -> void:
 	while len(%MainContainer/Profile/Container/Body/Keybinds/Container/Panel1/Container/Keybinds.get_children()) < len(MasterDirectoryManager.keybinds):
@@ -331,24 +355,30 @@ func set_song_upload_style(style : String) -> void:
 func populate_library_screen(page : int) -> void:
 	print("\n- populate library start with a page of " + str(page))
 	await _set_soft_loading(true)
+	DisplayServer.cursor_set_shape(DisplayServer.CURSOR_BUSY)
 	#
-	library_page = page
+	if page != library_page:
+		%MainContainer/Library/Container/ScrollContainer.scroll_vertical = 0
+		%MainContainer/Library/Container/ScrollContainer.scroll_horizontal = 0
+		library_page = page
 	%MainContainer/Library/Container/Profile.visible = false
 	%MainContainer/Library/Container/ScrollContainer.visible = true
-	%MainContainer/Library/Container/Header/TabContainer/Page.text = " " + str(MasterDirectoryManager.get_data_types.call().map(func(item : String) -> String: return item.capitalize())[page])
+	%MainContainer/Library/Container/Header/TabContainer/Page.text = " " + str(MasterDirectoryManager.get_data_types.call().map(func(item : String) -> String: return item.capitalize())[page]) + " "
 	var location : VBoxContainer = %MainContainer/Library/Container/ScrollContainer/ItemList
 	var data : Dictionary = MasterDirectoryManager.get(MasterDirectoryManager.get_data_types.call()[page] + "_id_dict")
 	var data_keys : PackedStringArray = (func() -> Array: var arr : Array = data.keys(); arr.sort_custom((func(x : String, y : String) -> bool: return data[x]["name"] < data[y]["name"])); return arr).call()
 	while len(location.get_children()) < len(data_keys):
 		location.add_child(list_item_scene.instantiate())
+	location.get_child(0).size_mod = MasterDirectoryManager.user_data_dict["library_size_modifier"]
 	if len(data_keys) < len(location.get_children()):
 		data_keys.append_array((func() -> Array: var arr : PackedStringArray = []; arr.resize(len(location.get_children()) - len(data_keys)); arr.fill("invalid"); return arr).call())
 	for item : int in range(0, len(data_keys)):
 		var node : Node = location.get_child(item)
 		var data_id : String = data_keys[item]
-		node.visible = data_id != "invalid"
-		if node.visible:
-			print("data id: " + data_id + ", data: " + str(data[data_id]))
+		node.active = data_id != "invalid"
+		node.visible = node.active
+		if node.active:
+			#print("data id: " + data_id + ", data: " + str(data[data_id]))
 			var to_update : Dictionary = {"title": data[data_id]["name"], "subtitle": data_id, "copy_subtitle_text": (" ID '[u]" + data_id + "[/u]' Was Copied To Clipboard. "), "image": "", "action_button_sender": self, "action_buttons": 4, "action_button_images": ["Elipses", "Play", ["Favourite", "Favourited"][int(data[data_id]["favourite"])], "Delete"], "action_button_signal_names": ["open_context_menu", "play", "set_favourite", "delete"], "action_button_arguments": [data_id, data_id, data_id, data_id]}
 			if library_page == 2:
 				if data[data_id]["album"] != "" and data[data_id]["album"] in MasterDirectoryManager.album_id_dict.keys():
@@ -358,12 +388,85 @@ func populate_library_screen(page : int) -> void:
 			else:
 				to_update["image"] = ImageTexture.create_from_image(GeneralManager.get_image(data[data_id]["image_file_path"]))
 			node.update(to_update)
+	search_library(%MainContainer/Library/Container/Header/TabContainer/Searchbox.text)
 	#
 	await _set_soft_loading(false)
+	DisplayServer.cursor_set_shape(DisplayServer.CURSOR_ARROW)
 	return
 
 func populate_library_screen_str(page : String) -> void:
 	populate_library_screen(int(page))
+	return
+
+func search_library(query : String = "") -> void:
+	await _set_soft_loading(true)
+	DisplayServer.cursor_set_shape(DisplayServer.CURSOR_BUSY)
+	#
+	var children : Array[Node] = %MainContainer/Library/Container/ScrollContainer/ItemList.get_children().filter(func(node : Node) -> bool: return node.active)
+	var filters : Dictionary[String, String]
+	for filter : String in PackedStringArray(query.split("-", false)):
+		if library_page in [1, 2] and filter.left(7) == "artist:":
+			filters["artist"] = filter.right(-7)
+		elif library_page in [2] and filter.left(6) == "album:":
+			filters["album"] = filter.right(-6)
+		elif library_page in [0, 1, 3] and filter.left(5) == "song:":
+			filters["song"] = filter.right(-5)
+		elif library_page in [2] and filter.left(9) == "playlist:":
+			filters["playlist"] = filter.right(-9)
+		else:
+			filters["name"] = filter
+	print("query: " + query)
+	print("filters: " + str(filters))
+	for child : Node in children:
+		if query == "":
+			child.visible = true
+			continue
+		var valid : bool = true
+		var id : String = child.subtitle
+		for filter : String in filters.keys():
+			match filter:
+				"artist":
+					if library_page == 1:
+						valid = filters["artist"] == MasterDirectoryManager.album_id_dict[id]["artist"]
+					elif MasterDirectoryManager.song_id_dict[id]["album"] in MasterDirectoryManager.album_id_dict.keys():
+						valid = filters["artist"] == MasterDirectoryManager.album_id_dict[MasterDirectoryManager.song_id_dict[id]["album"]]["artist"]
+					if not valid:
+						break
+				"album":
+					valid = filters["album"] == MasterDirectoryManager.song_id_dict[id]["album"]
+					if not valid:
+						break
+				"song":
+					match library_page:
+						0:
+							for album : String in MasterDirectoryManager.artist_id_dict[id]["albums"]:
+								if MasterDirectoryManager.album_id_dict.has(album):
+									valid = filters["song"] in MasterDirectoryManager.album_id_dict[album]["songs"]
+								if not valid:
+									break
+						1:
+							valid = filters["song"] in MasterDirectoryManager.album_id_dict[id]["songs"]
+						3:
+							valid = filters["song"] in MasterDirectoryManager.playlist_id_dict[id]["songs"]
+					if not valid:
+						break
+				"playlist":
+					valid = MasterDirectoryManager.playlist_id_dict.has(filters["playlist"]) and id in MasterDirectoryManager.playlist_id_dict[filters["playlist"]]["songs"]
+					if not valid:
+						break
+				"name":
+					valid = filters["name"] in child.title
+					if not valid:
+						break
+		child.visible = valid
+	#
+	await _set_soft_loading(false)
+	DisplayServer.cursor_set_shape(DisplayServer.CURSOR_ARROW)
+	return
+
+## For the CLI to call since the real one is async.
+func _search_library(query : String = "") -> void:
+	search_library(query)
 	return
 
 func library_details_info_altered(new_value : String, property_name : String) -> void:
@@ -389,7 +492,7 @@ func clear_song_upload_list(_arg : String = "0") -> void:
 	return
 
 func remove_from_song_upload_list(index : String) -> void:
-	print("\nindex to remove form song upload list: " + index + "\n")
+	print("\nindex to remove from song upload list: " + index + "\n")
 	song_upload_list.remove_at(int(index))
 	%MainContainer/New/Container/Body/Container/Container/DataList/Container/ScrollContainer/Container.get_child(int(index)).queue_free()
 	populate_song_list(song_upload_list, %MainContainer/New/Container/Body/Container/Container/DataList/Container/ScrollContainer/Container)
@@ -404,16 +507,12 @@ func update_song_upload_list_data(data : Array[Variant] = ["new_value", 0], to_c
 
 func populate_song_list(data : Array, location : Node, subtitle_type : int = 0) -> void:
 	print("\nsong list at population:\n" + str(data).replace(" }, ", " }\n"))
-	#var location : Node = %MainContainer/New/Container/Container/Body/Song/Container/InfoPanel/Container/SelectPanel/GreaterContainer/ScrollContainer/Container
-	#var location : Node = %MainContainer/New/Container/Body/Container/Container/DataList/Container/ScrollContainer/Container
 	while len(location.get_children()) < len(data):
 		location.add_child(basic_entryitem_scene.instantiate())
 	for node : Node in location.get_children():
 		node.visible = location.get_children().find(node) < len(data)
 		if node.visible:
 			var item : Dictionary = data[location.get_children().find(node)]
-			#print("data to set in song list population: " + str({"title": item["name"], "subtitle": item["path"], "button_icon_name": "Delete", "pressed_signal_sender": self, "pressed_signal_name": "remove_from_song_upload_list", "pressed_signal_argument": str(song_upload_list.find(item))}))
-			#                                     {"title": item["name"], "subtitle": item["path"], "id": str(data.find(item)), "editable_title": true, "signal_sender": self, "button_icon_name": "Delete", "pressed_signal_name": "remove_from_song_upload_list", "title_changed_signal_name": "change_song_upload_list_data"}
 			node.call("update", {"title": item["name"], "subtitle": item.get(["path", "id"][subtitle_type]), "id": str(data.find(item)), "editable_title": true, "signal_sender": self, "button_icon_name": "Delete", "pressed_signal_name": "remove_from_song_upload_list", "title_changed_signal_name": "update_song_upload_list_data"})
 			#await get_tree().process_frame
 	%MainContainer/New/Container/Body/Container/Container/DataList/Container/InfoContainer/ItemQuantity.text = " Items: " + str(len(data)) + " "
@@ -428,8 +527,10 @@ func open_context_menu(id : String) -> int:
 	if GeneralManager.get_id_type(id) == MasterDirectoryManager.use_type.UNKNOWN:
 		return ERR_INVALID_PARAMETER
 	#
+	%MainContainer/Library/Container/Profile/Container/Container/HeaderContainer/ImageContainer/Image.texture = GeneralManager.get_icon_texture()
 	if id_type == MasterDirectoryManager.use_type.SONG:
-		%MainContainer/Library/Container/Profile/Container/Container/HeaderContainer/ImageContainer/Image.texture = ImageTexture.create_from_image(GeneralManager.get_image(MasterDirectoryManager.get_object_data.call(MasterDirectoryManager.get_object_data.call(id)["album"])["image_file_path"]))
+		if MasterDirectoryManager.get_object_data.call(id)["album"] != "":
+			%MainContainer/Library/Container/Profile/Container/Container/HeaderContainer/ImageContainer/Image.texture = ImageTexture.create_from_image(GeneralManager.get_image(MasterDirectoryManager.get_object_data.call(MasterDirectoryManager.get_object_data.call(id)["album"])["image_file_path"]))
 	else:
 		%MainContainer/Library/Container/Profile/Container/Container/HeaderContainer/ImageContainer/Image.texture = ImageTexture.create_from_image(GeneralManager.get_image(MasterDirectoryManager.get_object_data.call(id)["image_file_path"]))
 	%MainContainer/Library/Container/Profile/Container/Container/HeaderContainer/Container/Title.update({"editing_mode": true, "text": MasterDirectoryManager.get_object_data.call(id)["name"]})
@@ -465,7 +566,7 @@ func open_context_menu(id : String) -> int:
 					data["title"] = MasterDirectoryManager.artist_id_dict[MasterDirectoryManager.album_id_dict[id]["artist"]]["name"]
 					data["subtitle"] = MasterDirectoryManager.album_id_dict[id]["artist"]
 			MasterDirectoryManager.use_type.SONG:
-				if MasterDirectoryManager.album_id_dict[id].has("album") and MasterDirectoryManager.album_id_dict[id]["album"] != "":
+				if MasterDirectoryManager.song_id_dict[id].has("album") and MasterDirectoryManager.song_id_dict[id]["album"] != "":
 					data["image"] = ImageTexture.create_from_image(GeneralManager.get_image(MasterDirectoryManager.get_object_data.call(MasterDirectoryManager.get_object_data.call(id)["album"])["image_file_path"]))
 					data["title"] = MasterDirectoryManager.album_id_dict[MasterDirectoryManager.song_id_dict[id]["album"]]["name"]
 					data["subtitle"] = MasterDirectoryManager.song_id_dict[id]["album"]
@@ -621,6 +722,10 @@ func user_setting_changed(number : String, state : bool) -> int:
 	MasterDirectoryManager.user_data_dict[user_setting_keys[int(number)]] = state
 	return OK
 
+func _other_user_setting_changed(args : Array) -> int:
+	MasterDirectoryManager.user_data_dict[user_setting_keys[int(args[1])]] = args[0]
+	return OK
+
 func player_widget_changed(number : String, state : bool) -> int:
 	MasterDirectoryManager.user_data_dict["player_widgets"][int(number)] = state
 	playing_screen.call("set_widgets")
@@ -715,9 +820,7 @@ func create_button_pressed(button : String, arg : String = "") -> void:
 func set_main_screen_page(page : String) -> void:
 	var children : Array[Node] = %MainContainer.get_children()
 	children.map(func(node : Node) -> Node: node.visible = children.find(node) == int(page); return node)
-	#for item : Node in children:
-	#	item.set("visible", children.find(item) == int(page))
-	if page == "3":
+	if page == "2":
 		populate_library_screen(int(library_page))
 	return
 
@@ -749,8 +852,6 @@ func set_create_screen_page(page : String) -> void:
 func set_profile_screen_page(page : String) -> void:
 	var children : Array[Node] = %MainContainer/Profile/Container/Body.get_children()
 	children.map(func(node : Node) -> Node: node.visible = children.find(node) == int(page); return node)
-	#for node : Node in children:
-	#	node.set("visible", children.find(node) == int(page))
 	%MainContainer/Profile/Container/Header/TabContainer/Page.text = " " + children[int(page)].name
 	return
 
@@ -794,6 +895,24 @@ func _set_soft_loading(state : bool) -> void:
 	%SoftLoadingScreen.visible = state
 	await get_tree().process_frame
 	await get_tree().process_frame
+	return
+
+func _apply_scroll_cursors() -> void:
+	for scroll_container : ScrollContainer in get_tree().get_nodes_in_group("ScrollContainer"):
+		scroll_container.get_v_scroll_bar().set("mouse_default_cursor_shape", CURSOR_VSIZE)
+		scroll_container.get_h_scroll_bar().set("mouse_default_cursor_shape", CURSOR_HSIZE)
+	return
+
+func _apply_cli_size_mod() -> void:
+	for cli_output_label : RichTextLabel in get_tree().get_nodes_in_group("CLIOutputLabel"):
+		for type : String in rich_text_font_size_types:
+			cli_output_label.set("theme_override_font_sizes/" + type + "_font_size", 16.0 * MasterDirectoryManager.user_data_dict["cli_size_modifier"])
+	return
+
+func _apply_profile_size_mod() -> void:
+	for profile_label : RichTextLabel in get_tree().get_nodes_in_group("ProfileLabel"):
+		for type : String in rich_text_font_size_types:
+			profile_label.set("theme_override_font_sizes/" + type + "_font_size", 16.0 * MasterDirectoryManager.user_data_dict["profile_size_modifier"])
 	return
 
 func exit(_arg : String = "0") -> void:
