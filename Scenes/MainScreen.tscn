@@ -1,4 +1,4 @@
-[gd_scene load_steps=33 format=3 uid="uid://43inlmvkfr28"]
+[gd_scene load_steps=42 format=3 uid="uid://43inlmvkfr28"]
 
 [ext_resource type="PackedScene" uid="uid://di0ca61w28uio" path="res://Scenes/PlayingScreen.tscn" id="1_kfe6r"]
 [ext_resource type="Script" uid="uid://cwh22cgpk5b40" path="res://Scripts/MainScreen.gd" id="1_paqbq"]
@@ -12,11 +12,15 @@
 [ext_resource type="Texture2D" uid="uid://bib3ce2ocxmme" path="res://Assets/Icons/Missing.svg" id="8_3oq6m"]
 [ext_resource type="StyleBox" uid="uid://bvsmn8sm7d00h" path="res://Assets/Styleboxes/DarkBackground.tres" id="9_ejiiw"]
 [ext_resource type="Texture2D" uid="uid://boil57b6dhqk8" path="res://Assets/Icons/Refresh.svg" id="11_kwnr3"]
+[ext_resource type="Texture2D" uid="uid://bqybl4xdop8uf" path="res://Assets/Icons/Search.svg" id="13_dhx4k"]
+[ext_resource type="Texture2D" uid="uid://vra3i1ftfted" path="res://Assets/Icons/Filter.svg" id="14_x3cy0"]
 [ext_resource type="PackedScene" uid="uid://b5n1vjgghwt10" path="res://Scenes/ListItem.tscn" id="14_x718d"]
+[ext_resource type="Texture2D" uid="uid://biprxais6vmcq" path="res://Assets/Icons/MatchCase.svg" id="15_3rscq"]
 [ext_resource type="Texture2D" uid="uid://drnhidqcabcfc" path="res://Assets/Icons/ArtistList.svg" id="15_3145b"]
 [ext_resource type="ButtonGroup" uid="uid://dpbtutev3ljsv" path="res://Assets/ButtonGroups/LibraryPageButtonGroup.tres" id="15_csmgt"]
 [ext_resource type="PackedScene" uid="uid://bthj54bhnkv5v" path="res://Scenes/ToggleLineEdit.tscn" id="16_330uy"]
 [ext_resource type="Texture2D" uid="uid://cttholvo5vytg" path="res://Assets/Icons/Album.svg" id="16_mjcgn"]
+[ext_resource type="Texture2D" uid="uid://b5jysxdeebgxm" path="res://Assets/Icons/MatchCaseFalse.svg" id="16_rgbuo"]
 [ext_resource type="Texture2D" uid="uid://dxhlnfrnw88bv" path="res://Assets/Icons/Songs.svg" id="17_447hp"]
 [ext_resource type="ButtonGroup" uid="uid://c3vakk2a2hdf5" path="res://Assets/ButtonGroups/ProfileButtonGroup.tres" id="17_dg6yg"]
 [ext_resource type="Texture2D" uid="uid://ddg1c7gl7n3e3" path="res://Assets/Icons/Delete.svg" id="17_mblys"]
@@ -24,11 +28,15 @@
 [ext_resource type="Texture2D" uid="uid://cwhbev52mhjs8" path="res://Assets/Icons/Upload.svg" id="18_465rc"]
 [ext_resource type="StyleBox" uid="uid://chijk7dtw7my" path="res://Assets/Styleboxes/DefaultStyleboxFilled.tres" id="18_put2v"]
 [ext_resource type="PackedScene" uid="uid://cggfq5ldfu5yj" path="res://Scenes/CustomToggleButton.tscn" id="19_g648t"]
+[ext_resource type="Texture2D" uid="uid://cs7356iiey0li" path="res://Assets/Icons/Artist.svg" id="21_8lptr"]
+[ext_resource type="Texture2D" uid="uid://batnsmwvnisrj" path="res://Assets/Icons/Playlist.svg" id="22_tg2ix"]
 [ext_resource type="StyleBox" uid="uid://cvlx7sgwyg4ft" path="res://Assets/Styleboxes/CustomButtonHovered.tres" id="23_7ubo8"]
 [ext_resource type="Script" uid="uid://bqkccpjb42fj0" path="res://Scripts/RichTextScript.gd" id="23_tcvtk"]
 [ext_resource type="PackedScene" uid="uid://bmc50mv2rgkwt" path="res://Scenes/CommandLineInterface.tscn" id="24_khgiu"]
 [ext_resource type="StyleBox" uid="uid://cyk1k4nde07k7" path="res://Assets/Styleboxes/CustomButtonPressed.tres" id="24_sc56p"]
 [ext_resource type="StyleBox" uid="uid://dvt0bb3h5ar54" path="res://Assets/Styleboxes/CustomButtonNormal.tres" id="25_vcar7"]
+[ext_resource type="StyleBox" uid="uid://dkgym2u000nvk" path="res://Assets/Styleboxes/CornerStylebox.tres" id="31_rgbuo"]
+[ext_resource type="Texture2D" uid="uid://pxjb7c6c20bu" path="res://Assets/Icons/Saving.svg" id="32_c1xsu"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_s6y4c"]
 content_margin_left = 10.0
@@ -39,6 +47,13 @@ bg_color = Color(0.6, 0.6, 0.6, 0)
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_khvou"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3rscq"]
+content_margin_left = 5.0
+content_margin_top = 5.0
+content_margin_right = 5.0
+content_margin_bottom = 5.0
+bg_color = Color(0.6, 0.6, 0.6, 0)
+
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_srsng"]
 
 [node name="MainScreen" type="Control" node_paths=PackedStringArray("playing_screen", "cli")]
@@ -47,6 +62,8 @@ layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_right = 960.0
+offset_bottom = 540.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_paqbq")
@@ -669,6 +686,7 @@ size_flags_horizontal = 3
 size_flags_vertical = 2
 
 [node name="Library" type="Control" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer"]
+visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -714,19 +732,49 @@ text = " Artists "
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="SearchButton" type="TextureButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Header/TabContainer"]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+texture_normal = ExtResource("13_dhx4k")
+stretch_mode = 5
+
 [node name="Searchbox" type="LineEdit" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Header/TabContainer"]
 custom_minimum_size = Vector2(500, 45)
 layout_mode = 2
 size_flags_vertical = 4
 theme_override_styles/focus = SubResource("StyleBoxEmpty_khvou")
+keep_editing_on_text_submit = true
 context_menu_enabled = false
 emoji_menu_enabled = false
 virtual_keyboard_enabled = false
 clear_button_enabled = true
 deselect_on_focus_loss_enabled = false
-select_all_on_focus = true
 caret_blink = true
 caret_blink_interval = 0.5
+
+[node name="FilterListButton" type="TextureButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Header/TabContainer"]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+mouse_default_cursor_shape = 2
+toggle_mode = true
+texture_normal = ExtResource("14_x3cy0")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="MatchCaseButton" type="TextureButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Header/TabContainer"]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+mouse_default_cursor_shape = 2
+toggle_mode = true
+texture_normal = ExtResource("15_3rscq")
+texture_pressed = ExtResource("16_rgbuo")
+ignore_texture_size = true
+stretch_mode = 5
 
 [node name="Void0" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Header/TabContainer"]
 self_modulate = Color(1, 1, 1, 0)
@@ -799,6 +847,7 @@ layout_mode = 2
 color = Color(0.235294, 0.235294, 0.235294, 1)
 
 [node name="ScrollContainer" type="ScrollContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container" groups=["ScrollContainer"]]
+visible = false
 layout_mode = 2
 size_flags_vertical = 3
 
@@ -812,7 +861,6 @@ theme_override_constants/separation = 20
 layout_mode = 2
 
 [node name="Profile" type="ColorRect" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container" groups=["Background"]]
-visible = false
 layout_mode = 2
 size_flags_vertical = 3
 color = Color(0.158472, 0.158472, 0.158472, 1)
@@ -874,12 +922,14 @@ alignment = 1
 layout_mode = 2
 text = "Disturbed"
 font_size = 35
+button_custom_min_size = Vector2i(40, 40)
 text_changed_signal_sender = NodePath("../../../../../../../../../../../..")
 text_changed_signal_name = "library_details_info_altered"
 text_changed_signal_argument = "name"
 
 [node name="Subtitle" type="Label" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/HeaderContainer/Container"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 20
 text = "Subtitle"
 
 [node name="Void3" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/HeaderContainer"]
@@ -898,6 +948,7 @@ ignore_texture_size = true
 stretch_mode = 5
 
 [node name="ParentContainer" type="PanelContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container"]
+visible = false
 custom_minimum_size = Vector2(750, 50)
 layout_mode = 2
 size_flags_horizontal = 0
@@ -982,135 +1033,90 @@ stretch_mode = 5
 self_modulate = Color(1, 1, 1, 0)
 layout_mode = 2
 
-[node name="Body" type="Control" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container"]
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="Artist" type="VBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body"]
-visible = false
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="DataList" type="PanelContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Artist"]
-custom_minimum_size = Vector2(750, 350)
+[node name="AudioFileContainer" type="PanelContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container"]
+custom_minimum_size = Vector2(750, 50)
 layout_mode = 2
 size_flags_horizontal = 0
 theme_override_styles/panel = ExtResource("9_ejiiw")
 
-[node name="Container" type="VBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Artist/DataList"]
+[node name="Container" type="HBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/AudioFileContainer"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="Void" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/AudioFileContainer/Container"]
+self_modulate = Color(1, 1, 1, 0)
 layout_mode = 2
 
-[node name="InfoContainer" type="HBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Artist/DataList/Container"]
+[node name="Description" type="Label" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/AudioFileContainer/Container"]
 layout_mode = 2
-
-[node name="ItemQuantity" type="Label" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Artist/DataList/Container/InfoContainer"]
-layout_mode = 2
-text = " Items: 0"
+theme_override_font_sizes/font_size = 25
+text = "Audio File:"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Separator" type="ColorRect" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Artist/DataList/Container"]
-custom_minimum_size = Vector2(0, 5)
+[node name="Title" type="Label" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/AudioFileContainer/Container"]
 layout_mode = 2
-color = Color(0.137255, 0.137255, 0.137255, 1)
-
-[node name="ScrollContainer" type="ScrollContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Artist/DataList/Container" groups=["ScrollContainer"]]
-custom_minimum_size = Vector2(0, 300)
-layout_mode = 2
-
-[node name="Container" type="VBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Artist/DataList/Container/ScrollContainer"]
-custom_minimum_size = Vector2(0, 100)
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 20
-
-[node name="Album" type="VBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body"]
-visible = false
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="DataList" type="PanelContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Album"]
-custom_minimum_size = Vector2(750, 350)
-layout_mode = 2
-size_flags_horizontal = 0
-theme_override_styles/panel = ExtResource("9_ejiiw")
-
-[node name="Container" type="VBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Album/DataList"]
-layout_mode = 2
-
-[node name="InfoContainer" type="HBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Album/DataList/Container"]
-layout_mode = 2
-
-[node name="ItemQuantity" type="Label" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Album/DataList/Container/InfoContainer"]
-layout_mode = 2
-text = " Items: 0"
+theme_override_font_sizes/font_size = 25
+text = "None"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Separator" type="ColorRect" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Album/DataList/Container"]
-custom_minimum_size = Vector2(0, 5)
-layout_mode = 2
-color = Color(0.137255, 0.137255, 0.137255, 1)
-
-[node name="ScrollContainer" type="ScrollContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Album/DataList/Container" groups=["ScrollContainer"]]
-custom_minimum_size = Vector2(0, 300)
-layout_mode = 2
-
-[node name="Container" type="VBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Album/DataList/Container/ScrollContainer"]
-custom_minimum_size = Vector2(0, 100)
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 20
-
-[node name="Song" type="VBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body"]
-visible = false
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="Playlist" type="VBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="DataList" type="PanelContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Playlist"]
-custom_minimum_size = Vector2(750, 500)
-layout_mode = 2
-size_flags_horizontal = 0
-theme_override_styles/panel = ExtResource("9_ejiiw")
-
-[node name="Container" type="VBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Playlist/DataList"]
-layout_mode = 2
-
-[node name="InfoContainer" type="HBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Playlist/DataList/Container"]
-layout_mode = 2
-
-[node name="ItemQuantity" type="Label" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Playlist/DataList/Container/InfoContainer"]
-layout_mode = 2
-text = " Items: 0"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Void" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Playlist/DataList/Container/InfoContainer"]
+[node name="Void2" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/AudioFileContainer/Container"]
 self_modulate = Color(1, 1, 1, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="AddArtistButton" type="TextureButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Playlist/DataList/Container/InfoContainer"]
+[node name="ClearBtn" type="TextureButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/AudioFileContainer/Container"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+texture_normal = ExtResource("17_mblys")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="SelectBtn" type="TextureButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/AudioFileContainer/Container"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+texture_normal = ExtResource("18_465rc")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="Void3" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/AudioFileContainer/Container"]
+self_modulate = Color(1, 1, 1, 0)
+layout_mode = 2
+
+[node name="Body" type="Control" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="DataList" type="PanelContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body"]
+custom_minimum_size = Vector2(750, 500)
+layout_mode = 2
+offset_right = 750.0
+offset_bottom = 500.0
+size_flags_horizontal = 0
+theme_override_styles/panel = ExtResource("9_ejiiw")
+
+[node name="Container" type="VBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/DataList"]
+layout_mode = 2
+
+[node name="InfoContainer" type="HBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/DataList/Container"]
+layout_mode = 2
+
+[node name="ItemQuantity" type="Label" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/DataList/Container/InfoContainer"]
+layout_mode = 2
+text = " Items: 0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Void" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/DataList/Container/InfoContainer"]
+self_modulate = Color(1, 1, 1, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="AddArtistButton" type="TextureButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/DataList/Container/InfoContainer"]
+visible = false
 custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 mouse_default_cursor_shape = 2
@@ -1118,7 +1124,8 @@ texture_normal = ExtResource("15_3145b")
 ignore_texture_size = true
 stretch_mode = 5
 
-[node name="AddAlbumButton" type="TextureButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Playlist/DataList/Container/InfoContainer"]
+[node name="AddAlbumButton" type="TextureButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/DataList/Container/InfoContainer"]
+visible = false
 custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 mouse_default_cursor_shape = 2
@@ -1126,7 +1133,8 @@ texture_normal = ExtResource("16_mjcgn")
 ignore_texture_size = true
 stretch_mode = 5
 
-[node name="AddSongButton" type="TextureButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Playlist/DataList/Container/InfoContainer"]
+[node name="AddSongButton" type="TextureButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/DataList/Container/InfoContainer"]
+visible = false
 custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 mouse_default_cursor_shape = 2
@@ -1134,17 +1142,17 @@ texture_normal = ExtResource("17_447hp")
 ignore_texture_size = true
 stretch_mode = 5
 
-[node name="Separator" type="ColorRect" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Playlist/DataList/Container"]
+[node name="Separator" type="ColorRect" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/DataList/Container"]
 custom_minimum_size = Vector2(0, 5)
 layout_mode = 2
 color = Color(0.137255, 0.137255, 0.137255, 1)
 
-[node name="ScrollContainer" type="ScrollContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Playlist/DataList/Container" groups=["ScrollContainer"]]
+[node name="ScrollContainer" type="ScrollContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/DataList/Container" groups=["ScrollContainer"]]
 custom_minimum_size = Vector2(0, 300)
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="Container" type="VBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/Playlist/DataList/Container/ScrollContainer"]
+[node name="Container" type="VBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/Body/DataList/Container/ScrollContainer"]
 custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -1170,16 +1178,128 @@ theme_override_styles/panel = ExtResource("9_ejiiw")
 [node name="ScrollContainer" type="ScrollContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/SelectList" groups=["ScrollContainer"]]
 custom_minimum_size = Vector2(350, 200)
 layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_3rscq")
 follow_focus = true
 
 [node name="Container" type="VBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/SelectList/ScrollContainer"]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_vertical = 2
+size_flags_vertical = 3
+
+[node name="FiltersPage" type="PanelContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library"]
+visible = false
+custom_minimum_size = Vector2(0, 362)
+layout_mode = 1
+offset_left = 960.0
+offset_top = 22.0
+offset_right = 1310.0
+offset_bottom = 249.0
+theme_override_styles/panel = ExtResource("9_ejiiw")
+
+[node name="Container" type="VBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/FiltersPage"]
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_constants/separation = 5
+
+[node name="Panel" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/FiltersPage/Container"]
+self_modulate = Color(1, 1, 1, 0)
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+
+[node name="Text" type="Label" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/FiltersPage/Container"]
+custom_minimum_size = Vector2(350, 0)
+layout_mode = 2
+text = "Depending on the page you can apply certain filters to your query.
+By default the name is checked.
+
+You can search by multple criteria by separating each check with a hyphon."
+autowrap_mode = 3
+
+[node name="Row1" type="HBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/FiltersPage/Container"]
+modulate = Color(0.498039, 0.498039, 0.498039, 1)
+layout_mode = 2
+
+[node name="Button" type="TextureButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/FiltersPage/Container/Row1"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+texture_normal = ExtResource("21_8lptr")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="Text" type="RichTextLabel" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/FiltersPage/Container/Row1"]
+layout_mode = 2
+size_flags_horizontal = 3
+bbcode_enabled = true
+text = "Artist Filter:   [u]artist:[b]ID[/b][/u]"
+fit_content = true
+shortcut_keys_enabled = false
+vertical_alignment = 1
+
+[node name="Row2" type="HBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/FiltersPage/Container"]
+modulate = Color(0.498039, 0.498039, 0.498039, 1)
+layout_mode = 2
+
+[node name="Button" type="TextureButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/FiltersPage/Container/Row2"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+texture_normal = ExtResource("16_mjcgn")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="Text" type="RichTextLabel" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/FiltersPage/Container/Row2"]
+layout_mode = 2
+size_flags_horizontal = 3
+bbcode_enabled = true
+text = "Album Filter:    [u]album:[b]ID[/b][/u]"
+fit_content = true
+shortcut_keys_enabled = false
+vertical_alignment = 1
+
+[node name="Row3" type="HBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/FiltersPage/Container"]
+layout_mode = 2
+
+[node name="Button" type="TextureButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/FiltersPage/Container/Row3"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+texture_normal = ExtResource("17_447hp")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="Text" type="RichTextLabel" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/FiltersPage/Container/Row3"]
+layout_mode = 2
+size_flags_horizontal = 3
+bbcode_enabled = true
+text = "Song Filter:     [u]song:[b]ID[/b][/u]"
+fit_content = true
+shortcut_keys_enabled = false
+vertical_alignment = 1
+
+[node name="Row4" type="HBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/FiltersPage/Container"]
+modulate = Color(0.498039, 0.498039, 0.498039, 1)
+layout_mode = 2
+
+[node name="Button" type="TextureButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/FiltersPage/Container/Row4"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+texture_normal = ExtResource("22_tg2ix")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="Text" type="RichTextLabel" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/FiltersPage/Container/Row4"]
+layout_mode = 2
+size_flags_horizontal = 3
+bbcode_enabled = true
+text = "Playlist Filter: [u]playlist:[b]ID[/b][/u]"
+fit_content = true
+shortcut_keys_enabled = false
+vertical_alignment = 1
 
 [node name="Profile" type="Control" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer"]
-visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -1260,6 +1380,21 @@ self_modulate = Color(1, 1, 1, 0)
 custom_minimum_size = Vector2(5, 0)
 layout_mode = 2
 
+[node name="AccessibilityButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Header/TabContainer" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("3_qykjb")]
+layout_mode = 2
+button_custom_minimum_size = Vector2i(45, 45)
+texture_icon_name = "Accessibility"
+toggle = true
+button_group = ExtResource("17_dg6yg")
+pressed_signal_sender = NodePath("../../../../../../../../..")
+pressed_signal_name = "set_profile_screen_page"
+argument = "2"
+
+[node name="Void3" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Header/TabContainer"]
+self_modulate = Color(1, 1, 1, 0)
+custom_minimum_size = Vector2(5, 0)
+layout_mode = 2
+
 [node name="KeybindsButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Header/TabContainer" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("3_qykjb")]
 layout_mode = 2
 button_custom_minimum_size = Vector2i(45, 45)
@@ -1268,9 +1403,9 @@ toggle = true
 button_group = ExtResource("17_dg6yg")
 pressed_signal_sender = NodePath("../../../../../../../../..")
 pressed_signal_name = "set_profile_screen_page"
-argument = "2"
+argument = "3"
 
-[node name="Void3" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Header/TabContainer"]
+[node name="Void4" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Header/TabContainer"]
 self_modulate = Color(1, 1, 1, 0)
 custom_minimum_size = Vector2(5, 0)
 layout_mode = 2
@@ -1283,9 +1418,9 @@ toggle = true
 button_group = ExtResource("17_dg6yg")
 pressed_signal_sender = NodePath("../../../../../../../../..")
 pressed_signal_name = "set_profile_screen_page"
-argument = "3"
+argument = "4"
 
-[node name="Void4" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Header/TabContainer"]
+[node name="Void5" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Header/TabContainer"]
 self_modulate = Color(1, 1, 1, 0)
 custom_minimum_size = Vector2(5, 0)
 layout_mode = 2
@@ -1334,15 +1469,16 @@ layout_mode = 2
 size_flags_vertical = 3
 bbcode_enabled = true
 text = "[center][b]Data Managment[/b]
-This app stores all of it functional data inside of one file, local on your system; NMP_Data.dat This is stored with this name in the same directory/folder as the programme, this file stores the following:
+This app stores all of it functional data inside of one file, local on your system; NMP_Data.dat This is stored in the same directory / folder as the programme, storing the following:
 
-[i][u]Artist Data:[/u][/i] Everything pertaining to Artists, including their Albums, Image File Path, etc.
-[i][u]Album Data:[/u][/i] Everything pertaining to Albums, including their Songs, Artist, Image File Path, etc.
-[i][u]Song Data:[/u][/i] Everything pertaining to Songs, including their Album, Song File Path, etc.
-[i][u]Playlist Data:[/u][/i] Everything pertaining to Playlists, including their Songs, Image File Path, etc.
-[i][u]User Data:[/u][/i] All other Data used by the programme, such as storing the Volume, the last song you were listening to, settings, etc.
+[u]Artist Data[/u]: Everything pertaining to Artists, including their Albums, Image File Path, etc.
+[u]Album Data[/u]: Everything pertaining to Albums, including their Songs, Artist, Image File Path, etc.
+[u]Song Data[/u]: Everything pertaining to Songs, including their Album, Song File Path, etc.
+[u]Playlist Data[/u]: Everything pertaining to Playlists, including their Songs, Image File Path, etc.
+[u]User Data[/u]: All other Data used by the programme, such as Settings and Accessibility Options.
 
-To manage your data, please see the buttons below. For info on creating backups of your data; see the following paragraph.[/center]"
+To manage your data, please see the buttons below. For info on creating backups of your data; please see the following paragraph.
+The delete buttons only delete the data used by the programme right now, for it to save the changes to the data file you will need to save after deleting the data.[/center]"
 fit_content = true
 scroll_active = false
 
@@ -1406,12 +1542,14 @@ layout_mode = 2
 bbcode_enabled = true
 text = "
 [center][b]Backups:[/b]
-When creating a backup/copy of your data, a file called 'NMP_Data_Backup_{Unix Time}.data will be created in the same location as where the normal data is stored. The 'Unix Time' mentioned above is the seconds since 1970/1/1 according to your systems clock at the time of creating the backup.
-For example; if you created a backup on the first of January 2000, the name would be 'NMP_Data_Backup_946684800.dat'.[/center]"
+When creating a backup / copy of your data, a file called 'NMP_Data_Backup_{Unix Time}.data' will be created in the same location as where the normal data is stored. The 'Unix Time' mentioned above is the seconds since 1970/1/1 according to your systems clock at the time of creating the backup.
+For example; if you created a backup on the first of January 2000, the name would be 'NMP_Data_Backup_946684800.dat'.
+To use this backup simply change the file name to 'NMP_Data.data' again, making sure to rename / delete the old one first, and then re-launch the programme.[/center]"
 fit_content = true
 scroll_active = false
 
 [node name="Settings" type="ScrollContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body"]
+visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -1447,11 +1585,10 @@ Below are some of the modifiable settings for the programme; These options are s
 For changing all of the settings used by the programme instead of the few below please use the CLI (Command Line Interface).
 (See the 'CommandLineInterface' screen for more information)
 
-[i][u]Save On Quit:[/u][/i] If enabled, when the programme is quit in a safe way (not by either force-closing the programme, hard-reloading the programme or something uncontrolled like system crashing), then your data will first be saved before quiting.
-[i][u]Continue Playing:[/u][/i] If enabled, when saving your data your active song and song list (Playlist, Album, etc.) will be saved and automatically reloaded upon opening in the future. Note this will not save where in the song you where and if it was paused. 
-[i][u]Continue Playing Exact:[/u][/i] If this and [u]Continue Playing[/u] are enabled; when saving your active song data it will save the percentage of your progress through the song.
-[i][u]Generate Home Screen:[/u][/i] If enabled when opening the programme the Home screen will be populated with reccomendations of things to listen to, though this will increase loading time. If you don't want to use the Home screen you can disable it to make the app load faster.
-[i][u]Library Size Modifier:[/u][/i] The multiplier used when scaling the Images and Text of items inside the Library, decrease to show more items at once and increase to see each item easier. The library screen must be refreshed for this to take effect.
+[u]Save On Quit[/u]: If enabled, when the programme is quit in a safe way (not by either force-closing the programme, hard-reloading the programme or something uncontrolled like system crashing), then your data will first be saved before quiting.
+[u]Continue Playing[/u]: If enabled, when saving your data your active song and song list (Playlist, Album, etc.) will be saved and automatically reloaded upon opening in the future. Note this will not save where in the song you where and if it was paused. 
+[u]Continue Playing Exact[/u]: If this and [u]Continue Playing[/u] are enabled; when saving your active song data it will save the percentage of your progress through the song.
+[u]Generate Home Screen[/u]: If enabled when opening the programme the Home screen will be populated with reccomendations of things to listen to, though this will increase loading time. If you don't want to use the Home screen you can disable it to make the app load faster.
 
 To manage these options, please see the buttons below.
 
@@ -1495,15 +1632,6 @@ pressed_signal_sender = NodePath("../../../../../../../../../../../../..")
 pressed_signal_name = "user_setting_changed"
 argument = "3"
 
-[node name="CustomSpinbox" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Settings/Container/SettingsPanel/Container/Buttons" node_paths=PackedStringArray("submitted_sender") instance=ExtResource("5_khvou")]
-layout_mode = 2
-text = " Library Size Modifier"
-type = 1
-value_range = Vector2(0.25, 10)
-submitted_sender = NodePath("../../../../../../../../../../../../..")
-submitted_signal_name = "_other_user_setting_changed"
-submitted_signal_argument = "4"
-
 [node name="WidgetPanel" type="PanelContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Settings/Container"]
 custom_minimum_size = Vector2(961, 400)
 layout_mode = 2
@@ -1520,9 +1648,9 @@ bbcode_enabled = true
 text = "[center][b]Player Widget Settings[/b]
 Below are all the toggleable widgets for the music player; These options are saved in the 'User Data' portion of the 'NMP_Data.dat' file used by the programme, for more info on data storage please see the data page.
 
-[i][u]Save And Quit Button:[/u][/i] If enabled, shows a button which will save before exiting the programme.
-[i][u]Mute Toggle:[/u][/i] If enabled, shows a button which can switch the music player between being muted or unmuted. The music player will not remain muted when the programme is closed and re-opened
-[i][u]Time Display:[/u][/i] If enabled, shows the time according to your system in the format HH:MM.
+[u]Save And Quit Button[/u]: If enabled, shows a button which will save before exiting the programme.
+[u]Mute Toggle[/u]: If enabled, shows a button which can switch the music player between being muted or unmuted. The music player will not remain muted when the programme is closed and re-opened
+[u]Time Display[/u]: If enabled, shows the time according to your system in the format HH:MM.
 
 To manage these options, please see the buttons below.
 
@@ -1570,12 +1698,15 @@ layout_mode = 2
 bbcode_enabled = true
 text = "[center][b]Cache Managment[/b]
 This programme utilises multiple Caches to help improve the speed of the programme, at the cost of memory; You can decide to clear any of these Caches manually, though this will impact performance as the content coresponding to the Cache will need to be re-made when their next needed. Caches are not saved when closing and re-opening the programme.
+(Cache maximum sizes can be changed using the CLI, for more info see the 'CommandLineInterface' page and the 'set' / 'get' commands.)
 
-[i][u]Image Cache:[/u][/i] When the programme tries to load an image (for example an album cover), if the image has been loaded previously, instead of re-loading it a copy of the already loaded image will be grabbed instead.
-[i][u]Image Average Cache:[/u][/i] Just like the Image Cache, but for the backgrounds used by the Song Player.
-[i][u]Library Cache:[/u][/i] This refers to the items used inside the Library to display the items of Artists, Albums, Songs or Playlists. Instead of re-creating these every time, the programme will hide those not in use, this is the most important cache as when creating these items en masse there can be a large performance impact/loading time.
-[i][u]Song Cache:[/u][/i] Just like the Image Cache but for songs instead. This cache has a configurable maximum size inside of the User Settings.
-(You can only set this using the CLI (Command Line Interface) using the 'set' command, you can use 'set-user_settings-song_cache_size' followed by a type-casted number, for more info see the 'Command Line Interface' screen in the Profile)
+[u]Image Cache[/u]: When the programme tries to load an image (For example an album cover), if the image has been loaded previously, instead of re-loading it a copy of the already loaded image will be grabbed instead. This cache has a configurable maximum size.
+
+[u]Image Average Cache[/u]: Just like the Image Cache, but for the backgrounds used by the Song Player. This cache shares a configurable maximum size with the Image Cache.
+
+[u]Library Cache[/u]: This refers to the items used inside the Library to display the items of Artists, Albums, Songs or Playlists. Instead of re-creating these every time, the programme will hide those not in use, this is the most important cache as when creating these items en masse there can be a large performance impact / loading time.
+
+[u]Song Cache[/u]: Just like the Image Cache but for songs instead. This cache has a configurable maximum size.
 
 To manage the above caches, please see the buttons below.[/center]"
 fit_content = true
@@ -1620,6 +1751,95 @@ pressed_signal_sender = NodePath("../../../../../../../../../../../../..")
 pressed_signal_name = "cache_managment_button_pressed"
 argument = "4"
 
+[node name="Accessibility" type="ScrollContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Container" type="VBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Accessibility"]
+custom_minimum_size = Vector2(1920, 0)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 50
+
+[node name="Void" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Accessibility/Container"]
+self_modulate = Color(1, 1, 1, 0)
+layout_mode = 2
+
+[node name="Panel1" type="PanelContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Accessibility/Container"]
+custom_minimum_size = Vector2(961, 400)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_styles/panel = ExtResource("18_53o1o")
+
+[node name="Container" type="VBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Accessibility/Container/Panel1"]
+custom_minimum_size = Vector2(775, 0)
+layout_mode = 2
+
+[node name="Text1" type="RichTextLabel" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Accessibility/Container/Panel1/Container" groups=["ProfileLabel"]]
+custom_minimum_size = Vector2(750, 0)
+layout_mode = 2
+bbcode_enabled = true
+text = "[center][b]Accessibility[/b]
+There are multiple accessibility features you can enable to help you use the app, you can see them listed and explained below alongside the values / toggles for said settings.
+
+[u]Library Size Modifier[/u]: The scale applied to the size of items and text inside the Library page, and certain other lists of Artists / Albums / Songs / Playlists.
+
+[u]CLI Size Modifier[/u]: The scale applied to the output text inside the CLI (Command Line Interface).
+
+[u]Profile Size Modifier[/u]: The scale applied to text in the Profile screen.
+
+[u]Separate CLI Outputs[/u]: If enabled, puts an empty line between every newly printed line in the CLI, making reading individual lines easier.
+
+[u]Solid CLI[/u]: If enabled, the background of the CLI is made solid opposed to its default semi-transparent appearance.
+[/center]"
+fit_content = true
+scroll_active = false
+
+[node name="Buttons" type="HFlowContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Accessibility/Container/Panel1/Container"]
+layout_mode = 2
+alignment = 1
+
+[node name="1" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Accessibility/Container/Panel1/Container/Buttons" node_paths=PackedStringArray("submitted_sender") instance=ExtResource("5_khvou")]
+layout_mode = 2
+text = "Library Size Modifier"
+type = 1
+submitted_sender = NodePath("../../../../../../../../../../../../..")
+submitted_signal_name = "accessibility_setting_changed"
+
+[node name="2" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Accessibility/Container/Panel1/Container/Buttons" node_paths=PackedStringArray("submitted_sender") instance=ExtResource("5_khvou")]
+layout_mode = 2
+text = "CLI Size Modifier"
+type = 1
+submitted_sender = NodePath("../../../../../../../../../../../../..")
+submitted_signal_name = "accessibility_setting_changed"
+submitted_signal_argument = "1"
+
+[node name="3" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Accessibility/Container/Panel1/Container/Buttons" node_paths=PackedStringArray("submitted_sender") instance=ExtResource("5_khvou")]
+layout_mode = 2
+text = "Profile Size Modifier"
+type = 1
+submitted_sender = NodePath("../../../../../../../../../../../../..")
+submitted_signal_name = "accessibility_setting_changed"
+submitted_signal_argument = "2"
+
+[node name="4" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Accessibility/Container/Panel1/Container/Buttons" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("19_g648t")]
+layout_mode = 2
+button_text = "Separate CLI Outputs"
+pressed_signal_sender = NodePath("../../../../../../../../../../../../..")
+pressed_signal_name = "accessibility_setting_changed"
+argument = "3"
+
+[node name="5" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Accessibility/Container/Panel1/Container/Buttons" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("19_g648t")]
+layout_mode = 2
+button_text = "Solid CLI"
+pressed_signal_sender = NodePath("../../../../../../../../../../../../..")
+pressed_signal_name = "accessibility_setting_changed"
+argument = "4"
+
 [node name="Keybinds" type="ScrollContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body"]
 visible = false
 layout_mode = 1
@@ -1647,6 +1867,7 @@ theme_override_styles/panel = ExtResource("18_53o1o")
 
 [node name="Container" type="VBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Keybinds/Container/Panel1"]
 layout_mode = 2
+theme_override_constants/separation = -1
 
 [node name="RichTextLabel" type="RichTextLabel" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Keybinds/Container/Panel1/Container" groups=["ProfileLabel"]]
 custom_minimum_size = Vector2(775, 0)
@@ -1656,15 +1877,81 @@ text = "[center][b]Keybinds[/b]
 Below are buttons to change the keybinds used by the programme, alongside the action they correspond to.
 To change a keybind; press the button relating to the action followed by hitting the button combination you want to change it to when the popup appears on screen.
 
-[i]!WARNING![/i] Certain key combinations may not work depending on your operating system and any other apps running on your device.
+[u][color=red]!WARNING![/color] Certain key combinations may not work depending on your operating system and any other apps running on your device.[/u]
 
 [/center]"
 fit_content = true
 scroll_active = false
 
-[node name="Keybinds" type="VBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Keybinds/Container/Panel1/Container"]
+[node name="Header" type="HBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Keybinds/Container/Panel1/Container"]
+layout_mode = 2
+
+[node name="LabelsHeader" type="Label" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Keybinds/Container/Panel1/Container/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Names"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Separator" type="ColorRect" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Keybinds/Container/Panel1/Container/Header" groups=["Separator"]]
+custom_minimum_size = Vector2(5, 0)
+layout_mode = 2
+color = Color(0.235294, 0.235294, 0.235294, 1)
+
+[node name="ButtonRow1Header" type="Label" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Keybinds/Container/Panel1/Container/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "1st Keybind"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Separator2" type="ColorRect" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Keybinds/Container/Panel1/Container/Header" groups=["Separator"]]
+custom_minimum_size = Vector2(5, 0)
+layout_mode = 2
+color = Color(0.235294, 0.235294, 0.235294, 1)
+
+[node name="ButtonRow2Header" type="Label" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Keybinds/Container/Panel1/Container/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "2nd Keybind"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Separator" type="ColorRect" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Keybinds/Container/Panel1/Container" groups=["Separator"]]
+custom_minimum_size = Vector2(0, 5)
+layout_mode = 2
+color = Color(0.235294, 0.235294, 0.235294, 1)
+
+[node name="Void" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Keybinds/Container/Panel1/Container"]
+self_modulate = Color(1, 1, 1, 0)
+custom_minimum_size = Vector2(0, 2)
+layout_mode = 2
+
+[node name="Keybinds" type="HBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Keybinds/Container/Panel1/Container"]
 layout_mode = 2
 alignment = 1
+
+[node name="Labels" type="VBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Keybinds/Container/Panel1/Container/Keybinds"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Separator" type="ColorRect" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Keybinds/Container/Panel1/Container/Keybinds" groups=["Separator"]]
+custom_minimum_size = Vector2(5, 0)
+layout_mode = 2
+color = Color(0.235294, 0.235294, 0.235294, 1)
+
+[node name="ButtonRow1" type="VBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Keybinds/Container/Panel1/Container/Keybinds"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Separator2" type="ColorRect" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Keybinds/Container/Panel1/Container/Keybinds" groups=["Separator"]]
+custom_minimum_size = Vector2(5, 0)
+layout_mode = 2
+color = Color(0.235294, 0.235294, 0.235294, 1)
+
+[node name="ButtonRow2" type="VBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Keybinds/Container/Panel1/Container/Keybinds"]
+layout_mode = 2
+size_flags_horizontal = 3
 
 [node name="Command Line Interface" type="ScrollContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body"]
 visible = false
@@ -1735,6 +2022,20 @@ custom_minimum_size = Vector2(1920, 500)
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 8
+
+[node name="SaveIndicator" type="PanelContainer" parent="Camera/AspectRatioContainer"]
+visible = false
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+theme_override_styles/panel = ExtResource("31_rgbuo")
+
+[node name="Indicator" type="TextureRect" parent="Camera/AspectRatioContainer/SaveIndicator"]
+layout_mode = 2
+texture = ExtResource("32_c1xsu")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="PopupNotifications" type="Control" parent="Camera/AspectRatioContainer"]
 layout_mode = 2
@@ -1808,7 +2109,7 @@ theme_override_styles/focus = SubResource("StyleBoxEmpty_srsng")
 theme_override_styles/hover = ExtResource("23_7ubo8")
 theme_override_styles/pressed = ExtResource("24_sc56p")
 theme_override_styles/normal = ExtResource("25_vcar7")
-text = " Last Page "
+text = " Previous "
 
 [node name="NextPage" type="Button" parent="Camera/AspectRatioContainer/NewUserScreen/Background/Container/PageButtons"]
 layout_mode = 2
@@ -1816,7 +2117,7 @@ theme_override_styles/focus = SubResource("StyleBoxEmpty_srsng")
 theme_override_styles/hover = ExtResource("23_7ubo8")
 theme_override_styles/pressed = ExtResource("24_sc56p")
 theme_override_styles/normal = ExtResource("25_vcar7")
-text = " Next Page "
+text = " Next "
 
 [node name="Void2" type="Panel" parent="Camera/AspectRatioContainer/NewUserScreen/Background/Container/PageButtons"]
 self_modulate = Color(1, 1, 1, 0)

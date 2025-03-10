@@ -8,8 +8,8 @@ extends Node
 @export var finished_loading_data : bool = false
 @export var finished_saving_data : bool = false
 @export var finished_loading_keybinds : bool = false
-@export var get_data_types : Callable = (func() -> Array: return use_type.keys().map(func(key : String) -> String: return key.to_lower()).filter(func(key : String) -> bool: return key != "unknown"))
-@export var get_object_data : Callable = (func(id : String) -> Dictionary: return self.get(get_data_types.call()[int(id[0])] + "_id_dict")[id])
+@export var data_types : PackedStringArray
+@export var get_object_data : Callable = (func(id : String) -> Dictionary: return self.get(data_types[int(id[0])] + "_id_dict")[id])
 @export var new_user : bool = false
 var data_location : String = "" # read only after ready
 @warning_ignore("unused_signal")
@@ -20,19 +20,21 @@ const default_user_data : Dictionary = {
 "volume": 0, "player_fullscreen": false, "special_icon_scale": 2, "icon_scale": 1, 
 "song_cache_size": 3, "image_cache_size": 20, "player_widgets": [false, false, false], 
 "auto_clear": false, "clear_input": false, "shuffle": false, "command_on_startup": "", 
-"window_position": Vector2.ZERO, "window_mode": DisplayServer.WINDOW_MODE_MAXIMIZED, 
+"window_position": Vector2.ZERO, "window_mode": DisplayServer.WINDOW_MODE_FULLSCREEN, 
 "window_screen": 0, "window_size": Vector2(960, 540), "save_on_quit": true, 
 "continue_playing": true, "continue_playing_exact": true, 
 "active_song_data": {"active_song_list": [], "active_song_list_id": "", "active_song_id": "", "song_progress": 0}, 
 "keybinds": {}, "sleep_when_unfocused": false, "generate_home_screen": true, 
-"library_size_modifier": 1.0, "cli_size_modifier": 1.0, "profile_size_modifier": 1.0
+"library_size_modifier": 1.0, "cli_size_modifier": 1.0, "profile_size_modifier": 1.0, 
+"separate_cli_outputs": false, "solid_cli": false
 }
 const settable_settings : PackedStringArray = [
 "volume", "player_fullscreen", "special_icon_scale", "icon_scale", "song_cache_size", 
 "image_cache_size", "player_widgets", "auto_clear", "clear_input", "shuffle", 
 "command_on_startup", "window_position", "window_mode", "window_screen", "window_size", 
 "save_on_quit", "continue_playing", "continue_playing_exact", "sleep_when_unfocused", 
-"generate_home_screen", "library_size_modifier", "cli_size_modifier", "profile_size_modifier"
+"generate_home_screen", "library_size_modifier", "cli_size_modifier", "profile_size_modifier", 
+"separate_cli_outputs", "solid_cli"
 ]
 const id_chars : PackedStringArray = [
 "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", 
@@ -46,7 +48,8 @@ enum use_type {ARTIST, ALBUM, SONG, PLAYLIST, UNKNOWN}
 
 func _ready() -> void:
 	data_location = OS.get_executable_path().get_base_dir() + "/NMP_Data.dat"
-	print("i am about to load the keybinds")
+	data_types = (func() -> Array: return use_type.keys().map(func(key : String) -> String: return key.to_lower()).filter(func(key : String) -> bool: return key != "unknown")).call()
+	#print("i am about to load the keybinds")
 	for item : String in InputMap.get_actions().filter(func(item : String) -> bool: return not item.left(3) == "ui_"):
 		keybinds[item] = Array(InputMap.action_get_events(item).map(func(event : InputEvent) -> Dictionary: return GeneralManager.parse_inputevent_to_customevent(event)))
 		if len(keybinds[item]) < 2:
@@ -59,11 +62,12 @@ func _ready() -> void:
 
 func _notification(notif : int) -> void:
 	if notif == Node.NOTIFICATION_WM_CLOSE_REQUEST and user_data_dict["save_on_quit"] == true:
-		print("received quit notification and save on quit is true; saving data.")
+		#print("received quit notification and save on quit is true; saving data.")
 		save_data()
 		await get_tree().process_frame
 		if finished_saving_data == false:
 			await self.finished_saving_data_signal
+		await get_tree().process_frame
 	return
 
 func create_entry(type : use_type, data : Dictionary = get_data_template(type)) -> int:
@@ -86,14 +90,16 @@ func generate_id(type : use_type) -> String:
 		for i : int in range(0, 16):
 			result += id_chars[randi_range(0, len(id_chars)-1)]
 		generating = result in self.get(["artist", "album", "song", "playlist"][type] + "_id_dict").keys()
-	print("Newly Generated " + str(use_type.keys()[type]).to_lower().capitalize() + " ID: " + str(result))
+	#print("Newly Generated " + str(use_type.keys()[type]).to_lower().capitalize() + " ID: " + str(result))
 	return result
 
 func save_data(save_location : String = "NMP_Data.dat") -> int:
 	finished_saving_data = false
 	save_location = OS.get_executable_path().get_base_dir() + "/" + save_location
-	print("\n!! Saving Data In " + save_location + " !!")
+	#print("\n!! Saving Data In " + save_location + " !!")
 	GeneralManager.set_mouse_busy_state.call(true)
+	get_node("/root/MainScreen").show_saving_indicator = true
+	await get_tree().process_frame
 	var data : ConfigFile = ConfigFile.new()
 	user_data_dict["window_position"] = DisplayServer.window_get_position()
 	user_data_dict["window_mode"] = DisplayServer.window_get_mode()
@@ -102,7 +108,7 @@ func save_data(save_location : String = "NMP_Data.dat") -> int:
 	user_data_dict["player_fullscreen"] = not get_node("/root/MainScreen/Camera").enabled
 	user_data_dict["shuffle"] = get_node("/root/MainScreen").playing_screen.shuffle
 	user_data_dict["auto_clear"] = get_node("/root/MainScreen/Camera/AspectRatioContainer/CommandLineInterface").auto_clear
-	for item : String in get_data_types.call():
+	for item : String in data_types:
 		data.set_value("data", item + "_id_dict", self.get(item + "_id_dict"))
 	for item : String in user_data_dict["active_song_data"].keys():
 		user_data_dict["active_song_data"][item] = get_node("/root/MainScreen").playing_screen.get(item)
@@ -110,30 +116,37 @@ func save_data(save_location : String = "NMP_Data.dat") -> int:
 		if not keybind in keybinds:
 			user_data_dict["keybinds"].erase(keybind)
 	data.set_value("data", "user_data_dict", user_data_dict)
-	print("got to the writing portion")
+	#print("got to the writing portion")
 	if (not FileAccess.file_exists(save_location)) or (data.encode_to_text() != FileAccess.open(save_location, FileAccess.READ).get_as_text()):
-		print("i am going to write it now")
+		#print("i am going to write it now")
 		data.save(save_location)
-	print("finished writing portion")
+	#print("finished writing portion")
 	GeneralManager.set_mouse_busy_state.call(false)
+	get_node("/root/MainScreen").show_saving_indicator = false
+	await get_tree().process_frame
 	GeneralManager.cli_print_callable.call("SYS: Saved Data Succesfully To '[u]" + save_location.get_file() + "[/u]' In '[u]" + save_location.get_base_dir() + "[/u]'.")
 	get_node("/root/MainScreen").call("create_popup_notif", "Saved Data Succesfully To '[u]" + save_location.get_file() + "[/u]' In '[u]" + save_location.get_base_dir() + "[/u]'.")
 	finished_saving_data = true
 	self.emit_signal("finished_saving_data_signal")
-	print("!! Saved Data Succesfully To '" + save_location + "' !!\n")
+	#print("!! Saved Data Succesfully To '" + save_location + "' !!\n")
+	return OK
+
+## For the CLI to call as the normal one is async.
+func _save_data(location : String = "NMP_Data.dat") -> int:
+	save_data(location)
 	return OK
 
 func load_data() -> void:
 	finished_loading_data = false
-	print("\n!! Loading Data !!")
+	#print("\n!! Loading Data !!")
 	if not FileAccess.file_exists(data_location):
-		print("!! No Data Available During Data Loading")
+		#print("!! No Data Available During Data Loading")
 		new_user = true
 		user_data_dict = default_user_data.duplicate()
 		user_data_dict["keybinds"] = {}
 		user_data_dict["active_song_data"] = {}
-		print("all " + str(len(keybinds.keys())) + " keybind keys before setting them: " + str(keybinds.keys()))
-		print(user_data_dict["keybinds"].is_read_only())
+		#print("all " + str(len(keybinds.keys())) + " keybind keys before setting them: " + str(keybinds.keys()))
+		#print(user_data_dict["keybinds"].is_read_only())
 		for keybind : String in keybinds.keys():
 			user_data_dict["keybinds"][keybind] = keybinds[keybind]
 		finished_loading_data = true
@@ -143,19 +156,19 @@ func load_data() -> void:
 		return
 	var data : ConfigFile = ConfigFile.new()
 	data.load(data_location)
-	for item : String in get_data_types.call():
+	for item : String in data_types:
 		self.get(item + "_id_dict").assign(data.get_value("data", item + "_id_dict", {}))
 	var loaded_user_data : Dictionary = data.get_value("data", "user_data_dict", default_user_data)
 	for key : String in default_user_data.keys():
 		user_data_dict[key] = loaded_user_data.get(key, default_user_data[key])
 	if not finished_loading_keybinds:
 		await self.finished_loading_keybinds_signal
-	print("all " + str(len(keybinds.keys())) + " keybind keys before setting them: " + str(keybinds.keys()))
+	#print("all " + str(len(keybinds.keys())) + " keybind keys before setting them: " + str(keybinds.keys()))
 	for keybind : String in keybinds.keys():
 		if not keybind in user_data_dict["keybinds"].keys():
 			user_data_dict["keybinds"][keybind] = keybinds[keybind]
 	apply_control_settings()
-	print("!! Data Succesfully Loaded From '" + data_location + "' !!\n")
+	#print("!! Data Succesfully Loaded From '" + data_location + "' !!\n")
 	finished_loading_data = true
 	self.emit_signal("finished_loading_data_signal")
 	await GeneralManager.finished_loading_icons_signal
@@ -195,10 +208,10 @@ func set_user_settings(setting : StringName, value : Variant) -> int:
 			"profile_size_modifier":
 				get_node("/root/MainScreen")._apply_profile_size_mod()
 		return OK
-	if typeof(user_data_dict[setting]) != typeof(value):
-		GeneralManager.cli_print_callable.call("ERROR: Tried to set [u]" + setting + "[/u] whos value is of type [u]" + type_string(typeof(user_data_dict[setting])) + "[/u] to [u]" + str(value) + "[/u] which is of type [u]" + type_string(typeof(value)) + "[/u].")
+	if not setting in settable_settings:
+		GeneralManager.cli_print_callable.call("ERROR: Setting [u]" + setting + "[/u] does not exist in User Settings or is unable to be set. Did you mean '[u]" + GeneralManager.spellcheck(setting, default_user_data.keys()) + "[/u]'?.")
 	else:
-		GeneralManager.cli_print_callable.call("ERROR: Setting [u]" + setting + "[/u] does not exist in User Settings or is unable to be set.")
+		GeneralManager.cli_print_callable.call("ERROR: Tried to set [u]" + setting + "[/u] whos value is of type [u]" + type_string(typeof(user_data_dict[setting])) + "[/u] to [u]" + str(value) + "[/u] which is of type [u]" + type_string(typeof(value)) + "[/u].")
 	return ERR_INVALID_PARAMETER
 
 func get_user_settings() -> Dictionary:

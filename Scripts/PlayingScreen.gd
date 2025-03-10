@@ -143,7 +143,7 @@ func _process(_delta : float) -> void:
 	if ((%AudioPlayer.stream != null) and (not dragging_progress_bar)):
 		%ProgressBar.value = %AudioPlayer.get_playback_position()
 		%Percentage.text = str(int((%ProgressBar.value / %ProgressBar.max_value) * 100)) + "%"
-		#%Percentage.tooltip_text = str(GeneralManager.seconds_to_readable_time(%ProgressBar.value) + " / " + GeneralManager.seconds_to_readable_time(%ProgressBar.max_value))
+		%Percentage.tooltip_text = str(GeneralManager.seconds_to_readable_time(%ProgressBar.value) + " / " + GeneralManager.seconds_to_readable_time(%ProgressBar.max_value)) + " = " + %Percentage.text
 	if %TimeWidget.visible:
 		%TimeWidget.text = Time.get_time_string_from_system().left(-3)
 	return
@@ -192,7 +192,7 @@ func _exit_tree() -> void:
 	return
 
 func load_song_list(list_id : String = active_song_list_id) -> int:
-	print("Load Song List ID: '" + list_id + "', begins with '" + list_id.left(1) + "'")
+	#print("Load Song List ID: '" + list_id + "', begins with '" + list_id.left(1) + "'")
 	active_song_list_id = list_id
 	active_song_list = []
 	if list_id in special_ids:
@@ -228,19 +228,19 @@ func load_song_list(list_id : String = active_song_list_id) -> int:
 		return ERR_QUERY_FAILED
 	GeneralManager.cli_print_callable.call("SYS: Loaded song list with ID [u]" + list_id + "[/u] with a length of [u]" + str(len(active_song_list)) + "[/u].")
 	load_song(GeneralManager.arr_get(active_song_list, 0, ""))
-	print("Load Song List Ran Succesfully")
+	#print("Load Song List Ran Succesfully")
 	return OK
 
 func load_song(song_id : String = active_song_id) -> int:
-	print("\n\nLoad Song ID: '" + song_id + "', begins with '" + song_id.left(1) + "'")
+	#print("\n\nLoad Song ID: '" + song_id + "', begins with '" + song_id.left(1) + "'")
 	if (GeneralManager.get_id_type(song_id) != MasterDirectoryManager.use_type.SONG) or (not MasterDirectoryManager.song_id_dict.has(song_id)):
 		GeneralManager.cli_print_callable.call("SYS_ERROR: Attempted to load song of ID '[u]" + song_id + "[/u]' which isn't valid, please check it and try again.")
 		reset_playing_screen()
 		return ERR_INVALID_PARAMETER
-	print("Song ID is valid.")
+	#print("Song ID is valid.")
 	active_song_id = song_id
 	var song_data : Dictionary = GeneralManager.get_data(active_song_id)
-	print("song data: " + str(song_data))
+	#print("song data: " + str(song_data))
 	if not song_data["song_file_path"] in song_cache.keys():
 		load_song_mutex.lock()
 		song_cache[song_data["song_file_path"]] = GeneralManager.load_audio_file(song_data["song_file_path"])
@@ -251,17 +251,22 @@ func load_song(song_id : String = active_song_id) -> int:
 		reset_playing_screen()
 		return ERR_INVALID_DATA
 	%Title.text = GeneralManager.limit_str(song_data["name"], 30)
+	%Title.tooltip_text = song_data["name"]
 	%"Album&Band".text = GeneralManager.smart_limit_str([
 		GeneralManager.get_data(song_data["album"], "name"), 
 		" | ", 
 		GeneralManager.get_data(GeneralManager.get_data(song_data["album"], "artist"), "name")]
 		, 27)
+	%"Album&Band".tooltip_text = GeneralManager.get_data(song_data["album"], "name") + "\n" + GeneralManager.get_data(GeneralManager.get_data(song_data["album"], "artist"), "name")
 	if not active_song_list_id in special_ids:
 		var list_name : String = GeneralManager.get_data(active_song_list_id, "name")
 		%Playlist.text = ["All Of: ", "Album: ", "Listening To: ", "Playlist: "][int(active_song_list_id.left(1))] + GeneralManager.limit_str(list_name, 13)
+		%Playlist.tooltip_text = list_name
 	else:
 		%Playlist.text = ["All Songs", "Random Songs"][special_ids.find(active_song_list_id)]
+		%Playlist.tooltip_text = ["All Songs", "Random Songs"][special_ids.find(active_song_list_id)]
 	%Playlist.text += " | " + str(str(active_song_list.find(song_id)+1) + "/" + str(len(active_song_list)))
+	%Playlist.tooltip_text += "\n" + str(str(active_song_list.find(song_id)+1) + "/" + str(len(active_song_list)))
 	%ProgressBar.max_value = %AudioPlayer.stream.get_length()
 	%ToggleFavourite.set_pressed_no_signal(song_data["favourite"])
 	%Image.texture = ImageTexture.create_from_image(GeneralManager.get_image(GeneralManager.get_data(song_data["album"], "image_file_path")))
@@ -278,7 +283,7 @@ func load_song(song_id : String = active_song_id) -> int:
 	if load_song_thread.is_started():
 		load_song_thread.wait_to_finish()
 	load_song_thread.start(Callable(self, "load_next_song_into_cache"))
-	print("!! Load Song Ran Succesfully !!")
+	#print("!! Load Song Ran Succesfully !!")
 	GeneralManager.cli_print_callable.call("SYS: Now playing song [u]" + str(active_song_list.find(active_song_id) + 1) + "[/u]/[u]" + str(len(active_song_list)) + "[/u] with the ID of [u]" + active_song_id + "[/u].")
 	return OK
 
@@ -297,10 +302,10 @@ func set_player_settings(setting : StringName, value : Variant) -> int:
 		GeneralManager.cli_print_callable.call("NOTIF: Player Settings: Set [u]" + setting + "[/u] from [u]" + str(self.get(setting)) + "[/u] > [u]" + str(value) + "[/u].")
 		self.set(setting, value)
 		return OK
-	if typeof(self.get(setting)) != typeof(value):
-		GeneralManager.cli_print_callable.call("ERROR: Tried to set [u]" + setting + "[/u] whos value is of type [u]" + type_string(typeof(self.get(setting))) + "[/u] to [u]" + str(value) + "[/u] which is of type [u]" + type_string(typeof(value)) + "[/u].")
+	if not setting in settable_settings:
+		GeneralManager.cli_print_callable.call("ERROR: Setting [u]" + setting + "[/u] does not exist in Player Settings or is unable to be set. Did you mean '[u]" + GeneralManager.spellcheck(setting, settable_settings) + "[/u]'?.")
 	else:
-		GeneralManager.cli_print_callable.call("ERROR: Setting [u]" + setting + "[/u] does not exist in Player Settings or is unable to be set.")
+		GeneralManager.cli_print_callable.call("ERROR: Tried to set [u]" + setting + "[/u] whos value is of type [u]" + type_string(typeof(self.get(setting))) + "[/u] to [u]" + str(value) + "[/u] which is of type [u]" + type_string(typeof(value)) + "[/u].")
 	return ERR_INVALID_PARAMETER
 
 func get_player_settings() -> Dictionary:
@@ -314,11 +319,13 @@ func reset_playing_screen() -> void:
 	active_song_list = []
 	active_song_list_id = ""
 	%Playlist.text = "Playlist"
+	%Playlist.tooltip_text = "Playlist"
 	%Title.text = "Title"
+	%Title.tooltip_text = "Title"
 	%"Album&Band".text = "Album | Band"
+	%"Album&Band".tooltip_text = "Album\nBand"
 	%Percentage.text = "0%"
-	#%Percentage.tooltip_text = "0s / 0s"
-	%Percentage.tooltip_text = ""
+	%Percentage.tooltip_text = "0s / 0s"
 	%ProgressBar.value = 0
 	%Image.texture = GeneralManager.load_svg_to_img("res://Assets/Icons/Missing.svg", 5)
 	%Background.color = Color8(50, 50, 50)

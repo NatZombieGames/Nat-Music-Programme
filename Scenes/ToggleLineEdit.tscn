@@ -35,7 +35,7 @@ caret_blink_interval = 0.5
 self_modulate = Color(1, 1, 1, 0)
 layout_mode = 2
 
-[node name="TextureButton" type="TextureButton" parent="Container"]
+[node name="Button" type="TextureButton" parent="Container"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(30, 30)
 layout_mode = 2

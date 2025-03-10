@@ -8,7 +8,7 @@ extends PanelContainer
 @export var button_group : ButtonGroup
 @export var pressed_signal_sender : Node
 @export var pressed_signal_name : String = "custom_button_pressed"
-@export var argument : String = "0"
+@export var argument : Variant = "0"
 
 func _ready() -> void:
 	update()

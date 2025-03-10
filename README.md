@@ -7,6 +7,7 @@
 
 The NMP (Nat Music Programme) is an app made in Godot (4.4) which allows you to upload and listen to songs (.mp3, .ogg and .wav), you can sort them by Artist and Album, and also create and manage Playlists.  
 You can also use the built-in CLI (Command Line Interface) to get more granular control and specific information.  
+There is an Accessibility page located in the Profile screen.
 The app is entirely offline and standalone.
 
 ## Scalability / ID's ##
@@ -18,7 +19,6 @@ Other efforts have been made to make the app able to handle itself despite the w
 - Giving a multitude of functions to the CLI to help make your management of the app and its data easier.
 - Adjustable keybinds for every shortcut / hotkey in the app.
 - Songs and Albums can be listened to stand-alone if you don't want to upload / create Albums and Artists for them.
-- Certain elements of the UI also have an adjustable scale to help with ease of use.
 
 ## Project Details ##
 
@@ -36,10 +36,10 @@ This is made entirely using Godot 4.4, with GDScript (all statically-typed) as t
 - Exported, All of the builds for the app, the names are structured; 'NatMusicProgramme_{architecture}', for example the main 64Bit builds for both versions are called 'NatMusicProgramme_x64':
   - Windows: Folder containing all the Windows builds.
     - Other Builds: Folder where all other Windows builds are exported to.
-    - The main build for Windows, being 64Bit.
+    - Where the main build for Windows is exported, being 64Bit.
   - Linux: Folder containing all the Linux builds
     - Other Builds: Folder with all other Linux builds are exported to.
-    - The main build for Linux, being 64Bit.
+    - Where the main build for Linux is exported, being 64Bit.
 - Scenes:
   - All the scene files.
 - Scripts:

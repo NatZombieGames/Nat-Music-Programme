@@ -2,6 +2,7 @@ extends PanelContainer
 
 @export var text : String = "Placeholder"
 @export var font_size : int = 16
+@export var button_custom_min_size : Vector2i = Vector2i(30, 30)
 @export var editing_mode : bool = false
 @export var emit_text_changed_signal : bool = true
 @export var text_changed_signal_sender : Node
@@ -12,9 +13,10 @@ func _ready() -> void:
 	%LineEdit.text_submitted.connect(func(_text : String = "") -> void: update_editing_mode(!editing_mode); return)
 	if not GeneralManager.finished_loading_icons:
 		await GeneralManager.finished_loading_icons_signal
-	%TextureButton.texture_normal = GeneralManager.get_icon_texture("Edit")
-	%TextureButton.texture_pressed = GeneralManager.get_icon_texture("Save")
-	%TextureButton.toggled.connect(
+	%Button.texture_normal = GeneralManager.get_icon_texture("Edit")
+	%Button.texture_pressed = GeneralManager.get_icon_texture("Save")
+	%Button.custom_minimum_size = button_custom_min_size
+	%Button.toggled.connect(
 		func(state : bool) -> void: 
 			update_editing_mode(state); 
 			if emit_text_changed_signal: 
@@ -23,12 +25,12 @@ func _ready() -> void:
 	update()
 	return
 
-func update(data : Dictionary = {"text": text, "font_size": font_size, "editing_mode": editing_mode, "emit_text_changed_signal": emit_text_changed_signal, "text_changed_signal_sender": text_changed_signal_sender, "text_changed_signal_name": text_changed_signal_name, "text_changed_signal_argument": text_changed_signal_argument}) -> void:
+func update(data : Dictionary = {}) -> void:
 	for item : String in data.keys():
 		self.set(item, data[item])
 	%LineEdit.text = text
 	%LineEdit.add_theme_font_size_override("font_size", font_size)
-	%TextureButton.set_pressed_no_signal(editing_mode)
+	%Button.set_pressed_no_signal(editing_mode)
 	update_editing_mode()
 	return
 

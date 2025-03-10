@@ -30,6 +30,7 @@ func update(data : Dictionary = {}) -> void:
 	%Button.disabled = !copy_subtitle_button
 	GeneralManager.disconnect_all_connections(%Button.pressed)
 	%Button.pressed.connect(func() -> void: DisplayServer.clipboard_set(subtitle); get_node("/root/MainScreen").call("create_popup_notif", copy_subtitle_text); return)
+	%Container/ActionsContainer.get_children().map(func(node : Node) -> Node: node.visible = node.get_index() < action_buttons; return node)
 	for i : int in range(0, action_buttons):
 		if len(%Container/ActionsContainer.get_children()) < (i + 1):
 			%Container/ActionsContainer.add_child(action_button.instantiate())

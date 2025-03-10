@@ -28,6 +28,7 @@ const repo_url : String = "https://github.com/NatZombieGames/Nat-Music-Programme
 const valid_audio_types : PackedStringArray = ["mp3", "ogg", "wav"]
 const weekday_names : PackedStringArray = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 const month_names : PackedStringArray = ["Janauary", "Febuary", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+const boolean_strings : PackedStringArray = ["1", "true", "enabled", "yes", "on"]
 @warning_ignore("unused_signal")
 signal finished_loading_icons_signal
 
@@ -36,7 +37,7 @@ func _ready() -> void:
 	build = ["Release", "Debug"][int(is_in_debug)]
 	version = ProjectSettings.get("application/config/version")
 	if not is_in_debug:
-		print("we are not in debug so are getting the export data, does the file exist? " + str(FileAccess.file_exists("res://ExportData.cfg")))
+		#print("we are not in debug so are getting the export data, does the file exist? " + str(FileAccess.file_exists("res://ExportData.cfg")))
 		var export_file : ConfigFile = ConfigFile.new()
 		export_file.load("res://ExportData.cfg")
 		for i : int in range(0, len(export_data_names)):
@@ -73,10 +74,10 @@ func set_general_settings(setting : StringName, value : Variant) -> int:
 	if setting in settable_settings and typeof(value) == typeof(self.get(setting)):
 		cli_print_callable.call("NOTIF: General Settings: Set [u]" + setting + "[/u] from [u]" + str(self.get(setting)) + "[/u] > [u]" + str(value) + "[/u].")
 		self.set(setting, value)
-	if typeof(self.get(setting)) != typeof(value):
-		GeneralManager.cli_print_callable.call("ERROR: Tried to set [u]" + setting + "[/u] whos value is of type [u]" + type_string(typeof(self.get(setting))) + "[/u] to [u]" + str(value) + "[/u] which is of type [u]" + type_string(typeof(value)) + "[/u].")
+	if not setting in settable_settings:
+		GeneralManager.cli_print_callable.call("ERROR: Setting [u]" + setting + "[/u] does not exist in General Settings or is unable to be set. Did you mean '[u]" + GeneralManager.spellcheck(setting, settable_settings) + "[/u]'?.")
 	else:
-		GeneralManager.cli_print_callable.call("ERROR: Setting [u]" + setting + "[/u] does not exist in General Settings or is unable to be set.")
+		GeneralManager.cli_print_callable.call("ERROR: Tried to set [u]" + setting + "[/u] whos value is of type [u]" + type_string(typeof(self.get(setting))) + "[/u] to [u]" + str(value) + "[/u] which is of type [u]" + type_string(typeof(value)) + "[/u].")
 	return ERR_INVALID_PARAMETER
 
 func get_general_settings() -> Dictionary:
@@ -130,6 +131,30 @@ func get_image(path : String) -> Image:
 		return image_cache[path]
 	return get_icon_texture().get_image()
 
+func spellcheck(query : String, words : PackedStringArray) -> String:
+	if query in words:
+		return query
+	var word_to_query_dict : Dictionary
+	for word : String in words:
+		word_to_query_dict[word] = _get_word_distance(query, word)
+	return word_to_query_dict.find_key(word_to_query_dict.values().min())
+
+func _get_word_distance(word1 : String, word2 : String) -> int:
+	var dist : int = 0
+	var word1_letters : Dictionary
+	var word2_letters : Dictionary
+	for character : String in get_unique_array(word1.split("", false)):
+		word1_letters[character] = word1.count(character)
+	for character : String in get_unique_array(word2.split("", false)):
+		word2_letters[character] = word2.count(character)
+	for key : String in word1_letters.keys():
+		if word2_letters.get(key, 0) != word1_letters[key]:
+			if word1_letters[key] > word2_letters.get(key, 0):
+				dist += word1_letters[key] - word2_letters.get(key, 0)
+			else:
+				dist += word2_letters[key] - word1_letters[key]
+	return dist
+
 func load_audio_file(path : String) -> AudioStream:
 	var file : FileAccess = FileAccess.open(path, FileAccess.READ)
 	var sound : AudioStream
@@ -145,7 +170,7 @@ func load_audio_file(path : String) -> AudioStream:
 	return sound
 
 func get_id_type(id : String) -> MasterDirectoryManager.use_type:
-	#print("Get id is running with an id of; " + id + ", which is " + str(len(id)) + " long and starts with " + id.left(1) + " and " + ["isnt", "is"][int(int(id.left(1)) > -1 and int(id.left(1)) < len(MasterDirectoryManager.get_data_types.call())-1)] + " inside the use type enum")
+	#print("Get id is running with an id of; " + id + ", which is " + str(len(id)) + " long and starts with " + id.left(1) + " and " + ["isnt", "is"][int(int(id.left(1)) > -1 and int(id.left(1)) < len(MasterDirectoryManager.data_types)-1)] + " inside the use type enum")
 	if (len(id) == 17) and (int(id.left(1)) > -1) and (int(id.left(1)) < (len(MasterDirectoryManager.use_type.keys()) - 1)):
 		return MasterDirectoryManager.use_type.get(MasterDirectoryManager.use_type.keys()[int(id.left(1))])
 	return MasterDirectoryManager.use_type.UNKNOWN
@@ -181,6 +206,18 @@ func smart_limit_str(strings : Array[String], size : int, limiter : String = "â€
 		len_remaining += 1
 	to_return = strings.reduce(func(total : String, item : String) -> String: return total + item, "")
 	return to_return
+
+func int_to_hex(num : int) -> String:
+	return "%x" % [num]
+
+func int_to_readable_int(num : int) -> String:
+	var to_return : String = ""
+	var reversed : String = str(num).reverse()
+	for i : int in range(0, len(reversed)):
+		if i != 0 and i != len(reversed) and i % 3 == 0:
+			to_return += ","
+		to_return += reversed[i]
+	return to_return.reverse()
 
 func get_date(include_date : bool = true, include_weekday : bool = true, include_time : bool = true) -> String:
 	if not include_date and not include_weekday and not include_time:

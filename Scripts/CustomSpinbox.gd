@@ -26,7 +26,7 @@ func _ready() -> void:
 		%Value.text = new_text
 		return)
 	%Value.text_submitted.connect(func(_submitted_text : String) -> void: 
-		submitted_sender.call(submitted_signal_name, [[value_int, value_float][type], submitted_signal_argument])
+		submitted_sender.call(submitted_signal_name, submitted_signal_argument, [value_int, value_float][type])
 		return)
 	%IncrementButton.pressed.connect(func() -> void: 
 		if type == value_type.INTEGER:
