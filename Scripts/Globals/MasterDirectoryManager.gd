@@ -26,7 +26,7 @@ const default_user_data : Dictionary = {
 "active_song_data": {"active_song_list": [], "active_song_list_id": "", "active_song_id": "", "song_progress": 0}, 
 "keybinds": {}, "sleep_when_unfocused": false, "generate_home_screen": true, 
 "library_size_modifier": 1.0, "cli_size_modifier": 1.0, "profile_size_modifier": 1.0, 
-"separate_cli_outputs": false, "solid_cli": false
+"separate_cli_outputs": false, "solid_cli": false, "autocomplete": true
 }
 const settable_settings : PackedStringArray = [
 "volume", "player_fullscreen", "special_icon_scale", "icon_scale", "song_cache_size", 
@@ -34,7 +34,7 @@ const settable_settings : PackedStringArray = [
 "command_on_startup", "window_position", "window_mode", "window_screen", "window_size", 
 "save_on_quit", "continue_playing", "continue_playing_exact", "sleep_when_unfocused", 
 "generate_home_screen", "library_size_modifier", "cli_size_modifier", "profile_size_modifier", 
-"separate_cli_outputs", "solid_cli"
+"separate_cli_outputs", "solid_cli", "autocomplete"
 ]
 const id_chars : PackedStringArray = [
 "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", 
@@ -197,7 +197,8 @@ func set_user_settings(setting : StringName, value : Variant) -> int:
 				DisplayServer.window_set_size(value)
 			"shuffle":
 				get_node("/root/MainScreen").playing_screen.shuffle = value
-			"auto_clear", "clear_input":
+			"auto_clear", "clear_input", "autocomplete":
+				print(get_node("/root/MainScreen/Camera/AspectRatioContainer/CommandLineInterface").autocomplete)
 				get_node("/root/MainScreen/Camera/AspectRatioContainer/CommandLineInterface").set(setting, value)
 			"special_icon_scale", "icon_scale", "song_cache_size", "image_cache_size":
 				if value < 1:
@@ -209,7 +210,7 @@ func set_user_settings(setting : StringName, value : Variant) -> int:
 				get_node("/root/MainScreen")._apply_profile_size_mod()
 		return OK
 	if not setting in settable_settings:
-		GeneralManager.cli_print_callable.call("ERROR: Setting [u]" + setting + "[/u] does not exist in User Settings or is unable to be set. Did you mean '[u]" + GeneralManager.spellcheck(setting, default_user_data.keys()) + "[/u]'?.")
+		GeneralManager.cli_print_callable.call("ERROR: Setting [u]" + setting + "[/u] does not exist in User Settings or is unable to be set. Did you mean '[u]" + GeneralManager.spellcheck(setting, default_user_data.keys())[0] + "[/u]'?.")
 	else:
 		GeneralManager.cli_print_callable.call("ERROR: Tried to set [u]" + setting + "[/u] whos value is of type [u]" + type_string(typeof(user_data_dict[setting])) + "[/u] to [u]" + str(value) + "[/u] which is of type [u]" + type_string(typeof(value)) + "[/u].")
 	return ERR_INVALID_PARAMETER

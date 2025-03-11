@@ -10,8 +10,9 @@ func _ready() -> void:
 func update(new_title : String = title, new_custom_min_size : Vector2 = custom_min_size) -> void:
 	$Title.text = new_title
 	self.custom_minimum_size = new_custom_min_size
-	create_tween().tween_property(self, "global_position", Vector2(get_global_mouse_position().x, get_global_mouse_position().y-50), 2).from(get_global_mouse_position())
+	create_tween().tween_property(self, "global_position", Vector2(get_global_mouse_position().x, get_global_mouse_position().y-50), 3.5).from(get_global_mouse_position())
+	await get_tree().process_frame
 	self.visible = true
-	await create_tween().tween_property(self, "modulate", Color(1, 1, 1, 0), 2).from(Color(1, 1, 1, 1)).finished
+	await create_tween().tween_property(self, "modulate", Color(1, 1, 1, 0), 3.5).from(Color(1, 1, 1, 1)).finished
 	self.queue_free()
 	return

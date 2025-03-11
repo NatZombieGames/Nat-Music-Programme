@@ -1,9 +1,15 @@
-[gd_scene load_steps=4 format=3 uid="uid://bmc50mv2rgkwt"]
+[gd_scene load_steps=6 format=3 uid="uid://bmc50mv2rgkwt"]
 
 [ext_resource type="StyleBox" uid="uid://dj6ianfhju64w" path="res://Assets/Styleboxes/CLI_Stylebox_Default.tres" id="1_kqyvi"]
 [ext_resource type="Script" uid="uid://8kag0r8nytmx" path="res://Scripts/CommandLineInterface.gd" id="2_khwqj"]
+[ext_resource type="Texture2D" uid="uid://dwiybiyr6f8q3" path="res://Assets/Icons/Close.svg" id="3_4pt6n"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_udip1"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_017m4"]
+content_margin_left = 5.0
+bg_color = Color(0.0980392, 0.0980392, 0.0980392, 1)
+corner_radius_top_right = 7
 
 [node name="CommandLineInterface" type="PanelContainer"]
 custom_minimum_size = Vector2(0, 500)
@@ -48,3 +54,45 @@ virtual_keyboard_enabled = false
 clear_button_enabled = true
 caret_blink = true
 caret_blink_interval = 0.5
+
+[node name="AutocompleteContainer" type="VBoxContainer" parent="."]
+visible = false
+layout_mode = 2
+alignment = 2
+
+[node name="Autocomplete" type="PanelContainer" parent="AutocompleteContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_017m4")
+
+[node name="Container" type="HBoxContainer" parent="AutocompleteContainer/Autocomplete"]
+layout_mode = 2
+
+[node name="AutocompleteText" type="RichTextLabel" parent="AutocompleteContainer/Autocomplete/Container"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(275, 0)
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
+vertical_alignment = 2
+
+[node name="ButtonContainer" type="VBoxContainer" parent="AutocompleteContainer/Autocomplete/Container"]
+layout_mode = 2
+
+[node name="CloseAutocompleteButton" type="TextureButton" parent="AutocompleteContainer/Autocomplete/Container/ButtonContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(15, 15)
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 0
+mouse_default_cursor_shape = 2
+texture_normal = ExtResource("3_4pt6n")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="Void" type="Panel" parent="AutocompleteContainer"]
+self_modulate = Color(1, 1, 1, 0)
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+mouse_filter = 2

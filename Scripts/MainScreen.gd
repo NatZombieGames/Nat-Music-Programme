@@ -19,7 +19,7 @@ const custom_button : PackedScene = preload("res://Scenes/CustomButton.tscn")
 			await create_tween().tween_property($Camera/AspectRatioContainer/SaveIndicator/Indicator, "modulate:a", 0.75, 0.5).from(0.5).finished
 	get:
 		return show_saving_indicator
-var song_upload_list : Array = []
+var song_upload_list : Array[Dictionary] = []
 var popup_response : int = 0
 var library_page : int = 0
 var library_details_item_id : String
@@ -41,18 +41,18 @@ var tutorial_page : int = 0:
 		return tutorial_page
 signal popup_responded
 signal primary_initialization_finished_signal
-const user_setting_keys : PackedStringArray = ["save_on_quit", "continue_playing", "continue_playing_exact", "generate_home_screen"]
+const user_setting_keys : PackedStringArray = ["save_on_quit", "continue_playing", "continue_playing_exact", "generate_home_screen", "autocomplete"]
 const accessibility_keys : PackedStringArray = ["library_size_modifier", "cli_size_modifier", "profile_size_modifier", "separate_cli_outputs", "solid_cli"]
 const tutorial_pages_text : PackedStringArray = [
 	"[img]res://Assets/NMP_Icon.png[/img]\n\nThis is a short guide on how to use the app, if you would like to\nskip this, simply hit the Close button below.\n\nOtherwise, please use the Previous / Next Page buttons respectively to navigate.", 
 	"[img]res://Assets/Tutorial Images/Image_1.png[/img]\n\nIn the top right of the screen you can see buttons for every page of the app, left to right these are:\nHome, New, Library and Profile, the last button is the close button.", 
-	"[img]res://Assets/Tutorial Images/Image_1.png[/img]\n\nThe Home page is where you can get random recommendations for Artists, Albums, Songs and Playlists to listen to.\nThis will change daily and is persistant across sesions in the same day.", 
+	"[img]res://Assets/Tutorial Images/Image_1.png[/img]\n\nThe Home page is where you can get random recommendations for Artists, Albums, Songs and Playlists to listen to.\nThis will change daily and is persistant across sessions in the same day.", 
 	"[img]res://Assets/Tutorial Images/Image_2.png[/img]\n\nThe New page is where you will upload all of your songs, and create your Artists / Albums to put them in.\nThis is also where you can make new Playlists.", 
 	"[img]res://Assets/Tutorial Images/Image_3.png[/img]\n\nThe Library page is where all of your Artists, Albums, Songs and Playlists are stored.\nThis is where you can manage and search through them, and also play them by hitting the Play button on every item.", 
 	"[img]res://Assets/Tutorial Images/Image_4.png[/img]\n\nThe Profile page has many things, including Data Managment, Settings, Accessability and Keybind Managment.\nFor more information see the Profile page.", 
 	"[img=320x180]res://Assets/Tutorial Images/Image_5.png[/img]\n\nThis is the Player / Playing screen, seen in the bottom right of the screen.\n\nWhen playing a song it will appear here.\nYou can customize this screen using Widgets, which can be set inside the Profile page under Settings.", 
 	"[img=175x175]res://Assets/Tutorial Images/Image_6.png[/img]\n\nThe app also features a built-in CLI, or Command Line Interface\nwhich can be oppened using Ctrl+O or in the respective Profile page.\n\nThe CLI can be used for more granular control of the app and its data\nfor more help using it, open it and run 'help'.", 
-	"[img]res://Assets/NMP_Icon.png[/img]\n\nThat is all you need to know to get started using the NMP\n(Nat Music Programme)!\n\nNow you can get started by going to the New page and uploading your first songs!\nIf you have any feedback or suggestions or want to get the latest version; go to the [url=" + GeneralManager.repo_url + "][i]Project's Github[/i][/url]."
+	"[img]res://Assets/NMP_Icon.png[/img]\n\nThat is all you need to know to get started using the NMP\n(Nat Music Programme)!\n\nNow you can get started by going to the New page and uploading your first songs!\nIf you have any feedback or suggestions or want to get the latest version; go to the [url=https://github.com/NatZombieGames/Nat-Music-Programme][i]Project's Github[/i][/url]."
 	]
 const rich_text_font_size_types : PackedStringArray = ["bold_italics", "italics", "mono", "normal", "bold"]
 
@@ -80,7 +80,6 @@ func _ready() -> void:
 		func(state : bool) -> void: 
 			if state:
 				%MainContainer/Library/FiltersPage.position = Vector2i(%MainContainer/Library/Container/Header/TabContainer/FilterListButton.position.x + 115, %MainContainer/Library/Container/Header/TabContainer/FilterListButton.position.y + 10)
-				%MainContainer/Library/FiltersPage.size = %MainContainer/Library/FiltersPage.custom_minimum_size
 				%MainContainer/Library/FiltersPage/Container/Row1.modulate = [Color.GRAY, Color.WHITE][int(library_page in [1, 2])]
 				%MainContainer/Library/FiltersPage/Container/Row1/Button.mouse_default_cursor_shape = [CursorShape.CURSOR_FORBIDDEN, CursorShape.CURSOR_POINTING_HAND][int(library_page in [1, 2])]
 				%MainContainer/Library/FiltersPage/Container/Row2.modulate = [Color.GRAY, Color.WHITE][int(library_page in [2])]
@@ -89,6 +88,7 @@ func _ready() -> void:
 				%MainContainer/Library/FiltersPage/Container/Row3/Button.mouse_default_cursor_shape = [CursorShape.CURSOR_FORBIDDEN, CursorShape.CURSOR_POINTING_HAND][int(library_page in [0, 1, 3])]
 				%MainContainer/Library/FiltersPage/Container/Row4.modulate = [Color.GRAY, Color.WHITE][int(library_page in [2])]
 				%MainContainer/Library/FiltersPage/Container/Row4/Button.mouse_default_cursor_shape = [CursorShape.CURSOR_FORBIDDEN, CursorShape.CURSOR_POINTING_HAND][int(library_page in [2])]
+			%MainContainer/Library/FiltersPage.size = %MainContainer/Library/FiltersPage.custom_minimum_size
 			%MainContainer/Library/FiltersPage.visible = state
 			return)
 	%MainContainer/Library/FiltersPage/Container/Row1/Button.pressed.connect(
@@ -159,9 +159,6 @@ func _ready() -> void:
 	%NewUserScreen/Background/Container/PageButtons/PreviousPage.pressed.connect(func() -> void: tutorial_page -= 1; return)
 	%NewUserScreen/Background/Container/PageButtons/NextPage.pressed.connect(func() -> void: tutorial_page += 1; return)
 	%NewUserScreen/Background/Container/PageButtons/Close.pressed.connect(func() -> void: %NewUserScreen.visible = false; return)
-	%MainContainer/Library/Container/Header/TabContainer/FilterListButton.button_pressed = true
-	await get_tree().process_frame
-	%MainContainer/Library/Container/Header/TabContainer/FilterListButton.button_pressed = false
 	set_main_screen_page("0")
 	set_create_screen_page("0")
 	populate_library_screen(0)
@@ -183,9 +180,9 @@ func _ready() -> void:
 		await MasterDirectoryManager.finished_loading_keybinds_signal
 	update_keybinds_screen()
 	DisplayServer.window_set_current_screen(wrapi(MasterDirectoryManager.user_data_dict["window_screen"], 0, DisplayServer.get_screen_count()))
-	DisplayServer.window_set_mode(MasterDirectoryManager.user_data_dict["window_mode"])
 	DisplayServer.window_set_size(MasterDirectoryManager.user_data_dict["window_size"])
 	get_tree().get_root().set("position", MasterDirectoryManager.user_data_dict["window_position"])
+	DisplayServer.window_set_mode(MasterDirectoryManager.user_data_dict["window_mode"])
 	%PlayingScreen.fullscreen = MasterDirectoryManager.user_data_dict["player_fullscreen"]
 	%NewUserScreen.visible = MasterDirectoryManager.new_user
 	if MasterDirectoryManager.user_data_dict["generate_home_screen"]:
@@ -203,6 +200,7 @@ func _ready() -> void:
 	%LoadingScreen.visible = false
 	GeneralManager.set_mouse_busy_state.call(false)
 	GeneralManager.cli_print_callable.call("SYS: Programme Initialization Complete")
+	%MainContainer/Library/FiltersPage.visible = false
 	return
 
 func _input(event : InputEvent) -> void:
@@ -451,9 +449,11 @@ func populate_data_list_context_menu(location : Node, type : MasterDirectoryMana
 func set_song_upload_style(style : String) -> void:
 	#print("-\nsong upload style is " + str(style))
 	var dialog : FileDialog = [%SelectSongDialog, %SelectSongDirectoryDialog][int(style)]
+	var selected : String
+	var starting_list : Array[Dictionary] = song_upload_list.duplicate()
 	dialog.visible = true
 	await [dialog.file_selected, dialog.dir_selected][int(style)]
-	var selected : String = dialog.current_path
+	selected = dialog.current_path
 	#print("selected " + selected)
 	#print(dialog.current_path.split("/"))
 	#print("selected is valid dir: " + str(DirAccess.dir_exists_absolute(selected)))
@@ -470,6 +470,8 @@ func set_song_upload_style(style : String) -> void:
 			#print("adding into song upload list: " + str({"name": item.get_basename(), "path": selected + "\\"[0] + item}))
 			song_upload_list.append({"name": item.get_basename(), "path": selected + "\\"[0] + item})
 		#print("Dir Acess Err: " + str(DirAccess.get_open_error()))
+	if starting_list == song_upload_list:
+		create_popup_notif("Unabled to upload any songs, make sure they are of a valid type.")
 	populate_song_list(song_upload_list, %MainContainer/New/Container/Body/Container/Container/DataList/Container/ScrollContainer/Container)
 	return
 
@@ -655,6 +657,54 @@ func populate_song_list(data : Array, location : Node, subtitle_type : int = 0) 
 	%MainContainer/New/Container/Body/Container/Container/DataList/Container/InfoContainer/ItemQuantity.text = " Items: " + str(len(data)) + " "
 	return
 
+func mass_import(_arg : String = "") -> void:
+	%MassImportDialog.visible = true
+	await %MassImportDialog.dir_selected
+	var path : String = %MassImportDialog.current_path
+	var new_artist_ids : PackedStringArray
+	var new_album_ids : PackedStringArray
+	var new_song_ids : PackedStringArray
+	var available_images : PackedStringArray
+	print("Path at mass import: " + path)
+	for artist_dir : String in DirAccess.get_directories_at(path):
+		new_artist_ids.append(MasterDirectoryManager.generate_id(MasterDirectoryManager.use_type.ARTIST))
+		print("making new ARTIST with id '" + new_artist_ids[-1] + "' and name '" + artist_dir + "'")
+		MasterDirectoryManager.artist_id_dict[new_artist_ids[-1]] = MasterDirectoryManager.get_data_template(MasterDirectoryManager.use_type.ARTIST)
+		MasterDirectoryManager.artist_id_dict[new_artist_ids[-1]]["name"] = artist_dir
+		available_images = GeneralManager.packed_string_filter(DirAccess.get_files_at(path + "/" + artist_dir), GeneralManager.is_valid_image)
+		if len(available_images) > 0:
+			MasterDirectoryManager.artist_id_dict[new_artist_ids[-1]]["image_file_path"] = path + "/" + artist_dir + "/" + available_images[0]
+		for album_dir : String in DirAccess.get_directories_at(path + "/" + artist_dir):
+			new_album_ids.append(MasterDirectoryManager.generate_id(MasterDirectoryManager.use_type.ALBUM))
+			print("making new ALBUM  with id '" + new_album_ids[-1] + "' and name '" + album_dir + "'")
+			MasterDirectoryManager.album_id_dict[new_album_ids[-1]] = MasterDirectoryManager.get_data_template(MasterDirectoryManager.use_type.ALBUM)
+			MasterDirectoryManager.album_id_dict[new_album_ids[-1]]["name"] = album_dir
+			MasterDirectoryManager.album_id_dict[new_album_ids[-1]]["artist"] = new_artist_ids[-1]
+			MasterDirectoryManager.artist_id_dict[new_artist_ids[-1]]["albums"].append(new_album_ids[-1])
+			available_images = GeneralManager.packed_string_filter(DirAccess.get_files_at(path + "/" + artist_dir + "/" + album_dir), GeneralManager.is_valid_image)
+			if len(available_images) > 0:
+				MasterDirectoryManager.album_id_dict[new_album_ids[-1]]["image_file_path"] = path + "/" + artist_dir + "/" + album_dir + "/" + available_images[0]
+			for song_file : String in DirAccess.get_files_at(path + "/" + artist_dir + "/" + album_dir):
+				if song_file.get_extension() in GeneralManager.valid_audio_types:
+					new_song_ids.append(MasterDirectoryManager.generate_id(MasterDirectoryManager.use_type.SONG))
+					print("making new  SONG  with id '" + new_song_ids[-1] + "' and name '" + song_file.get_basename() + "'")
+					MasterDirectoryManager.song_id_dict[new_song_ids[-1]] = MasterDirectoryManager.get_data_template(MasterDirectoryManager.use_type.SONG)
+					MasterDirectoryManager.song_id_dict[new_song_ids[-1]]["name"] = song_file.get_basename()
+					MasterDirectoryManager.song_id_dict[new_song_ids[-1]]["song_file_path"] = path + "\\" + artist_dir + "\\" + album_dir + "\\" + song_file
+					MasterDirectoryManager.song_id_dict[new_song_ids[-1]]["album"] = new_album_ids[-1]
+					MasterDirectoryManager.album_id_dict[new_album_ids[-1]]["songs"].append(new_song_ids[-1])
+	await get_tree().process_frame
+	if len(new_artist_ids) == 0:
+		create_popup_notif("Unable to create any data at directory [u]" + path + "[/u], please check it and try again.")
+	else:
+		create_popup_notif("Succesfully created [u]" + str(len(new_artist_ids)) + "[/u] Artists, [u]" + str(len(new_album_ids)) + "[/u] Albums and [u]" + str(len(new_song_ids)) + "[/u] Songs.")
+	return
+
+## For the CLI to call as normal one is aysnc
+func _mass_import() -> int:
+	mass_import()
+	return OK
+
 func open_context_menu(id : String) -> int:
 	#print("open context menu called with id of: " + id)
 	GeneralManager.set_mouse_busy_state.call(true)
@@ -665,6 +715,7 @@ func open_context_menu(id : String) -> int:
 	if GeneralManager.get_id_type(id) == MasterDirectoryManager.use_type.UNKNOWN:
 		return ERR_INVALID_PARAMETER
 	#
+	%MainContainer/Library/Container/Profile/Container/Container/ParentContainer/Container/SelectBtn.tooltip_text = "Select " + MasterDirectoryManager.data_types[id_type-1].capitalize()
 	%MainContainer/Library/Container/Profile/Container/Container/HeaderContainer/ImageContainer/Image.texture = GeneralManager.get_icon_texture()
 	if id_type == MasterDirectoryManager.use_type.SONG:
 		if MasterDirectoryManager.get_object_data.call(id)["album"] != "":
@@ -864,6 +915,9 @@ func data_managment_button_pressed(button : String) -> void:
 
 func user_setting_changed(number : String, state : bool) -> int:
 	MasterDirectoryManager.user_data_dict[user_setting_keys[int(number)]] = state
+	match user_setting_keys[int(number)]:
+		"autocomplete":
+			cli.autocomplete = state
 	return OK
 
 func accessibility_setting_changed(number: String, value : Variant) -> int:
@@ -942,7 +996,7 @@ func create_button_pressed(button : String, arg : String = "") -> void:
 				if new_page == 1 and new_entry_data["artist"] != "":
 					MasterDirectoryManager.artist_id_dict[new_entry_data["artist"]]["albums"].append(id)
 				create_popup_notif(" Made A New " + MasterDirectoryManager.data_types[new_page].capitalize() + " With The ID [u]" + id + "[/u]. ")
-			set_create_screen_page(str(new_page))
+			set_create_screen_page(str(new_page + 1))
 		"3":
 			%MainContainer/New/Container/Body/SelectList.visible = false
 			new_entry_data[["album", "artist"][int(%MainContainer/New/Container/Body/Container/Container/HeaderContainer.visible)]] = ""
@@ -977,11 +1031,20 @@ func set_main_screen_page(page : String) -> void:
 	return
 
 func set_create_screen_page(page : String) -> void:
+	if page == "0":
+		%MainContainer/New/Container/LandingPage.visible = true
+		%MainContainer/New/Container/Body.visible = false
+		%MainContainer/New/Container/Header/TabContainer/Page.text = " Creation Info"
+		new_page = 0
+		return
+	%MainContainer/New/Container/LandingPage.visible = false
+	%MainContainer/New/Container/Body.visible = true
 	%MainContainer/New/Container/Header/TabContainer.get_children().filter(func(node : Node) -> bool: return node.get_class() == "PanelContainer")[int(page)].update({"pressed": true})
-	%MainContainer/New/Container/Header/TabContainer/Page.text = " " + MasterDirectoryManager.data_types[int(page)].capitalize()
-	new_page = int(page)
+	%MainContainer/New/Container/Header/TabContainer/Page.text = " " + MasterDirectoryManager.data_types[int(page)-1].capitalize()
+	new_page = int(page)-1
 	new_entry_data = MasterDirectoryManager.get_data_template(new_page)
 	song_upload_list = []
+	$Camera/AspectRatioContainer/GreaterContainer/MainContainer/New/Container/Body/Container/Container/ParentContainer/Container/SelectBtn.tooltip_text = "Select " + MasterDirectoryManager.data_types[int(new_page)-1].capitalize()
 	%MainContainer/New/Container/Body/Container/Container/DataList/Container/ScrollContainer/Container.get_children().map(func(node : Node) -> Node: node.queue_free(); return node)
 	%MainContainer/New/Container/Body/Container/Container/DataList/Container/InfoContainer/ItemQuantity.text = " Items: 0 "
 	%MainContainer/New/Container/Body/Container/Container/HeaderContainer/ImageContainer/Image.texture = GeneralManager.get_icon_texture()

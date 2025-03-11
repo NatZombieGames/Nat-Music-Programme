@@ -75,7 +75,7 @@ func set_general_settings(setting : StringName, value : Variant) -> int:
 		cli_print_callable.call("NOTIF: General Settings: Set [u]" + setting + "[/u] from [u]" + str(self.get(setting)) + "[/u] > [u]" + str(value) + "[/u].")
 		self.set(setting, value)
 	if not setting in settable_settings:
-		GeneralManager.cli_print_callable.call("ERROR: Setting [u]" + setting + "[/u] does not exist in General Settings or is unable to be set. Did you mean '[u]" + GeneralManager.spellcheck(setting, settable_settings) + "[/u]'?.")
+		GeneralManager.cli_print_callable.call("ERROR: Setting [u]" + setting + "[/u] does not exist in General Settings or is unable to be set. Did you mean '[u]" + GeneralManager.spellcheck(setting, settable_settings)[0] + "[/u]'?.")
 	else:
 		GeneralManager.cli_print_callable.call("ERROR: Tried to set [u]" + setting + "[/u] whos value is of type [u]" + type_string(typeof(self.get(setting))) + "[/u] to [u]" + str(value) + "[/u] which is of type [u]" + type_string(typeof(value)) + "[/u].")
 	return ERR_INVALID_PARAMETER
@@ -114,6 +114,13 @@ func get_other_list_item(array : Array, item : Variant) -> Variant:
 		return array[int(!bool(array.find(item)))]
 	return item
 
+func packed_string_filter(arr : PackedStringArray, filter : Callable) -> PackedStringArray:
+	var to_ret : PackedStringArray
+	for item : String in arr:
+		if filter.call(item) == true:
+			to_ret.append(item)
+	return to_ret
+
 func get_icon_texture(icon_name : StringName = &"Missing") -> ImageTexture:
 	return (func(icons_name : String) -> ImageTexture: var image : ImageTexture = ImageTexture.create_from_image(icons[icons_name]); image.resource_name = icons_name; return image).call(icon_name)
 
@@ -131,13 +138,20 @@ func get_image(path : String) -> Image:
 		return image_cache[path]
 	return get_icon_texture().get_image()
 
-func spellcheck(query : String, words : PackedStringArray) -> String:
-	if query in words:
-		return query
-	var word_to_query_dict : Dictionary
+func spellcheck(query : String, words : PackedStringArray, return_max : int = 5, max_edit_distance : int = 0) -> PackedStringArray:
+	var to_ret : Array[String]
+	var word_to_dist_dict : Dictionary
 	for word : String in words:
-		word_to_query_dict[word] = _get_word_distance(query, word)
-	return word_to_query_dict.find_key(word_to_query_dict.values().min())
+		word_to_dist_dict[word] = _get_word_distance(query, word)
+	if max_edit_distance != 0:
+		for key : String in word_to_dist_dict.keys():
+			if word_to_dist_dict[key] > max_edit_distance:
+				word_to_dist_dict.erase(key)
+	to_ret.assign(word_to_dist_dict.keys())
+	to_ret.sort_custom(func(key1 : String, key2 : String) -> bool: return word_to_dist_dict[key1] < word_to_dist_dict[key2])
+	if len(to_ret) > return_max:
+		to_ret.resize(return_max)
+	return to_ret
 
 func _get_word_distance(word1 : String, word2 : String) -> int:
 	var dist : int = 0
@@ -149,10 +163,14 @@ func _get_word_distance(word1 : String, word2 : String) -> int:
 		word2_letters[character] = word2.count(character)
 	for key : String in word1_letters.keys():
 		if word2_letters.get(key, 0) != word1_letters[key]:
-			if word1_letters[key] > word2_letters.get(key, 0):
+			if word1_letters[key] >= word2_letters.get(key, 0):
 				dist += word1_letters[key] - word2_letters.get(key, 0)
 			else:
 				dist += word2_letters[key] - word1_letters[key]
+	if len(word1) < len(word2):
+		dist += len(word2) - len(word1)
+	elif len(word1) > len(word2):
+		dist += len(word1) - len(word2)
 	return dist
 
 func load_audio_file(path : String) -> AudioStream:

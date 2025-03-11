@@ -38,6 +38,7 @@ const output_scene : PackedScene = preload("res://Scenes/CliOutputLabel.tscn")
 		self.set("theme_override_styles/panel", styleboxes[style])
 	get:
 		return style
+@export var autocomplete : bool = true
 var check_call_arg_type : Callable = (func(arg : String) -> String: var msg : String = arg.right(arg.find("/") * -1); return arg.replace(msg, ""))
 var set_arg_type_callable : Callable = (
 	func(arg : String) -> Variant: 
@@ -73,7 +74,7 @@ const callables : Dictionary[String, Array] = {
 	"CommandLineInterface": ["print_to_output", "run_command", "get_cli_settings", "set_cli_settings"], 
 	"MainScreen": [
 		"play", "set_favourite", "toggle_cli", "open_tutorial", 
-		"_create_home_screen", "_search_library"], 
+		"_create_home_screen", "_search_library", "_mass_import"], 
 	"PlayingScreen": [
 		"reset_playing_screen", "set_player_settings", "get_player_settings", 
 		]
@@ -88,14 +89,20 @@ const keyword_to_text : Dictionary[String, String] = {
 		"ALERT:": "[color=yellow]ALERT |>[/color]", 
 		"NOTIF:": "[color=gold]NOTIFICATION |>[/color]"
 		}
-const settable_settings : PackedStringArray = ["auto_clear", "clear_input", "print_debug_info"]
+const settable_settings : PackedStringArray = ["auto_clear", "clear_input", "print_debug_info", "autocomplete"]
+const autocomplete_select_keys : PackedInt32Array = [KEY_F1, KEY_F2, KEY_F3, KEY_F4, KEY_F5]
 var callables_commands : Array[String] = [] # read only after ready
+var all_commands : Array[String] # read only after ready
 
 func _ready() -> void:
 	callables.values().map(func(item : Array) -> Array: callables_commands.append_array(item); return item)
 	callables_commands.make_read_only()
+	all_commands = (func() -> Array[String]: var to_ret : Array[String] = []; to_ret.append_array(commands); to_ret.append_array(special_commands); return to_ret).call()
+	all_commands.make_read_only()
 	#
-	%InputField.text_submitted.connect(func(text : String) -> void: run_command(text); return)
+	%InputField.text_submitted.connect(Callable(self, "run_command"))
+	%InputField.text_changed.connect(Callable(self, "input_typed"))
+	%CloseAutocompleteButton.pressed.connect(func() -> void: $AutocompleteContainer.visible = false; return)
 	#
 	if MasterDirectoryManager.finished_loading_data == false:
 		await MasterDirectoryManager.finished_loading_data_signal
@@ -107,7 +114,7 @@ func _ready() -> void:
 		run_command(MasterDirectoryManager.user_data_dict["command_on_startup"], true)
 	return
 
-func _input(_event: InputEvent) -> void:
+func _input(event: InputEvent) -> void:
 	if Input.is_action_just_pressed("CommandHistoryUp", true) or Input.is_action_just_pressed("CommandHistoryDown", true):
 		if command_history_placement == 0 and GeneralManager.arr_get(command_history, 0, "") != %InputField.text:
 			command_history.insert(0, %InputField.text)
@@ -118,6 +125,28 @@ func _input(_event: InputEvent) -> void:
 		else:
 			command_history_placement = wrapi(command_history_placement - 1, 0, len(command_history))
 		%InputField.text = command_history[command_history_placement]
+	elif "F" in event.as_text().left(1) and $AutocompleteContainer.visible and %AutocompleteText.text != "":
+		var options : PackedStringArray = %AutocompleteText.text.split("\n", false)
+		print(options)
+		for key : int in autocomplete_select_keys:
+			if len(options) > autocomplete_select_keys.find(key) and Input.is_key_label_pressed(key):
+				var cmd : String = options[(autocomplete_select_keys.find(key) + 1) * -1].right(-3)
+				%InputField.text = cmd + ["", "-"][int(not cmd in special_commands or cmd in ["cache", "read", "error_codes"])]
+		$AutocompleteContainer.visible = false
+		%InputField.grab_focus()
+		%InputField.caret_column = len(%InputField.text)
+	return
+
+func input_typed(new_text : String) -> void:
+	$AutocompleteContainer.visible = autocomplete
+	if autocomplete:
+		%AutocompleteText.text = ""
+		if new_text in all_commands or "-" in new_text:
+			$AutocompleteContainer.visible = false
+			return
+		var results : PackedStringArray = GeneralManager.spellcheck(new_text, all_commands, 5)
+		for result : String in results:
+			%AutocompleteText.text = "F" + str(results.find(result) + 1) + " " + GeneralManager.limit_str(result, 23) + "\n" + %AutocompleteText.text
 	return
 
 func run_command(command : String, bypass_active : bool = false) -> int:
@@ -132,6 +161,9 @@ func run_command(command : String, bypass_active : bool = false) -> int:
 		if len(command_history) > 11:
 			command_history.resize(11)
 	var command_chunks : PackedStringArray = command.split("-", false)
+	if len(command_chunks) < 1:
+		print_to_output("ERROR: No command given to run, please enter a command.")
+		return ERR_CANT_RESOLVE
 	if command_chunks[0].to_lower() in special_commands:
 		match command_chunks[0].to_lower():
 			"help":
@@ -309,13 +341,14 @@ func run_command(command : String, bypass_active : bool = false) -> int:
 					return ERR_INVALID_PARAMETER
 				var data : Dictionary = MasterDirectoryManager.get_object_data.call(command_chunks[1])
 				var to_print : String = "[b]ID [u]" + command_chunks[1] + "[/u] Data:[/b] (Displayed data names are capitalized, real name are lowercase and use _ instead of spaces.)"
-				for item : String in (func() -> PackedStringArray: var keys : Array = data.keys(); return GeneralManager.sort_alphabetically(keys)).call():
+				var keys : PackedStringArray = (func() -> PackedStringArray: var to_return : Array = data.keys(); return GeneralManager.sort_alphabetically(to_return)).call()
+				for item : String in keys:
 					var to_add : String = str(data[item])
 					if typeof(data[item]) in [TYPE_ARRAY, TYPE_PACKED_STRING_ARRAY]:
 						to_add = ""
 						for item2 : Variant in data[item]:
-							to_add += "\n-- " + str(data[item].find(item2) + 1) + ": " + str(item2)
-					to_print += "\n- " + item.capitalize() + ": " + to_add
+							to_add += "\n" + ["│", " "][int(keys.find(item) == len(keys) - 1)] + ["├", "└"][int(data[item].find(item2) == len(data[item]) - 1)] + "─> " + str(data[item].find(item2)) + ": " + str(item2)
+					to_print += "\n" + ["├", "└"][int(keys.find(item) == len(keys) - 1)] + ["─", "┬"][int(to_add != str(data[item]))] + "> " + item.capitalize() + ": " + [to_add, "None"][int(to_add in ["", " "])]
 				print_to_output(to_print)
 			"close":
 				active = false
@@ -332,20 +365,21 @@ func run_command(command : String, bypass_active : bool = false) -> int:
 			"get_callables":
 				var to_print : String = "[b]Callables:[/b]"
 				for callable : String in callables_commands:
-					to_print += "\n[color=lime_green]-[/color] " + str(callables_commands.find(callable) + 1) + " [color=orange]-[/color] " + callable
-				print_to_output(to_print)
+					to_print += "\n[color=lime_green]├[/color][color=orange]──[/color]" + str(callables_commands.find(callable) + 1) + "[color=orange]───[/color]" + callable
+				print_to_output(to_print.insert(to_print.rfind("├"), "└").erase(to_print.rfind("├") + 1))
 			"get_commands":
-				var to_print : String = "[b]Commands:[/b]\n[color=lime_green]-[/color] [color=light_steel_blue]Special Commands:[/color]"
+				#└─├┬│
+				var to_print : String = "[b]Commands:[/b]\n[color=lime_green]│[/color] [color=light_steel_blue]Special Commands:[/color]"
 				for cmd : String in special_commands:
-					to_print += "\n[color=lime_green]-[/color] [color=orange]-[/color] " + str(special_commands.find(cmd) + 1) + " [color=yellow]-[/color] " + cmd
-				to_print += "\n[color=lime_green]-[/color] [color=light_steel_blue]Commands:[/color]"
+					to_print += "\n[color=lime_green]├[/color][color=orange]───[/color]" + str(special_commands.find(cmd) + 1) + "[color=orange]───[/color]" + cmd
+				to_print += "\n[color=lime_green]│[/color] [color=light_steel_blue]Commands:[/color]"
 				for cmd : String in commands:
-					to_print += "\n[color=lime_green]-[/color] [color=orange]-[/color] " + str(commands.find(cmd) + 1) + " [color=yellow]-[/color] " + cmd
+					to_print += "\n[color=lime_green]├[/color][color=orange]───[/color]" + str(commands.find(cmd) + 1) + "[color=orange]───[/color]" + cmd
 				if GeneralManager.is_in_debug:
-					to_print += "\n[color=lime_green]-[/color] [color=light_steel_blue]Debug Commands:[/color]"
+					to_print += "\n[color=lime_green]│[/color] [color=light_steel_blue]Debug Commands:[/color]"
 					for cmd : String in debug_commands:
-						to_print += "\n[color=lime_green]-[/color] [color=orange]-[/color] " + str(debug_commands.find(cmd) + 1) + " [color=yellow]-[/color] " + cmd
-				print_to_output(to_print)
+						to_print += "\n[color=lime_green]├[/color][color=orange]───[/color]" + str(debug_commands.find(cmd) + 1) + "[color=orange]───[/color]" + cmd
+				print_to_output(to_print.insert(to_print.rfind("├"), "└").erase(to_print.rfind("├") + 1))
 	elif ((command_chunks[0].to_lower() == "debug") and (len(command_chunks) > 1) and (command_chunks[1] in debug_commands) and (GeneralManager.is_in_debug)):
 		match command_chunks[1]:
 			"print_id_dict":
@@ -405,11 +439,11 @@ func run_command(command : String, bypass_active : bool = false) -> int:
 					data[command_chunks[2]] = set_arg_type_callable.call(command_chunks[3])
 					print_to_output("Set data of name '[u]" + command_chunks[2] + "[/u]' on object with the ID of '[u]" + command_chunks[1] + "[/u]' to a value of '[u]" + command_chunks[3] + "[/u]'.")
 				else:
-					print_to_output("ERROR: First argument given for 'set' is invalid, please try again with an ID or setting type. Did you mean '[u]" + GeneralManager.spellcheck(command_chunks[1], set_and_get_types) + "[/u]'?.")
+					print_to_output("ERROR: First argument given for 'set' is invalid, please try again with an ID or setting type. Did you mean '[u]" + GeneralManager.spellcheck(command_chunks[1], set_and_get_types)[0] + "[/u]'?.")
 					return ERR_INVALID_PARAMETER
 			"get":
 				if not command_chunks[1] in set_and_get_types:
-					print_to_output("ERROR: First argument given for 'get' is invalid, please try again with a setting type. Did you mean '[u]" + GeneralManager.spellcheck(command_chunks[1], set_and_get_types) + "[/u]'?.")
+					print_to_output("ERROR: First argument given for 'get' is invalid, please try again with a setting type. Did you mean '[u]" + GeneralManager.spellcheck(command_chunks[1], set_and_get_types)[0] + "[/u]'?.")
 					return ERR_INVALID_PARAMETER
 				var data : Dictionary
 				match command_chunks[1]:
@@ -459,15 +493,16 @@ func run_command(command : String, bypass_active : bool = false) -> int:
 				print_to_output("Removed item [u]" + data[command_chunks[2]][set_arg_type_callable.call(command_chunks[3])] + "[/u] at index [u]" + str(set_arg_type_callable.call(command_chunks[3])) + "[/u] from [u]" + str(data[command_chunks[2]]) + "[/u] on object with ID [u]" + command_chunks[1] + "[/u].")
 				data[command_chunks[2]].remove_at(set_arg_type_callable.call(command_chunks[3]))
 	else:
-		print_to_output("ERROR: Command '" + command + "' is not understandable; please check it and try again. Did you mean '[u]" + GeneralManager.spellcheck(command_chunks[0], (func() -> PackedStringArray: var to_ret : PackedStringArray = []; to_ret.append_array(commands); to_ret.append_array(special_commands); return to_ret).call()) + "[/u]'?.")
+		print_to_output("ERROR: Command '" + command + "' is not understandable; please check it and try again. Did you mean '[u]" + GeneralManager.spellcheck(command_chunks[0], all_commands)[0] + "[/u]'?.")
 		return ERR_INVALID_PARAMETER
 	return OK
 
 func print_to_output(text : String, use_keywords : bool = true) -> int:
 	if use_keywords:
 		for key : String in keyword_to_text.keys():
-			if key in text:
-				text = text.replace(key, keyword_to_text[key])
+			if len(text) > len(key) and text.left(len(key)) == key:
+				text = text.right(len(key) * -1)
+				text = keyword_to_text[key] + text
 				break
 	%OutputContainer.add_child(output_scene.instantiate())
 	%OutputContainer.get_child(-1).text = ["", "\n"][int(MasterDirectoryManager.user_data_dict["separate_cli_outputs"])] + text
@@ -476,7 +511,7 @@ func print_to_output(text : String, use_keywords : bool = true) -> int:
 
 func _run(command : String, args : Array[Variant]) -> Variant:
 	if not command in callables_commands:
-		print_to_output("ERROR: Callable '[u]" + command + "[/u]' Is not valid, please check it and try again. Did you mean '[u]" + GeneralManager.spellcheck(command, callables_commands) + "[/u]'?.")
+		print_to_output("ERROR: Callable '[u]" + command + "[/u]' Is not valid, please check it and try again. Did you mean '[u]" + GeneralManager.spellcheck(command, callables_commands)[0] + "[/u]'?.")
 		return ERR_INVALID_PARAMETER
 	for i : int in range(0, len(args)):
 		if typeof(args[i]) == TYPE_STRING:
@@ -508,7 +543,7 @@ func set_cli_settings(setting : String, value : Variant) -> int:
 		self.set(setting, value)
 		return OK
 	if not setting in settable_settings:
-		GeneralManager.cli_print_callable.call("ERROR: Setting [u]" + setting + "[/u] does not exist in Command Line Interface Settings or is unable to be set. Did you mean '[u]" + GeneralManager.spellcheck(setting, settable_settings) + "[/u]'?.")
+		GeneralManager.cli_print_callable.call("ERROR: Setting [u]" + setting + "[/u] does not exist in Command Line Interface Settings or is unable to be set. Did you mean '[u]" + GeneralManager.spellcheck(setting, settable_settings)[0] + "[/u]'?.")
 	else:
 		GeneralManager.cli_print_callable.call("ERROR: Tried to set [u]" + setting + "[/u] whos value is of type [u]" + type_string(typeof(self.get(setting))) + "[/u] to [u]" + str(value) + "[/u] which is of type [u]" + type_string(typeof(value)) + "[/u].")
 	return ERR_INVALID_PARAMETER

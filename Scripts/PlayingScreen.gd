@@ -303,7 +303,7 @@ func set_player_settings(setting : StringName, value : Variant) -> int:
 		self.set(setting, value)
 		return OK
 	if not setting in settable_settings:
-		GeneralManager.cli_print_callable.call("ERROR: Setting [u]" + setting + "[/u] does not exist in Player Settings or is unable to be set. Did you mean '[u]" + GeneralManager.spellcheck(setting, settable_settings) + "[/u]'?.")
+		GeneralManager.cli_print_callable.call("ERROR: Setting [u]" + setting + "[/u] does not exist in Player Settings or is unable to be set. Did you mean '[u]" + GeneralManager.spellcheck(setting, settable_settings)[0] + "[/u]'?.")
 	else:
 		GeneralManager.cli_print_callable.call("ERROR: Tried to set [u]" + setting + "[/u] whos value is of type [u]" + type_string(typeof(self.get(setting))) + "[/u] to [u]" + str(value) + "[/u] which is of type [u]" + type_string(typeof(value)) + "[/u].")
 	return ERR_INVALID_PARAMETER
@@ -328,7 +328,7 @@ func reset_playing_screen() -> void:
 	%Percentage.tooltip_text = "0s / 0s"
 	%ProgressBar.value = 0
 	%Image.texture = GeneralManager.load_svg_to_img("res://Assets/Icons/Missing.svg", 5)
-	%Background.color = Color8(50, 50, 50)
+	%Background.color = Color8(41, 42, 42)
 	%AudioPlayer.stop()
 	%AudioPlayer.stream = null
 	return

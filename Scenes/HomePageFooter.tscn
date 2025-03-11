@@ -6,7 +6,7 @@
 
 [node name="Text" type="Label" parent="."]
 layout_mode = 2
-text = "We don't have any more reccomendations for you
+text = "We don't have any more recommendations for you
 Want more? Try listening to a random playlist
 "
 horizontal_alignment = 1

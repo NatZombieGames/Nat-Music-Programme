@@ -5,6 +5,7 @@ static var pressed_stylebox : StyleBoxFlat = preload("res://Assets/Styleboxes/Cu
 @export var button_custom_minimum_size : Vector2i = Vector2i(24, 24)
 @export var texture_icon_name : String = "Missing"
 @export var pressed_texture_icon_name : String = "Missing"
+@export var tooltip : String = ""
 @export var toggle : bool = false
 @export var pressed : bool = false
 @export var button_group : ButtonGroup
@@ -24,6 +25,7 @@ func update(data : Dictionary = {}) -> void:
 	set_panel()
 	$Button.custom_minimum_size = button_custom_minimum_size
 	$Button.texture_normal = GeneralManager.get_icon_texture(texture_icon_name)
+	$Button.tooltip_text = tooltip
 	if pressed_texture_icon_name != "Missing":
 		$Button.texture_pressed = GeneralManager.get_icon_texture(pressed_texture_icon_name)
 	else:

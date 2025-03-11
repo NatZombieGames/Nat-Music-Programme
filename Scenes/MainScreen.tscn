@@ -155,6 +155,7 @@ size_flags_horizontal = 3
 layout_mode = 2
 button_custom_minimum_size = Vector2i(60, 60)
 texture_icon_name = "Home"
+tooltip = "Home Screen"
 toggle = true
 pressed = true
 button_group = ExtResource("4_2jogn")
@@ -170,6 +171,7 @@ layout_mode = 2
 layout_mode = 2
 button_custom_minimum_size = Vector2i(60, 60)
 texture_icon_name = "AddItem"
+tooltip = "New Screen"
 toggle = true
 button_group = ExtResource("4_2jogn")
 pressed_signal_sender = NodePath("../../../../../..")
@@ -185,6 +187,7 @@ layout_mode = 2
 layout_mode = 2
 button_custom_minimum_size = Vector2i(60, 60)
 texture_icon_name = "Library"
+tooltip = "Library Screen"
 toggle = true
 button_group = ExtResource("4_2jogn")
 pressed_signal_sender = NodePath("../../../../../..")
@@ -200,6 +203,7 @@ layout_mode = 2
 layout_mode = 2
 button_custom_minimum_size = Vector2i(60, 60)
 texture_icon_name = "Account"
+tooltip = "Profile Screen"
 toggle = true
 button_group = ExtResource("4_2jogn")
 pressed_signal_sender = NodePath("../../../../../..")
@@ -215,6 +219,7 @@ layout_mode = 2
 layout_mode = 2
 button_custom_minimum_size = Vector2i(60, 60)
 texture_icon_name = "Exit"
+tooltip = "Quit"
 pressed_signal_sender = NodePath("../../../../../..")
 pressed_signal_name = "exit"
 
@@ -235,7 +240,6 @@ size_flags_vertical = 3
 color = Color(0.156863, 0.156863, 0.156863, 1)
 
 [node name="Home" type="Control" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer"]
-visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -319,7 +323,7 @@ vertical_alignment = 1
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 theme_override_font_sizes/font_size = 25
-text = " Artist"
+text = " Creation Info"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -328,10 +332,11 @@ self_modulate = Color(1, 1, 1, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="ArtistButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/New/Container/Header/TabContainer" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("3_qykjb")]
+[node name="LandingButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/New/Container/Header/TabContainer" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("3_qykjb")]
 layout_mode = 2
 button_custom_minimum_size = Vector2i(45, 45)
-texture_icon_name = "Artist"
+texture_icon_name = "Info"
+tooltip = "Creation Info"
 toggle = true
 pressed = true
 button_group = ExtResource("6_wg16v")
@@ -343,10 +348,11 @@ self_modulate = Color(1, 1, 1, 0)
 custom_minimum_size = Vector2(5, 0)
 layout_mode = 2
 
-[node name="AlbumButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/New/Container/Header/TabContainer" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("3_qykjb")]
+[node name="ArtistButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/New/Container/Header/TabContainer" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("3_qykjb")]
 layout_mode = 2
 button_custom_minimum_size = Vector2i(45, 45)
-texture_icon_name = "Album"
+texture_icon_name = "Artist"
+tooltip = "Create New Artist"
 toggle = true
 button_group = ExtResource("6_wg16v")
 pressed_signal_sender = NodePath("../../../../../../../../..")
@@ -358,10 +364,11 @@ self_modulate = Color(1, 1, 1, 0)
 custom_minimum_size = Vector2(5, 0)
 layout_mode = 2
 
-[node name="SongButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/New/Container/Header/TabContainer" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("3_qykjb")]
+[node name="AlbumButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/New/Container/Header/TabContainer" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("3_qykjb")]
 layout_mode = 2
 button_custom_minimum_size = Vector2i(45, 45)
-texture_icon_name = "Songs"
+texture_icon_name = "Album"
+tooltip = "Create New Album"
 toggle = true
 button_group = ExtResource("6_wg16v")
 pressed_signal_sender = NodePath("../../../../../../../../..")
@@ -373,10 +380,11 @@ self_modulate = Color(1, 1, 1, 0)
 custom_minimum_size = Vector2(5, 0)
 layout_mode = 2
 
-[node name="PlaylistButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/New/Container/Header/TabContainer" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("3_qykjb")]
+[node name="SongButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/New/Container/Header/TabContainer" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("3_qykjb")]
 layout_mode = 2
 button_custom_minimum_size = Vector2i(45, 45)
-texture_icon_name = "Playlist"
+texture_icon_name = "Songs"
+tooltip = "Upload New Song(s)"
 toggle = true
 button_group = ExtResource("6_wg16v")
 pressed_signal_sender = NodePath("../../../../../../../../..")
@@ -388,12 +396,66 @@ self_modulate = Color(1, 1, 1, 0)
 custom_minimum_size = Vector2(5, 0)
 layout_mode = 2
 
+[node name="PlaylistButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/New/Container/Header/TabContainer" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("3_qykjb")]
+layout_mode = 2
+button_custom_minimum_size = Vector2i(45, 45)
+texture_icon_name = "Playlist"
+tooltip = "Create New Playlist"
+toggle = true
+button_group = ExtResource("6_wg16v")
+pressed_signal_sender = NodePath("../../../../../../../../..")
+pressed_signal_name = "set_create_screen_page"
+argument = "4"
+
+[node name="Void5" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/New/Container/Header/TabContainer"]
+self_modulate = Color(1, 1, 1, 0)
+custom_minimum_size = Vector2(5, 0)
+layout_mode = 2
+
 [node name="Separator" type="ColorRect" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/New/Container" groups=["Separator"]]
 custom_minimum_size = Vector2(0, 10)
 layout_mode = 2
 color = Color(0.235294, 0.235294, 0.235294, 1)
 
+[node name="LandingPage" type="Control" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/New/Container"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Container" type="VBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/New/Container/LandingPage"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Text" type="Label" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/New/Container/LandingPage/Container"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "This is the create screen.
+You can navigate to different pages using the new buttons on the right
+to make Artists, Albums, Song(s) and Playlists respectively.
+
+Or you can use our 'Mass Import' feature, which will (Using the selected directory)
+create everything.
+The top directories will be treated as Artists, second ones as Albums with all the valid
+audio files (.mp3, .ogg and .wav) in those being uploaded as Songs.
+The first image found inside each Artist and Album directory will also be uploaded as their covers.
+
+Any mistake or not-included data can be corrected in the Library by opening the item's Context Menu
+(Using the '...' button.)
+"
+horizontal_alignment = 1
+
+[node name="MassImport" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/New/Container/LandingPage/Container" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("5_5wduh")]
+layout_mode = 2
+button_text = " Mass Import "
+button_font_size = 25
+pressed_signal_sender = NodePath("../../../../../../../../..")
+pressed_signal_name = "mass_import"
+
 [node name="Body" type="Control" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/New/Container"]
+visible = false
 layout_mode = 2
 size_flags_vertical = 3
 
@@ -454,6 +516,7 @@ alignment = 1
 layout_mode = 2
 size_flags_horizontal = 0
 texture_icon_name = "UploadFile"
+tooltip = "Upload Image File"
 pressed_signal_sender = NodePath("../../../../../../../../../../../..")
 pressed_signal_name = "create_button_pressed"
 
@@ -532,6 +595,7 @@ size_flags_horizontal = 3
 [node name="ClearBtn" type="TextureButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/New/Container/Body/Container/Container/ParentContainer/Container"]
 custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
+tooltip_text = "Clear"
 mouse_default_cursor_shape = 2
 texture_normal = ExtResource("17_mblys")
 ignore_texture_size = true
@@ -540,6 +604,7 @@ stretch_mode = 5
 [node name="SelectBtn" type="TextureButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/New/Container/Body/Container/Container/ParentContainer/Container"]
 custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
+tooltip_text = "Select Album"
 mouse_default_cursor_shape = 2
 texture_normal = ExtResource("18_465rc")
 ignore_texture_size = true
@@ -584,6 +649,7 @@ size_flags_horizontal = 3
 [node name="AddArtistButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/New/Container/Body/Container/Container/DataList/Container/InfoContainer" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("3_qykjb")]
 layout_mode = 2
 texture_icon_name = "ArtistList"
+tooltip = "Add Artist"
 pressed_signal_sender = NodePath("../../../../../../../../../../../../..")
 pressed_signal_name = "create_button_pressed"
 argument = "5"
@@ -596,6 +662,7 @@ layout_mode = 2
 [node name="AddAlbumButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/New/Container/Body/Container/Container/DataList/Container/InfoContainer" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("3_qykjb")]
 layout_mode = 2
 texture_icon_name = "Album"
+tooltip = "Add Album"
 pressed_signal_sender = NodePath("../../../../../../../../../../../../..")
 pressed_signal_name = "create_button_pressed"
 argument = "6"
@@ -608,6 +675,7 @@ layout_mode = 2
 [node name="AddSongButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/New/Container/Body/Container/Container/DataList/Container/InfoContainer" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("3_qykjb")]
 layout_mode = 2
 texture_icon_name = "Songs"
+tooltip = "Add Song"
 pressed_signal_sender = NodePath("../../../../../../../../../../../../..")
 pressed_signal_name = "create_button_pressed"
 argument = "7"
@@ -620,6 +688,7 @@ layout_mode = 2
 [node name="UploadSongButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/New/Container/Body/Container/Container/DataList/Container/InfoContainer" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("3_qykjb")]
 layout_mode = 2
 texture_icon_name = "UploadFile"
+tooltip = "Upload Individual Song"
 pressed_signal_sender = NodePath("../../../../../../../../../../../../..")
 pressed_signal_name = "create_button_pressed"
 argument = "8"
@@ -632,6 +701,7 @@ layout_mode = 2
 [node name="UploadDirectoryButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/New/Container/Body/Container/Container/DataList/Container/InfoContainer" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("3_qykjb")]
 layout_mode = 2
 texture_icon_name = "Upload"
+tooltip = "Upload Directory"
 pressed_signal_sender = NodePath("../../../../../../../../../../../../..")
 pressed_signal_name = "create_button_pressed"
 argument = "9"
@@ -686,7 +756,6 @@ size_flags_horizontal = 3
 size_flags_vertical = 2
 
 [node name="Library" type="Control" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer"]
-visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -735,6 +804,7 @@ vertical_alignment = 1
 [node name="SearchButton" type="TextureButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Header/TabContainer"]
 custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
+tooltip_text = "Search"
 mouse_default_cursor_shape = 2
 texture_normal = ExtResource("13_dhx4k")
 stretch_mode = 5
@@ -758,6 +828,7 @@ custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
+tooltip_text = "Toggle Filter List"
 mouse_default_cursor_shape = 2
 toggle_mode = true
 texture_normal = ExtResource("14_x3cy0")
@@ -769,6 +840,7 @@ custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
+tooltip_text = "Toggle Match-Case"
 mouse_default_cursor_shape = 2
 toggle_mode = true
 texture_normal = ExtResource("15_3rscq")
@@ -785,6 +857,7 @@ size_flags_horizontal = 3
 layout_mode = 2
 button_custom_minimum_size = Vector2i(45, 45)
 texture_icon_name = "ArtistList"
+tooltip = "Artists"
 toggle = true
 pressed = true
 button_group = ExtResource("15_csmgt")
@@ -800,6 +873,7 @@ layout_mode = 2
 layout_mode = 2
 button_custom_minimum_size = Vector2i(45, 45)
 texture_icon_name = "Album"
+tooltip = "Albums"
 toggle = true
 button_group = ExtResource("15_csmgt")
 pressed_signal_sender = NodePath("../../../../../../../../..")
@@ -815,6 +889,7 @@ layout_mode = 2
 layout_mode = 2
 button_custom_minimum_size = Vector2i(45, 45)
 texture_icon_name = "Songs"
+tooltip = "Songs"
 toggle = true
 button_group = ExtResource("15_csmgt")
 pressed_signal_sender = NodePath("../../../../../../../../..")
@@ -830,6 +905,7 @@ layout_mode = 2
 layout_mode = 2
 button_custom_minimum_size = Vector2i(45, 45)
 texture_icon_name = "Playlist"
+tooltip = "Playlists"
 toggle = true
 button_group = ExtResource("15_csmgt")
 pressed_signal_sender = NodePath("../../../../../../../../..")
@@ -847,7 +923,6 @@ layout_mode = 2
 color = Color(0.235294, 0.235294, 0.235294, 1)
 
 [node name="ScrollContainer" type="ScrollContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container" groups=["ScrollContainer"]]
-visible = false
 layout_mode = 2
 size_flags_vertical = 3
 
@@ -861,6 +936,7 @@ theme_override_constants/separation = 20
 layout_mode = 2
 
 [node name="Profile" type="ColorRect" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container" groups=["Background"]]
+visible = false
 layout_mode = 2
 size_flags_vertical = 3
 color = Color(0.158472, 0.158472, 0.158472, 1)
@@ -920,7 +996,6 @@ alignment = 1
 
 [node name="Title" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/HeaderContainer/Container" node_paths=PackedStringArray("text_changed_signal_sender") instance=ExtResource("16_330uy")]
 layout_mode = 2
-text = "Disturbed"
 font_size = 35
 button_custom_min_size = Vector2i(40, 40)
 text_changed_signal_sender = NodePath("../../../../../../../../../../../..")
@@ -942,6 +1017,7 @@ custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
 size_flags_horizontal = 8
 size_flags_vertical = 0
+tooltip_text = "Close Context Menu"
 mouse_default_cursor_shape = 2
 texture_normal = ExtResource("8_3oq6m")
 ignore_texture_size = true
@@ -1008,6 +1084,7 @@ size_flags_horizontal = 3
 [node name="RefreshBtn" type="TextureButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/ParentContainer/Container"]
 custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
+tooltip_text = "Refresh"
 mouse_default_cursor_shape = 2
 texture_normal = ExtResource("11_kwnr3")
 ignore_texture_size = true
@@ -1016,6 +1093,7 @@ stretch_mode = 5
 [node name="ClearBtn" type="TextureButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/ParentContainer/Container"]
 custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
+tooltip_text = "Clear"
 mouse_default_cursor_shape = 2
 texture_normal = ExtResource("17_mblys")
 ignore_texture_size = true
@@ -1024,6 +1102,7 @@ stretch_mode = 5
 [node name="SelectBtn" type="TextureButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/ParentContainer/Container"]
 custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
+tooltip_text = "Select Parent"
 mouse_default_cursor_shape = 2
 texture_normal = ExtResource("18_465rc")
 ignore_texture_size = true
@@ -1069,6 +1148,7 @@ size_flags_horizontal = 3
 [node name="ClearBtn" type="TextureButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/AudioFileContainer/Container"]
 custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
+tooltip_text = "Clear"
 mouse_default_cursor_shape = 2
 texture_normal = ExtResource("17_mblys")
 ignore_texture_size = true
@@ -1077,6 +1157,7 @@ stretch_mode = 5
 [node name="SelectBtn" type="TextureButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/Container/Profile/Container/Container/AudioFileContainer/Container"]
 custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
+tooltip_text = "Upload Audio File"
 mouse_default_cursor_shape = 2
 texture_normal = ExtResource("18_465rc")
 ignore_texture_size = true
@@ -1119,6 +1200,7 @@ size_flags_horizontal = 3
 visible = false
 custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
+tooltip_text = "Upload Artist Songs"
 mouse_default_cursor_shape = 2
 texture_normal = ExtResource("15_3145b")
 ignore_texture_size = true
@@ -1128,6 +1210,7 @@ stretch_mode = 5
 visible = false
 custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
+tooltip_text = "Upload Album Songs"
 mouse_default_cursor_shape = 2
 texture_normal = ExtResource("16_mjcgn")
 ignore_texture_size = true
@@ -1137,6 +1220,7 @@ stretch_mode = 5
 visible = false
 custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
+tooltip_text = "Upload Song"
 mouse_default_cursor_shape = 2
 texture_normal = ExtResource("17_447hp")
 ignore_texture_size = true
@@ -1188,18 +1272,17 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [node name="FiltersPage" type="PanelContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library"]
-visible = false
 custom_minimum_size = Vector2(0, 362)
 layout_mode = 1
 offset_left = 960.0
 offset_top = 22.0
 offset_right = 1310.0
-offset_bottom = 249.0
+offset_bottom = 384.0
 theme_override_styles/panel = ExtResource("9_ejiiw")
 
 [node name="Container" type="VBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/FiltersPage"]
+custom_minimum_size = Vector2(0, 362)
 layout_mode = 2
-size_flags_vertical = 0
 theme_override_constants/separation = 5
 
 [node name="Panel" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/FiltersPage/Container"]
@@ -1223,6 +1306,7 @@ layout_mode = 2
 [node name="Button" type="TextureButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/FiltersPage/Container/Row1"]
 custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
+tooltip_text = "Add Artist Filter"
 mouse_default_cursor_shape = 2
 texture_normal = ExtResource("21_8lptr")
 ignore_texture_size = true
@@ -1244,6 +1328,7 @@ layout_mode = 2
 [node name="Button" type="TextureButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/FiltersPage/Container/Row2"]
 custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
+tooltip_text = "Add Album Filter"
 mouse_default_cursor_shape = 2
 texture_normal = ExtResource("16_mjcgn")
 ignore_texture_size = true
@@ -1264,6 +1349,7 @@ layout_mode = 2
 [node name="Button" type="TextureButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/FiltersPage/Container/Row3"]
 custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
+tooltip_text = "Add Song Filter"
 mouse_default_cursor_shape = 2
 texture_normal = ExtResource("17_447hp")
 ignore_texture_size = true
@@ -1285,6 +1371,7 @@ layout_mode = 2
 [node name="Button" type="TextureButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Library/FiltersPage/Container/Row4"]
 custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
+tooltip_text = "Add Playlist Filter"
 mouse_default_cursor_shape = 2
 texture_normal = ExtResource("22_tg2ix")
 ignore_texture_size = true
@@ -1300,6 +1387,7 @@ shortcut_keys_enabled = false
 vertical_alignment = 1
 
 [node name="Profile" type="Control" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer"]
+visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -1354,6 +1442,7 @@ size_flags_horizontal = 3
 layout_mode = 2
 button_custom_minimum_size = Vector2i(45, 45)
 texture_icon_name = "Data"
+tooltip = "Data Page"
 toggle = true
 pressed = true
 button_group = ExtResource("17_dg6yg")
@@ -1369,6 +1458,7 @@ layout_mode = 2
 layout_mode = 2
 button_custom_minimum_size = Vector2i(45, 45)
 texture_icon_name = "Settings"
+tooltip = "Settings Page"
 toggle = true
 button_group = ExtResource("17_dg6yg")
 pressed_signal_sender = NodePath("../../../../../../../../..")
@@ -1384,6 +1474,7 @@ layout_mode = 2
 layout_mode = 2
 button_custom_minimum_size = Vector2i(45, 45)
 texture_icon_name = "Accessibility"
+tooltip = "Accessibility Page"
 toggle = true
 button_group = ExtResource("17_dg6yg")
 pressed_signal_sender = NodePath("../../../../../../../../..")
@@ -1399,6 +1490,7 @@ layout_mode = 2
 layout_mode = 2
 button_custom_minimum_size = Vector2i(45, 45)
 texture_icon_name = "Keyboard"
+tooltip = "Keybinds Page"
 toggle = true
 button_group = ExtResource("17_dg6yg")
 pressed_signal_sender = NodePath("../../../../../../../../..")
@@ -1414,6 +1506,7 @@ layout_mode = 2
 layout_mode = 2
 button_custom_minimum_size = Vector2i(45, 45)
 texture_icon_name = "CommandLineInterface"
+tooltip = "Command Line Interface Page"
 toggle = true
 button_group = ExtResource("17_dg6yg")
 pressed_signal_sender = NodePath("../../../../../../../../..")
@@ -1589,6 +1682,7 @@ For changing all of the settings used by the programme instead of the few below 
 [u]Continue Playing[/u]: If enabled, when saving your data your active song and song list (Playlist, Album, etc.) will be saved and automatically reloaded upon opening in the future. Note this will not save where in the song you where and if it was paused. 
 [u]Continue Playing Exact[/u]: If this and [u]Continue Playing[/u] are enabled; when saving your active song data it will save the percentage of your progress through the song.
 [u]Generate Home Screen[/u]: If enabled when opening the programme the Home screen will be populated with reccomendations of things to listen to, though this will increase loading time. If you don't want to use the Home screen you can disable it to make the app load faster.
+[u]CLI Autocomplete[/u]: If enabled wehn typing the start of a command into the CLI then you will get up to the 5 closest commands to your input available listed above the input field, you can then press one of the Function (F1, F2, etc.) buttons according to the number to set your input field to the given command.
 
 To manage these options, please see the buttons below.
 
@@ -1631,6 +1725,14 @@ pressed = true
 pressed_signal_sender = NodePath("../../../../../../../../../../../../..")
 pressed_signal_name = "user_setting_changed"
 argument = "3"
+
+[node name="Button5" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Settings/Container/SettingsPanel/Container/Buttons" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("19_g648t")]
+layout_mode = 2
+button_text = "CLI Autocomplete"
+pressed = true
+pressed_signal_sender = NodePath("../../../../../../../../../../../../..")
+pressed_signal_name = "user_setting_changed"
+argument = "4"
 
 [node name="WidgetPanel" type="PanelContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Settings/Container"]
 custom_minimum_size = Vector2(961, 400)
@@ -2306,6 +2408,7 @@ unique_name_in_owner = true
 title = "Select An Image"
 initial_position = 4
 size = Vector2i(314, 176)
+always_on_top = true
 popup_window = true
 force_native = true
 ok_button_text = "Open"
@@ -2322,6 +2425,7 @@ auto_translate_mode = 1
 title = "Select A Song"
 initial_position = 4
 size = Vector2i(314, 176)
+always_on_top = true
 popup_window = true
 force_native = true
 ok_button_text = "Open"
@@ -2338,6 +2442,20 @@ auto_translate_mode = 1
 title = "Select A Directory"
 initial_position = 4
 size = Vector2i(314, 176)
+always_on_top = true
+popup_window = true
+force_native = true
+ok_button_text = "Select Current Folder"
+dialog_hide_on_ok = true
+mode_overrides_title = false
+file_mode = 2
+access = 2
+use_native_dialog = true
+
+[node name="MassImportDialog" type="FileDialog" parent="Camera/AspectRatioContainer"]
+unique_name_in_owner = true
+title = "Select Mass Import Directory"
+always_on_top = true
 popup_window = true
 force_native = true
 ok_button_text = "Select Current Folder"
