@@ -10,7 +10,7 @@ You can also use the built-in CLI (Command Line Interface) to get more granular 
 There is an Accessibility page located in the Profile screen.
 The app is entirely offline and standalone.
 
-![Showcase Image 1](Assets/Showcase Images/Showcase_1.png)
+![Showcase Image 1](Assets/ShowcaseImages/Showcase_1.png)
 
 ## Scalability / ID's ##
 
@@ -64,12 +64,12 @@ The data is saved using Godot's ConfigFile class, the data is organised like:
 
 ## Showcase Images ##
 
-![Showcase Image 1](Assets/Showcase Images/Showcase_1.png)
+![Showcase Image 1](Assets/ShowcaseImages/Showcase_1.png)
 
-![Showcase Image 2](Assets/Showcase Images/Showcase_2.png)
+![Showcase Image 2](Assets/ShowcaseImages/Showcase_2.png)
 
-![Showcase Image 3](Assets/Showcase Images/Showcase_3.png)
+![Showcase Image 3](Assets/ShowcaseImages/Showcase_3.png)
 
-![Showcase Image 4](Assets/Showcase Images/Showcase_4.png)
+![Showcase Image 4](Assets/ShowcaseImages/Showcase_4.png)
 
-![Showcase Image 5](Assets/Showcase Images/Showcase_5.png)
+![Showcase Image 5](Assets/ShowcaseImages/Showcase_5.png)
