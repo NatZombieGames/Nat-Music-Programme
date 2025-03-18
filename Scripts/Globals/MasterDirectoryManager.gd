@@ -198,7 +198,6 @@ func set_user_settings(setting : StringName, value : Variant) -> int:
 			"shuffle":
 				get_node("/root/MainScreen").playing_screen.shuffle = value
 			"auto_clear", "clear_input", "autocomplete":
-				print(get_node("/root/MainScreen/Camera/AspectRatioContainer/CommandLineInterface").autocomplete)
 				get_node("/root/MainScreen/Camera/AspectRatioContainer/CommandLineInterface").set(setting, value)
 			"special_icon_scale", "icon_scale", "song_cache_size", "image_cache_size":
 				if value < 1:

@@ -58,6 +58,8 @@ caret_blink_interval = 0.5
 [node name="AutocompleteContainer" type="VBoxContainer" parent="."]
 visible = false
 layout_mode = 2
+size_flags_vertical = 8
+mouse_filter = 2
 alignment = 2
 
 [node name="Autocomplete" type="PanelContainer" parent="AutocompleteContainer"]

@@ -127,7 +127,6 @@ func _input(event: InputEvent) -> void:
 		%InputField.text = command_history[command_history_placement]
 	elif "F" in event.as_text().left(1) and $AutocompleteContainer.visible and %AutocompleteText.text != "":
 		var options : PackedStringArray = %AutocompleteText.text.split("\n", false)
-		print(options)
 		for key : int in autocomplete_select_keys:
 			if len(options) > autocomplete_select_keys.find(key) and Input.is_key_label_pressed(key):
 				var cmd : String = options[(autocomplete_select_keys.find(key) + 1) * -1].right(-3)

@@ -665,10 +665,10 @@ func mass_import(_arg : String = "") -> void:
 	var new_album_ids : PackedStringArray
 	var new_song_ids : PackedStringArray
 	var available_images : PackedStringArray
-	print("Path at mass import: " + path)
+	#print("Path at mass import: " + path)
 	for artist_dir : String in DirAccess.get_directories_at(path):
 		new_artist_ids.append(MasterDirectoryManager.generate_id(MasterDirectoryManager.use_type.ARTIST))
-		print("making new ARTIST with id '" + new_artist_ids[-1] + "' and name '" + artist_dir + "'")
+		#print("making new ARTIST with id '" + new_artist_ids[-1] + "' and name '" + artist_dir + "'")
 		MasterDirectoryManager.artist_id_dict[new_artist_ids[-1]] = MasterDirectoryManager.get_data_template(MasterDirectoryManager.use_type.ARTIST)
 		MasterDirectoryManager.artist_id_dict[new_artist_ids[-1]]["name"] = artist_dir
 		available_images = GeneralManager.packed_string_filter(DirAccess.get_files_at(path + "/" + artist_dir), GeneralManager.is_valid_image)
@@ -676,7 +676,7 @@ func mass_import(_arg : String = "") -> void:
 			MasterDirectoryManager.artist_id_dict[new_artist_ids[-1]]["image_file_path"] = path + "/" + artist_dir + "/" + available_images[0]
 		for album_dir : String in DirAccess.get_directories_at(path + "/" + artist_dir):
 			new_album_ids.append(MasterDirectoryManager.generate_id(MasterDirectoryManager.use_type.ALBUM))
-			print("making new ALBUM  with id '" + new_album_ids[-1] + "' and name '" + album_dir + "'")
+			#print("making new ALBUM  with id '" + new_album_ids[-1] + "' and name '" + album_dir + "'")
 			MasterDirectoryManager.album_id_dict[new_album_ids[-1]] = MasterDirectoryManager.get_data_template(MasterDirectoryManager.use_type.ALBUM)
 			MasterDirectoryManager.album_id_dict[new_album_ids[-1]]["name"] = album_dir
 			MasterDirectoryManager.album_id_dict[new_album_ids[-1]]["artist"] = new_artist_ids[-1]
@@ -687,7 +687,7 @@ func mass_import(_arg : String = "") -> void:
 			for song_file : String in DirAccess.get_files_at(path + "/" + artist_dir + "/" + album_dir):
 				if song_file.get_extension() in GeneralManager.valid_audio_types:
 					new_song_ids.append(MasterDirectoryManager.generate_id(MasterDirectoryManager.use_type.SONG))
-					print("making new  SONG  with id '" + new_song_ids[-1] + "' and name '" + song_file.get_basename() + "'")
+					#print("making new  SONG  with id '" + new_song_ids[-1] + "' and name '" + song_file.get_basename() + "'")
 					MasterDirectoryManager.song_id_dict[new_song_ids[-1]] = MasterDirectoryManager.get_data_template(MasterDirectoryManager.use_type.SONG)
 					MasterDirectoryManager.song_id_dict[new_song_ids[-1]]["name"] = song_file.get_basename()
 					MasterDirectoryManager.song_id_dict[new_song_ids[-1]]["song_file_path"] = path + "\\" + artist_dir + "\\" + album_dir + "\\" + song_file

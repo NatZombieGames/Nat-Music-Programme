@@ -138,8 +138,8 @@ func get_image(path : String) -> Image:
 		return image_cache[path]
 	return get_icon_texture().get_image()
 
-func spellcheck(query : String, words : PackedStringArray, return_max : int = 5, max_edit_distance : int = 0) -> PackedStringArray:
-	var to_ret : Array[String]
+func spellcheck(query : String, words : PackedStringArray, max_return_amount : int = 5, max_edit_distance : int = 0) -> PackedStringArray:
+	var to_return : Array[String]
 	var word_to_dist_dict : Dictionary
 	for word : String in words:
 		word_to_dist_dict[word] = _get_word_distance(query, word)
@@ -147,11 +147,11 @@ func spellcheck(query : String, words : PackedStringArray, return_max : int = 5,
 		for key : String in word_to_dist_dict.keys():
 			if word_to_dist_dict[key] > max_edit_distance:
 				word_to_dist_dict.erase(key)
-	to_ret.assign(word_to_dist_dict.keys())
-	to_ret.sort_custom(func(key1 : String, key2 : String) -> bool: return word_to_dist_dict[key1] < word_to_dist_dict[key2])
-	if len(to_ret) > return_max:
-		to_ret.resize(return_max)
-	return to_ret
+	to_return.assign(word_to_dist_dict.keys())
+	to_return.sort_custom(func(key1 : String, key2 : String) -> bool: return word_to_dist_dict[key1] < word_to_dist_dict[key2])
+	if len(to_return) > max_return_amount:
+		to_return.resize(max_return_amount)
+	return to_return
 
 func _get_word_distance(word1 : String, word2 : String) -> int:
 	var dist : int = 0

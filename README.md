@@ -10,6 +10,8 @@ You can also use the built-in CLI (Command Line Interface) to get more granular 
 There is an Accessibility page located in the Profile screen.
 The app is entirely offline and standalone.
 
+![Showcase Image 1](Assets/Showcase Images/Showcase_1.png)
+
 ## Scalability / ID's ##
 
 This project has been made with scalability in mind; As such many efforts have been made to ensure that the app doesn't limit your ability to listen to and organise music, including the ID system for every item.  
@@ -59,3 +61,15 @@ The data is saved using Godot's ConfigFile class, the data is organised like:
   - song_id_dict: The Song dictionary, where all the song data is.
   - playlist_id_dict: The Playlist dictionary, where all the playlist data is.
   - user_id_dict: The User dictionary, where all the user data like settings and certain app info is.
+
+## Showcase Images ##
+
+![Showcase Image 1](Assets/Showcase Images/Showcase_1.png)
+
+![Showcase Image 2](Assets/Showcase Images/Showcase_2.png)
+
+![Showcase Image 3](Assets/Showcase Images/Showcase_3.png)
+
+![Showcase Image 4](Assets/Showcase Images/Showcase_4.png)
+
+![Showcase Image 5](Assets/Showcase Images/Showcase_5.png)
