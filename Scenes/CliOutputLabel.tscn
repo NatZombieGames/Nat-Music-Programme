@@ -1,19 +1,26 @@
-[gd_scene load_steps=2 format=3 uid="uid://csr0ysxwormvq"]
+[gd_scene load_steps=3 format=3 uid="uid://csr0ysxwormvq"]
 
 [ext_resource type="Script" uid="uid://bqkccpjb42fj0" path="res://Scripts/RichTextScript.gd" id="1_of6kd"]
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_m0hpd"]
+
 [node name="CLI_OutputLabel" type="RichTextLabel" groups=["CLIOutputLabel"]]
 offset_right = 1.0
+focus_mode = 2
+theme_override_colors/font_selected_color = Color(0.664591, 0.775854, 1, 1)
+theme_override_colors/selection_color = Color(0.317647, 0.317647, 0.317647, 0.498039)
+theme_override_constants/line_separation = -2
 theme_override_font_sizes/bold_italics_font_size = 16
 theme_override_font_sizes/italics_font_size = 16
 theme_override_font_sizes/mono_font_size = 16
 theme_override_font_sizes/normal_font_size = 16
 theme_override_font_sizes/bold_font_size = 16
+theme_override_styles/focus = SubResource("StyleBoxEmpty_m0hpd")
 bbcode_enabled = true
 fit_content = true
 scroll_active = false
-shortcut_keys_enabled = false
 hint_underlined = false
+selection_enabled = true
 script = ExtResource("1_of6kd")
 
 [connection signal="meta_clicked" from="." to="." method="_on_meta_clicked"]

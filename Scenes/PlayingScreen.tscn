@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://di0ca61w28uio"]
+[gd_scene load_steps=13 format=3 uid="uid://di0ca61w28uio"]
 
 [ext_resource type="Script" uid="uid://b87h87savmdfp" path="res://Scripts/PlayingScreen.gd" id="1_7klv3"]
 [ext_resource type="StyleBox" uid="uid://dydjfep1b7fhc" path="res://Assets/Styleboxes/DefaultStylebox.tres" id="2_i1rv6"]
@@ -10,6 +10,8 @@
 [ext_resource type="Texture2D" uid="uid://bclb1eihlj361" path="res://Assets/Icons/Exit.svg" id="4_wrr56"]
 [ext_resource type="Texture2D" uid="uid://d1mkxnwgk6m7y" path="res://Assets/Icons/VolumeUp.svg" id="5_ey3hu"]
 [ext_resource type="Script" uid="uid://q35bkn7timht" path="res://Scripts/PlayingProgressLabel.gd" id="10_rnv2i"]
+[ext_resource type="Texture2D" uid="uid://bhwmumksjv1hw" path="res://Assets/Icons/Down.svg" id="11_p3oi6"]
+[ext_resource type="Texture2D" uid="uid://d3doteorc4jj" path="res://Assets/Icons/Up.svg" id="12_nunew"]
 
 [node name="PlayingScreen" type="Control"]
 custom_minimum_size = Vector2(480, 270)
@@ -25,7 +27,7 @@ script = ExtResource("1_7klv3")
 offset = Vector2(2, 2)
 anchor_mode = 0
 enabled = false
-zoom = Vector2(2.035, 2.03)
+zoom = Vector2(4.017, 4.03)
 editor_draw_limits = true
 
 [node name="ScreenContainer" type="AspectRatioContainer" parent="Camera"]
@@ -213,6 +215,15 @@ toggle_mode = true
 ignore_texture_size = true
 stretch_mode = 5
 
+[node name="First" type="TextureButton" parent="Camera/ScreenContainer/MasterContainer/InfoPanel/InfoContainer/ControlButtons"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+ignore_texture_size = true
+stretch_mode = 5
+
 [node name="Previous" type="TextureButton" parent="Camera/ScreenContainer/MasterContainer/InfoPanel/InfoContainer/ControlButtons"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(36, 36)
@@ -238,6 +249,15 @@ mouse_default_cursor_shape = 2
 ignore_texture_size = true
 stretch_mode = 5
 
+[node name="Last" type="TextureButton" parent="Camera/ScreenContainer/MasterContainer/InfoPanel/InfoContainer/ControlButtons"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+ignore_texture_size = true
+stretch_mode = 5
+
 [node name="ToggleFavourite" type="TextureButton" parent="Camera/ScreenContainer/MasterContainer/InfoPanel/InfoContainer/ControlButtons"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(36, 36)
@@ -246,6 +266,69 @@ mouse_default_cursor_shape = 2
 toggle_mode = true
 ignore_texture_size = true
 stretch_mode = 5
+
+[node name="VolumeControlContainer" type="VBoxContainer" parent="Camera/ScreenContainer"]
+layout_mode = 2
+mouse_filter = 2
+alignment = 2
+
+[node name="VolumeControlPanel" type="PanelContainer" parent="Camera/ScreenContainer/VolumeControlContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 8
+theme_override_styles/panel = ExtResource("4_34oy1")
+
+[node name="Container" type="HBoxContainer" parent="Camera/ScreenContainer/VolumeControlContainer/VolumeControlPanel"]
+layout_mode = 2
+
+[node name="Mute" type="TextureButton" parent="Camera/ScreenContainer/VolumeControlContainer/VolumeControlPanel/Container"]
+custom_minimum_size = Vector2(25, 25)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+mouse_default_cursor_shape = 2
+toggle_mode = true
+button_pressed = true
+texture_normal = ExtResource("5_ey3hu")
+texture_pressed = ExtResource("4_v4ack")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="Display" type="Label" parent="Camera/ScreenContainer/VolumeControlContainer/VolumeControlPanel/Container"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Volume Amplifier (DB): 0"
+
+[node name="Decrement" type="TextureButton" parent="Camera/ScreenContainer/VolumeControlContainer/VolumeControlPanel/Container"]
+custom_minimum_size = Vector2(25, 25)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+mouse_default_cursor_shape = 2
+toggle_mode = true
+button_pressed = true
+texture_normal = ExtResource("11_p3oi6")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="Increment" type="TextureButton" parent="Camera/ScreenContainer/VolumeControlContainer/VolumeControlPanel/Container"]
+custom_minimum_size = Vector2(25, 25)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+mouse_default_cursor_shape = 2
+toggle_mode = true
+button_pressed = true
+texture_normal = ExtResource("12_nunew")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="Void" type="Panel" parent="Camera/ScreenContainer/VolumeControlContainer"]
+self_modulate = Color(1, 1, 1, 0)
+custom_minimum_size = Vector2(0, 15)
+layout_mode = 2
 
 [node name="VolumeIndicator" type="TextureRect" parent="Camera/ScreenContainer"]
 unique_name_in_owner = true

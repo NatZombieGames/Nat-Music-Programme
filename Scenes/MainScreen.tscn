@@ -1,4 +1,4 @@
-[gd_scene load_steps=42 format=3 uid="uid://43inlmvkfr28"]
+[gd_scene load_steps=43 format=3 uid="uid://43inlmvkfr28"]
 
 [ext_resource type="PackedScene" uid="uid://di0ca61w28uio" path="res://Scenes/PlayingScreen.tscn" id="1_kfe6r"]
 [ext_resource type="Script" uid="uid://cwh22cgpk5b40" path="res://Scripts/MainScreen.gd" id="1_paqbq"]
@@ -37,6 +37,7 @@
 [ext_resource type="StyleBox" uid="uid://dvt0bb3h5ar54" path="res://Assets/Styleboxes/CustomButtonNormal.tres" id="25_vcar7"]
 [ext_resource type="StyleBox" uid="uid://dkgym2u000nvk" path="res://Assets/Styleboxes/CornerStylebox.tres" id="31_rgbuo"]
 [ext_resource type="Texture2D" uid="uid://pxjb7c6c20bu" path="res://Assets/Icons/Saving.svg" id="32_c1xsu"]
+[ext_resource type="PackedScene" uid="uid://btr8vvxticf0e" path="res://Scenes/ThreadedIntermediary.tscn" id="38_ysbdf"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_s6y4c"]
 content_margin_left = 10.0
@@ -62,8 +63,6 @@ layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_right = 960.0
-offset_bottom = 540.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_paqbq")
@@ -72,7 +71,6 @@ cli = NodePath("Camera/AspectRatioContainer/CommandLineInterface")
 
 [node name="Camera" type="Camera2D" parent="."]
 anchor_mode = 0
-zoom = Vector2(0.5, 0.5)
 
 [node name="AspectRatioContainer" type="AspectRatioContainer" parent="Camera"]
 custom_minimum_size = Vector2(1920, 1080)
@@ -1519,6 +1517,22 @@ self_modulate = Color(1, 1, 1, 0)
 custom_minimum_size = Vector2(5, 0)
 layout_mode = 2
 
+[node name="NetworkButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Header/TabContainer" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("3_qykjb")]
+layout_mode = 2
+button_custom_minimum_size = Vector2i(45, 45)
+texture_icon_name = "Network"
+tooltip = "Network Page"
+toggle = true
+button_group = ExtResource("17_dg6yg")
+pressed_signal_sender = NodePath("../../../../../../../../..")
+pressed_signal_name = "set_profile_screen_page"
+argument = "5"
+
+[node name="Void6" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Header/TabContainer"]
+self_modulate = Color(1, 1, 1, 0)
+custom_minimum_size = Vector2(5, 0)
+layout_mode = 2
+
 [node name="Separator" type="ColorRect" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container" groups=["Separator"]]
 custom_minimum_size = Vector2(0, 10)
 layout_mode = 2
@@ -1684,6 +1698,7 @@ For changing all of the settings used by the programme instead of the few below 
 [u]Continue Playing Exact[/u]: If this and [u]Continue Playing[/u] are enabled; when saving your active song data it will save the percentage of your progress through the song.
 [u]Generate Home Screen[/u]: If enabled when opening the programme the Home screen will be populated with reccomendations of things to listen to, though this will increase loading time. If you don't want to use the Home screen you can disable it to make the app load faster.
 [u]CLI Autocomplete[/u]: If enabled wehn typing the start of a command into the CLI then you will get up to the 5 closest commands to your input available listed above the input field, you can then press one of the Function (F1, F2, etc.) buttons according to the number to set your input field to the given command.
+[u]CLI Style[/u]: Has two styles; 0 for the default semi-transparant background and 1 for a soid background for easier readibility.
 
 To manage these options, please see the buttons below.
 
@@ -1734,6 +1749,15 @@ pressed = true
 pressed_signal_sender = NodePath("../../../../../../../../../../../../..")
 pressed_signal_name = "user_setting_changed"
 argument = "4"
+
+[node name="Button6" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Settings/Container/SettingsPanel/Container/Buttons" node_paths=PackedStringArray("submitted_sender") instance=ExtResource("5_khvou")]
+layout_mode = 2
+text = "CLI Style"
+value_int = 0
+value_range = Vector2(0, 1)
+submitted_sender = NodePath("../../../../../../../../../../../../..")
+submitted_signal_name = "user_setting_changed"
+submitted_signal_argument = "5"
 
 [node name="WidgetPanel" type="PanelContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Settings/Container"]
 custom_minimum_size = Vector2(961, 400)
@@ -1801,7 +1825,7 @@ layout_mode = 2
 bbcode_enabled = true
 text = "[center][b]Cache Managment[/b]
 This programme utilises multiple Caches to help improve the speed of the programme, at the cost of memory; You can decide to clear any of these Caches manually, though this will impact performance as the content coresponding to the Cache will need to be re-made when their next needed. Caches are not saved when closing and re-opening the programme.
-(Cache maximum sizes can be changed using the CLI, for more info see the 'CommandLineInterface' page and the 'set' / 'get' commands.)
+(Cache maximum sizes can be changed using the CLI, for more info see the 'CommandLineInterface' page, open the CLI and in the help page see the 'set' / 'get' commands.)
 
 [u]Image Cache[/u]: When the programme tries to load an image (For example an album cover), if the image has been loaded previously, instead of re-loading it a copy of the already loaded image will be grabbed instead. This cache has a configurable maximum size.
 
@@ -1855,6 +1879,7 @@ pressed_signal_name = "cache_managment_button_pressed"
 argument = "4"
 
 [node name="Accessibility" type="ScrollContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body"]
+visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -1897,7 +1922,6 @@ There are multiple accessibility features you can enable to help you use the app
 
 [u]Separate CLI Outputs[/u]: If enabled, puts an empty line between every newly printed line in the CLI, making reading individual lines easier.
 
-[u]Solid CLI[/u]: If enabled, the background of the CLI is made solid opposed to its default semi-transparent appearance.
 [/center]"
 fit_content = true
 scroll_active = false
@@ -1936,13 +1960,6 @@ pressed_signal_sender = NodePath("../../../../../../../../../../../../..")
 pressed_signal_name = "accessibility_setting_changed"
 argument = "3"
 
-[node name="5" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Accessibility/Container/Panel1/Container/Buttons" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("19_g648t")]
-layout_mode = 2
-button_text = "Solid CLI"
-pressed_signal_sender = NodePath("../../../../../../../../../../../../..")
-pressed_signal_name = "accessibility_setting_changed"
-argument = "4"
-
 [node name="Keybinds" type="ScrollContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body"]
 visible = false
 layout_mode = 1
@@ -1980,7 +1997,8 @@ text = "[center][b]Keybinds[/b]
 Below are buttons to change the keybinds used by the programme, alongside the action they correspond to.
 To change a keybind; press the button relating to the action followed by hitting the button combination you want to change it to when the popup appears on screen.
 
-[u][color=red]!WARNING![/color] Certain key combinations may not work depending on your operating system and any other apps running on your device.[/u]
+[u][color=red]!WARNING![/color] Certain key combinations may not work depending on your operating system and any other apps running on your device. Also certain keybinds may only work on certain screens
+(For example 'Open Volume Control' only working while the Player is fullscreened.)[/u]
 
 [/center]"
 fit_content = true
@@ -2103,6 +2121,64 @@ layout_mode = 2
 button_text = " Open CLI "
 pressed_signal_sender = NodePath("../../../../../../../../../../../..")
 pressed_signal_name = "toggle_cli"
+
+[node name="Network" type="ScrollContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 8.0
+offset_bottom = 8.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Container" type="VBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Network"]
+custom_minimum_size = Vector2(1920, 0)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 50
+
+[node name="Void" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Network/Container"]
+self_modulate = Color(1, 1, 1, 0)
+layout_mode = 2
+
+[node name="Panel1" type="PanelContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Network/Container"]
+custom_minimum_size = Vector2(961, 226)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_styles/panel = ExtResource("18_53o1o")
+
+[node name="Container" type="VBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Network/Container/Panel1"]
+custom_minimum_size = Vector2(775, 0)
+layout_mode = 2
+
+[node name="Text1" type="RichTextLabel" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Network/Container/Panel1/Container" groups=["ProfileLabel"]]
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+text = "[center][b]Network Settings[/b]
+This app does not need an internet connection to function, but certian features (Such as checking the latest available version on start-up) do require network access.
+If you do not wish for the app to make network requests you can disable it entirely below, also below are some specific features that require network access that can be individually toggled.
+[/center]"
+fit_content = true
+scroll_active = false
+
+[node name="Buttons" type="HBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Network/Container/Panel1/Container"]
+layout_mode = 2
+alignment = 1
+
+[node name="Button1" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Network/Container/Panel1/Container/Buttons" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("19_g648t")]
+layout_mode = 2
+button_text = "Allow Network Requests"
+pressed_signal_sender = NodePath("../../../../../../../../../../../../..")
+pressed_signal_name = "network_setting_changed"
+
+[node name="Button2" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Network/Container/Panel1/Container/Buttons" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("19_g648t")]
+layout_mode = 2
+button_text = "Check Latest Version On Startup"
+pressed_signal_sender = NodePath("../../../../../../../../../../../../..")
+pressed_signal_name = "network_setting_changed"
+argument = "1"
 
 [node name="PlayerContainer" type="PanelContainer" parent="Camera/AspectRatioContainer"]
 layout_mode = 2
@@ -2328,7 +2404,7 @@ layout_mode = 2
 color = Color(0, 0, 0, 0)
 
 [node name="ShadedArea" type="ColorRect" parent="Camera/AspectRatioContainer/SoftLoadingScreen"]
-custom_minimum_size = Vector2(660, 70)
+custom_minimum_size = Vector2(675, 70)
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -2399,10 +2475,17 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="LoadingBar" type="ProgressBar" parent="Camera/AspectRatioContainer/LoadingScreen/Container"]
+process_thread_group = 2
+process_thread_group_order = 0
+process_thread_messages = 0
+visible = false
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
-indeterminate = true
-editor_preview_indeterminate = true
+show_percentage = false
+
+[node name="ThreadedIntermediary" parent="Camera/AspectRatioContainer/LoadingScreen/Container" instance=ExtResource("38_ysbdf")]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
 
 [node name="SelectImageDialog" type="FileDialog" parent="Camera/AspectRatioContainer"]
 unique_name_in_owner = true

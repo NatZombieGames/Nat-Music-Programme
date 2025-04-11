@@ -8,7 +8,6 @@ func _get_plugin_name() -> String:
 
 func _apply_changes() -> void:
 	if plugin.get_script().source_code != FileAccess.open("res://addons/ExportDataSetter/Script.gd", FileAccess.READ).get_as_text():
-		print("changing!")
 		remove_export_plugin(plugin)
 		plugin = load("res://addons/ExportDataSetter/Script.gd").new()
 		add_export_plugin(plugin)

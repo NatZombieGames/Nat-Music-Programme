@@ -8,16 +8,17 @@ extends Node
 @export var is_valid_keybind : Callable = (func(event : InputEvent) -> bool: return ((event.get_class() != "InputEventMouseMotion") and (event.is_pressed()) and (get_event_code(event) not in banned_keycodes)))
 @export var is_in_debug : bool = true
 @export var cli_print_callable : Callable = (func(msg : String) -> void: get_node("/root/MainScreen/Camera/AspectRatioContainer/CommandLineInterface").call("print_to_output", msg); return)
-@export var version : String = ""
-@export var build : String = ""
-@export var export_data : PackedStringArray = ["1970-1-1 (Thursday) | 00:00", "Godot Version Undetermined", "License Undetermined", "Architecture Undetermined"]
+@export var version : String = "Unknown"
+@export var build : String = "Unknown"
+@export var export_data : PackedStringArray = ["0", "Godot Version Undetermined", "License Undetermined", "Architecture Undetermined"]
+@export var latest_version : String = "Unresolved"
+@export var repo_connection_succesfull : bool = false
 @export var rng_seed : int = 0:
 	set(value):
 		rng_seed = value
 		seed(value)
-	get:
-		return rng_seed
 @export var finished_loading_icons : bool = false
+var repo_http_client : HTTPClient = HTTPClient.new()
 const key_keycodes : PackedInt32Array = [4194304, 4194305, 4194306, 4194307, 4194308, 4194309, 4194310, 4194311, 4194312, 4194313, 4194314, 4194315, 4194316, 4194317, 4194318, 4194319, 4194320, 4194321, 4194322, 4194323, 4194324, 4194325, 4194326, 4194327, 4194328, 4194329, 4194330, 4194331, 4194332, 4194333, 4194334, 4194335, 4194336, 4194337, 4194338, 4194339, 4194340, 4194341, 4194342, 4194343, 4194344, 4194345, 4194346, 4194347, 4194348, 4194349, 4194350, 4194351, 4194352, 4194353, 4194354, 4194355, 4194356, 4194357, 4194358, 4194359, 4194360, 4194361, 4194362, 4194363, 4194364, 4194365, 4194366, 4194433, 4194434, 4194435, 4194436, 4194437, 4194438, 4194439, 4194440, 4194441, 4194442, 4194443, 4194444, 4194445, 4194446, 4194447, 4194370, 4194371, 4194373, 4194376, 4194377, 4194378, 4194379, 4194380, 4194381, 4194382, 4194388, 4194389, 4194390, 4194391, 4194392, 4194393, 4194394, 4194395, 4194396, 4194397, 4194398, 4194399, 4194400, 4194401, 4194402, 4194403, 4194404, 4194405, 4194406, 4194407, 4194408, 4194409, 4194410, 4194411, 4194412, 4194413, 4194414, 4194415, 4194416, 4194417, 4194418, 4194419, 8388607, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 123, 124, 125, 126, 165, 167]
 const mouse_keycodes : PackedInt32Array = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 const banned_keycodes : PackedInt32Array = [4194325, 4194326, 4194328]
@@ -29,6 +30,28 @@ const valid_audio_types : PackedStringArray = ["mp3", "ogg", "wav"]
 const weekday_names : PackedStringArray = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 const month_names : PackedStringArray = ["Janauary", "Febuary", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 const boolean_strings : PackedStringArray = ["1", "true", "enabled", "yes", "on"]
+const disabled_network_connections_error_message_end : String = " as network requests are disabled, you can re-enable them in the 'Network' settings page."
+const connection_check_time_limit : int = 10
+const error_descriptions : Dictionary[err, String] = {
+	err.CRASH: "Something has gone criticaly wrong resulting in no error code being return, please report this with info of what caused this to be returned.", 
+	err.OK: "No Error, Task execute succesfully.", 
+	err.UNHANDLED: "An exception happened which resulted in an unexpected error, please report this with info of what caused this to be returned.", 
+	err.INACTIVE: "An attempt to run a command while the terminal was inactive without the bypass flag being enabled occured.", 
+	err.COMMANDLESS: "Tried to run the 'run_command' function without a command argument.", 
+	err.INSUFFICIENT_ARGUMENT_COUNT: "Tried to run a command with too few argument given.", 
+	err.INVALID_ARGUMENT: "Tried to run a command with an invalid argument, this is commonly caused by typos so it is reccomended to check arguments carefully before running them.", 
+	err.INVALID_ID: "The given ID was not valid, ID's must start with a signing character with signifies the type followed by other unique characters.", 
+	err.NON_EXISTANT_ID: "The given ID does not exist within the set for its dected type, check the ID and try again. You can also copy an ID to your clipboard in the Library by right-clicking the item.", 
+	err.INVALID_ARGUMENT_TYPE: "The type of the argument given is invalid, see the 'Argument Types / Type-Casting' part of the help page for more info.", 
+	err.NON_EXISTANT: "The given argument (often an index number or name) did not correspond to an item.", 
+	err.INVALID_TARGET: "The target of the command was not valid, for example trying to add a item into a object which doesn't have contents.", 
+	err.INVALID: "A non-descript invalid situation occured, this is often used when a case could consist of multiple other invalid-type errors.", 
+	err.LOOKUP_FAILED: "When attempting to load / grab some data, it returned a-typical contents which either means the data is corrupt or is unusable.", 
+	}
+enum err {
+	CRASH = -1, OK = 0, UNHANDLED, INACTIVE, COMMANDLESS, INSUFFICIENT_ARGUMENT_COUNT, 
+	INVALID_ARGUMENT, INVALID_ID, NON_EXISTANT_ID, INVALID_ARGUMENT_TYPE, NON_EXISTANT, 
+	INVALID_TARGET, INVALID, LOOKUP_FAILED}
 @warning_ignore("unused_signal")
 signal finished_loading_icons_signal
 
@@ -46,6 +69,88 @@ func _ready() -> void:
 		await MasterDirectoryManager.finished_loading_data_signal
 	cli_print_callable.call("SYS: Launching NMP Version [u]" + version + "[/u] In [u]" + build + "[/u] Mode At [u]" + get_date() + "[/u].")
 	_load_icons()
+	repo_http_client.blocking_mode_enabled = true
+	repo_http_client.read_chunk_size = 70_000
+	if MasterDirectoryManager.user_data_dict["check_latest_version_on_startup"]:
+		if attempt_repo_connection() == true:
+			get_latest_app_version()
+			if version != latest_version and not latest_version in ["Unknown", "Unresolved"]:
+				cli_print_callable.call("SYS_ALERT: Your version does not match the latest found from Github, you can get the latest version [url=https://github.com/NatZombieGames/Nat-Music-Programme/releases/latest][i]Here[/i][/url].")
+	return
+
+func attempt_repo_connection() -> bool:
+	if not MasterDirectoryManager.user_data_dict["allow_network_requests"]:
+		cli_print_callable.call("NET_ERROR: Unable to attempt repo connection" + disabled_network_connections_error_message_end)
+		return false
+	cli_print_callable.call("NET: Attempting to connect to Github API.")
+	repo_connection_succesfull = false
+	repo_http_client.connect_to_host("https://api.github.com")
+	var continue_attempt : bool = true
+	var attempt_start_time : int = int(Time.get_unix_time_from_system())
+	while continue_attempt:
+		repo_http_client.poll()
+		match repo_http_client.get_status():
+			HTTPClient.Status.STATUS_CONNECTED:
+				repo_connection_succesfull = true
+				cli_print_callable.call("NET_ALERT: Succesfully connected to GitHub API.")
+				return true
+			HTTPClient.Status.STATUS_RESOLVING, HTTPClient.Status.STATUS_CONNECTING:
+				continue_attempt = (int(Time.get_unix_time_from_system()) - attempt_start_time) < connection_check_time_limit
+			_:
+				continue_attempt = false
+	cli_print_callable.call("NET_ERROR: Unable to connect to Github API with status code '[u]" + str(repo_http_client.get_status()) + "[/u]', if you would like to attempt to reconnect please run 'call-attempt_repo_connection'.")
+	repo_http_client.close()
+	return false
+
+func close_repo_connection() -> void:
+	repo_http_client.close()
+	return
+
+func get_latest_app_version() -> void:
+	if not MasterDirectoryManager.user_data_dict["allow_network_requests"]:
+		cli_print_callable.call("NET_ERROR: Unable to get latest app version" + disabled_network_connections_error_message_end)
+		latest_version = "Unknown"
+		return
+	if not repo_connection_succesfull or repo_http_client.get_status() != HTTPClient.Status.STATUS_CONNECTED:
+		cli_print_callable.call("NET_ERROR: Attempted to get latest app version without being connected to the repo, please try to connect to the repo using 'call-attempt_repo_connecton'.")
+		latest_version = "Unknown"
+		return
+	cli_print_callable.call("NET: Attempting to fetch latest app version from Github.")
+	repo_http_client.request(HTTPClient.METHOD_GET, "/repos/NatZombieGames/Nat-Music-Programme/releases/latest", ["accept:application/vnd.github+json", "X-GitHub-Api-Version:2022-11-28"], '{"owner":"natzombiegames","repo":"nat-music-programme"}')
+	var continue_attempt : bool = true
+	var attempt_start_time : int = int(Time.get_unix_time_from_system())
+	while continue_attempt:
+		repo_http_client.poll()
+		match repo_http_client.get_status():
+			HTTPClient.Status.STATUS_BODY:
+				match repo_http_client.get_response_code():
+					HTTPClient.ResponseCode.RESPONSE_OK:
+						var response_str : String = repo_http_client.read_response_body_chunk().get_string_from_utf8()
+						if response_str == "" or JSON.parse_string(response_str) == null:
+							cli_print_callable.call("NET_ERROR: When getting the latest app version the returned data was invalid, please try to retrieve it again.")
+							latest_version = "Unknown"
+							return
+						var response : Dictionary[String, Variant] = {}
+						response.assign(JSON.parse_string(response_str))
+						cli_print_callable.call("NET_ALERT: Succesfully retreived latest app version from Github.")
+						latest_version = response["name"]
+						return
+					_:
+						cli_print_callable.call("NET_ERROR: When fetching the latest app version received the response code '[u]" + str(repo_http_client.get_response_code()) + "[/u]' which is unhandled, unable to get latest app version.")
+						latest_version = "Unknown"
+						return
+			HTTPClient.Status.STATUS_REQUESTING:
+				continue_attempt = (int(Time.get_unix_time_from_system()) - attempt_start_time) < connection_check_time_limit
+			HTTPClient.Status.STATUS_CONNECTION_ERROR:
+				cli_print_callable.call("NET_ERROR: While getting latest app version the connection suffered an error, attempting to reconnect once before continuing...")
+				if attempt_repo_connection() == true:
+					repo_http_client.request(HTTPClient.METHOD_GET, "/repos/NatZombieGames/Nat-Music-Programme/releases/latest", ["accept:application/vnd.github+json", "X-GitHub-Api-Version:2022-11-28", "per_page:1"], '{"owner":"natzombiegames","repo":"nat-music-programme"}')
+				else:
+					continue_attempt = false
+			_:
+				continue_attempt = false
+	cli_print_callable.call("NET_ERROR: Unable to get latest app version, either received unhandled status code or it took too long to connect. Received status code '[u]" + str(repo_http_client.get_status()) + "[/u]'.")
+	latest_version = "Unknown"
 	return
 
 func _load_icons() -> void:
@@ -78,7 +183,7 @@ func set_general_settings(setting : StringName, value : Variant) -> int:
 		GeneralManager.cli_print_callable.call("ERROR: Setting [u]" + setting + "[/u] does not exist in General Settings or is unable to be set. Did you mean '[u]" + GeneralManager.spellcheck(setting, settable_settings)[0] + "[/u]'?.")
 	else:
 		GeneralManager.cli_print_callable.call("ERROR: Tried to set [u]" + setting + "[/u] whos value is of type [u]" + type_string(typeof(self.get(setting))) + "[/u] to [u]" + str(value) + "[/u] which is of type [u]" + type_string(typeof(value)) + "[/u].")
-	return ERR_INVALID_PARAMETER
+	return err.INVALID
 
 func get_general_settings() -> Dictionary:
 	var data : Dictionary
@@ -121,6 +226,16 @@ func packed_string_filter(arr : PackedStringArray, filter : Callable) -> PackedS
 			to_ret.append(item)
 	return to_ret
 
+func packed_string_shuffle(arr : PackedStringArray) -> PackedStringArray:
+	if len(arr) < 2:
+		return arr
+	var to_return : PackedStringArray = [arr[0]]
+	arr.remove_at(0)
+	for i : int in range(0, len(arr)):
+		to_return.insert(randi_range(0, len(to_return)), arr[i])
+		arr.remove_at(i)
+	return to_return
+
 func get_icon_texture(icon_name : StringName = &"Missing") -> ImageTexture:
 	return (func(icons_name : String) -> ImageTexture: var image : ImageTexture = ImageTexture.create_from_image(icons[icons_name]); image.resource_name = icons_name; return image).call(icon_name)
 
@@ -138,40 +253,20 @@ func get_image(path : String) -> Image:
 		return image_cache[path]
 	return get_icon_texture().get_image()
 
-func spellcheck(query : String, words : PackedStringArray, max_return_amount : int = 5, max_edit_distance : int = 0) -> PackedStringArray:
+func spellcheck(query : String, words : PackedStringArray, max_return_amount : int = 5, max_edit_distance : float = 0.0) -> PackedStringArray:
 	var to_return : Array[String]
 	var word_to_dist_dict : Dictionary
 	for word : String in words:
-		word_to_dist_dict[word] = _get_word_distance(query, word)
+		word_to_dist_dict[word] = word.similarity(query) * len(query)
 	if max_edit_distance != 0:
 		for key : String in word_to_dist_dict.keys():
 			if word_to_dist_dict[key] > max_edit_distance:
 				word_to_dist_dict.erase(key)
 	to_return.assign(word_to_dist_dict.keys())
-	to_return.sort_custom(func(key1 : String, key2 : String) -> bool: return word_to_dist_dict[key1] < word_to_dist_dict[key2])
+	to_return.sort_custom(func(key1 : String, key2 : String) -> bool: return word_to_dist_dict[key1] > word_to_dist_dict[key2])
 	if len(to_return) > max_return_amount:
 		to_return.resize(max_return_amount)
 	return to_return
-
-func _get_word_distance(word1 : String, word2 : String) -> int:
-	var dist : int = 0
-	var word1_letters : Dictionary
-	var word2_letters : Dictionary
-	for character : String in get_unique_array(word1.split("", false)):
-		word1_letters[character] = word1.count(character)
-	for character : String in get_unique_array(word2.split("", false)):
-		word2_letters[character] = word2.count(character)
-	for key : String in word1_letters.keys():
-		if word2_letters.get(key, 0) != word1_letters[key]:
-			if word1_letters[key] >= word2_letters.get(key, 0):
-				dist += word1_letters[key] - word2_letters.get(key, 0)
-			else:
-				dist += word2_letters[key] - word1_letters[key]
-	if len(word1) < len(word2):
-		dist += len(word2) - len(word1)
-	elif len(word1) > len(word2):
-		dist += len(word1) - len(word2)
-	return dist
 
 func load_audio_file(path : String) -> AudioStream:
 	var file : FileAccess = FileAccess.open(path, FileAccess.READ)

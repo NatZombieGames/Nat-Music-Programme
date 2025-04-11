@@ -41,8 +41,9 @@ var tutorial_page : int = 0:
 		return tutorial_page
 signal popup_responded
 signal primary_initialization_finished_signal
-const user_setting_keys : PackedStringArray = ["save_on_quit", "continue_playing", "continue_playing_exact", "generate_home_screen", "autocomplete"]
-const accessibility_keys : PackedStringArray = ["library_size_modifier", "cli_size_modifier", "profile_size_modifier", "separate_cli_outputs", "solid_cli"]
+const user_setting_keys : PackedStringArray = ["save_on_quit", "continue_playing", "continue_playing_exact", "generate_home_screen", "autocomplete", "cli_style"]
+const accessibility_setting_keys : PackedStringArray = ["library_size_modifier", "cli_size_modifier", "profile_size_modifier", "separate_cli_outputs"]
+const network_setting_keys : PackedStringArray = ["allow_network_requests", "check_latest_version_on_startup"]
 const tutorial_pages_text : PackedStringArray = [
 	"[img]res://Assets/NMP_Icon.png[/img]\n\nThis is a short guide on how to use the app, if you would like to\nskip this, simply hit the Close button below.\n\nOtherwise, please use the Previous / Next Page buttons respectively to navigate.", 
 	"[img]res://Assets/Tutorial Images/Image_1.png[/img]\n\nIn the top right of the screen you can see buttons for every page of the app, left to right these are:\nHome, New, Library and Profile, the last button is the close button.", 
@@ -59,6 +60,7 @@ const rich_text_font_size_types : PackedStringArray = ["bold_italics", "italics"
 func _ready() -> void:
 	%LoadingScreen.visible = true
 	GeneralManager.set_mouse_busy_state.call(true)
+	%LoadingScreen/Container/ThreadedIntermediary.anim = true
 	await get_tree().process_frame
 	#
 	GeneralManager.rng_seed = int(float(Time.get_datetime_string_from_system().hash() * Time.get_date_string_from_system().hash()) / float(OS.get_name().hash()))
@@ -168,12 +170,14 @@ func _ready() -> void:
 	%Hatbar/Container/Version.text = GeneralManager.version
 	for setting : String in user_setting_keys:
 		%MainContainer/Profile/Container/Body/Settings/Container/SettingsPanel/Container/Buttons.get_child(user_setting_keys.find(setting)).update({"pressed": MasterDirectoryManager.user_data_dict[setting]})
-	for access_setting : String in accessibility_keys:
+	for access_setting : String in accessibility_setting_keys:
 		match typeof(MasterDirectoryManager.user_data_dict[access_setting]):
 			TYPE_FLOAT:
-				%MainContainer/Profile/Container/Body/Accessibility/Container/Panel1/Container/Buttons.get_child(accessibility_keys.find(access_setting)).update({"value_float": MasterDirectoryManager.user_data_dict[access_setting]})
+				%MainContainer/Profile/Container/Body/Accessibility/Container/Panel1/Container/Buttons.get_child(accessibility_setting_keys.find(access_setting)).update({"value_float": MasterDirectoryManager.user_data_dict[access_setting]})
 			TYPE_BOOL:
-				%MainContainer/Profile/Container/Body/Accessibility/Container/Panel1/Container/Buttons.get_child(accessibility_keys.find(access_setting)).update({"pressed": MasterDirectoryManager.user_data_dict[access_setting]})
+				%MainContainer/Profile/Container/Body/Accessibility/Container/Panel1/Container/Buttons.get_child(accessibility_setting_keys.find(access_setting)).update({"pressed": MasterDirectoryManager.user_data_dict[access_setting]})
+	for setting : String in network_setting_keys:
+		%MainContainer/Profile/Container/Body/Network/Container/Panel1/Container/Buttons.get_child(network_setting_keys.find(setting)).update({"pressed": MasterDirectoryManager.user_data_dict[setting]})
 	for i : int in range(0, len(MasterDirectoryManager.user_data_dict["player_widgets"])):
 		%MainContainer/Profile/Container/Body/Settings/Container/WidgetPanel/Container/Buttons.get_child(i).update({"pressed": MasterDirectoryManager.user_data_dict["player_widgets"][i]})
 	if not MasterDirectoryManager.finished_loading_keybinds:
@@ -198,6 +202,7 @@ func _ready() -> void:
 	await get_tree().create_timer(0.05).timeout
 	await create_tween().tween_property(%LoadingScreen, "modulate", Color(1, 1, 1, 0), 0.25).from(Color(1, 1, 1, 1)).finished
 	%LoadingScreen.visible = false
+	%LoadingScreen/Container/ThreadedIntermediary.anim = false
 	GeneralManager.set_mouse_busy_state.call(false)
 	GeneralManager.cli_print_callable.call("SYS: Programme Initialization Complete")
 	%MainContainer/Library/FiltersPage.visible = false
@@ -245,7 +250,8 @@ func create_home_screen() -> void:
 	await _set_soft_loading(true)
 	#
 	var to_create : Dictionary[String, PackedStringArray] = {}
-	var time_dict : Dictionary = Time.get_datetime_dict_from_system()
+	var time_dict : Dictionary[String, Variant] = {}
+	time_dict.assign(Time.get_datetime_dict_from_system())
 	var weekday : String = GeneralManager.weekday_names[time_dict["weekday"]-1]
 	var month : String = GeneralManager.month_names[time_dict["month"]-1]
 	var albums : PackedStringArray = MasterDirectoryManager.album_id_dict.keys()
@@ -314,13 +320,15 @@ func create_home_screen() -> void:
 		var temp_arr_2 : PackedStringArray = (func() -> PackedStringArray: return MasterDirectoryManager.song_id_dict.keys().filter(func(item : String) -> bool: return MasterDirectoryManager.song_id_dict[item]["favourite"])).call()
 		if len(temp_arr_2) < 15:
 			temp_arr = temp_arr_2
+			temp_arr = GeneralManager.packed_string_shuffle(temp_arr)
 		else:
 			seed((time_dict["day"] * time_dict["month"]) / time_dict["year"])
 			for i : int in range(0, 15):
 				temp_arr.append(temp_arr_2[randi_range(0, len(temp_arr_2)-1)])
 				temp_arr_2.remove_at(temp_arr_2.find(temp_arr[-1]))
 			seed(GeneralManager.rng_seed)
-		to_create["Revisit Old Favourites:"] = temp_arr
+		if len(temp_arr) > 0:
+			to_create["Revisit Old Favourites:"] = temp_arr
 		temp_arr = []
 	if len(playlists) > 0:
 		seed(time_dict["year"] * (time_dict["day"] / time_dict["month"]))
@@ -328,6 +336,7 @@ func create_home_screen() -> void:
 		temp_arr = [temp_str]
 		temp_arr.append_array(MasterDirectoryManager.playlist_id_dict[temp_str]["songs"])
 		to_create["When Did You Last Listen To " + MasterDirectoryManager.playlist_id_dict[temp_str]["name"] + "?:"] = temp_arr
+		seed(GeneralManager.rng_seed)
 	for key : String in to_create.keys():
 		%MainContainer/Home/MarginGiver/ScrollContainer/Container.add_child(home_page_bar_scene.instantiate())
 		%MainContainer/Home/MarginGiver/ScrollContainer/Container.get_child(-1).update(to_create[key], key)
@@ -342,7 +351,7 @@ func create_home_screen() -> void:
 ## For the CLI to call since the real one is async.
 func _create_home_screen() -> int:
 	create_home_screen()
-	return OK
+	return GeneralManager.err.OK
 
 func update_keybinds_screen() -> void:
 	var keybinds : PackedStringArray = MasterDirectoryManager.keybinds.keys()
@@ -358,7 +367,7 @@ func update_keybinds_screen() -> void:
 		%MainContainer/Profile/Container/Body/Keybinds/Container/Panel1/Container/Keybinds/ButtonRow2.add_child(custom_button.instantiate())
 	for i : int in range(0, len(keybinds)):
 		var events : Array = MasterDirectoryManager.user_data_dict["keybinds"][keybinds[i]]
-		%MainContainer/Profile/Container/Body/Keybinds/Container/Panel1/Container/Keybinds/Labels.get_child(i).text = keybinds[i]
+		%MainContainer/Profile/Container/Body/Keybinds/Container/Panel1/Container/Keybinds/Labels.get_child(i).text = keybinds[i].capitalize()
 		%MainContainer/Profile/Container/Body/Keybinds/Container/Panel1/Container/Keybinds/ButtonRow1.get_child(i).update({"button_text": "None", "pressed_signal_sender": self, "pressed_signal_name": "keybind_button_pressed", "argument": [0, i]})
 		if typeof(events[0]) == TYPE_DICTIONARY:
 			%MainContainer/Profile/Container/Body/Keybinds/Container/Panel1/Container/Keybinds/ButtonRow1.get_child(i).update({"button_text": GeneralManager.customevent_to_string(events[0])})
@@ -703,7 +712,7 @@ func mass_import(_arg : String = "") -> void:
 ## For the CLI to call as normal one is aysnc
 func _mass_import() -> int:
 	mass_import()
-	return OK
+	return GeneralManager.err.OK
 
 func open_context_menu(id : String) -> int:
 	#print("open context menu called with id of: " + id)
@@ -713,7 +722,7 @@ func open_context_menu(id : String) -> int:
 	%MainContainer/Library/Container/Profile/SelectList.visible = false
 	var id_type : MasterDirectoryManager.use_type = GeneralManager.get_id_type(id)
 	if GeneralManager.get_id_type(id) == MasterDirectoryManager.use_type.UNKNOWN:
-		return ERR_INVALID_PARAMETER
+		return GeneralManager.err.INVALID_ID
 	#
 	%MainContainer/Library/Container/Profile/Container/Container/ParentContainer/Container/SelectBtn.tooltip_text = "Select " + MasterDirectoryManager.data_types[id_type-1].capitalize()
 	%MainContainer/Library/Container/Profile/Container/Container/HeaderContainer/ImageContainer/Image.texture = GeneralManager.get_icon_texture()
@@ -771,7 +780,7 @@ func open_context_menu(id : String) -> int:
 	#
 	%MainContainer/Library/Container/Profile.visible = true
 	GeneralManager.set_mouse_busy_state.call(false)
-	return OK
+	return GeneralManager.err.OK
 
 func context_action_button_pressed(args : Array) -> void:
 	#print("context action button pressed args: " + str(args))
@@ -829,8 +838,8 @@ func set_favourite(id : String) -> int:
 	if GeneralManager.get_id_type(id) != MasterDirectoryManager.use_type.UNKNOWN:
 		var data : Dictionary = MasterDirectoryManager.get_object_data.call(id)
 		data["favourite"] = !data["favourite"]
-		return OK
-	return ERR_INVALID_PARAMETER
+		return GeneralManager.err.OK
+	return GeneralManager.err.INVALID_ID
 
 func delete(id : String, create_confirmation_popup : bool = true) -> void:
 	#print("delete id is: " + id + ", it starts with: " + id.left(1))
@@ -865,20 +874,20 @@ func cache_managment_button_pressed(button : String) -> void:
 		return
 	match int(button):
 		0:
-			GeneralManager.image_cache = {}
-			GeneralManager.image_average_cache = {}
+			GeneralManager.image_cache.assign({})
+			GeneralManager.image_average_cache.assign({})
 			for item : Node in %MainContainer/Library/Container/ScrollContainer/ItemList.get_children():
 				item.queue_free()
-			playing_screen.song_cache = {}
+			playing_screen.song_cache.assign({})
 		1:
-			GeneralManager.image_cache = {}
+			GeneralManager.image_cache.assign({})
 		2:
-			GeneralManager.image_average_cache = {}
+			GeneralManager.image_average_cache.assign({})
 		3:
 			for item : Node in %MainContainer/Library/Container/ScrollContainer/ItemList.get_children():
 				item.queue_free()
 		4:
-			playing_screen.song_cache = {}
+			playing_screen.song_cache.assign({})
 	return
 
 func keybind_button_pressed(args : Array) -> void:
@@ -913,28 +922,32 @@ func data_managment_button_pressed(button : String) -> void:
 	MasterDirectoryManager.save_data("NMP_Data_Backup_" + str(Time.get_unix_time_from_system()) + ".dat")
 	return
 
-func user_setting_changed(number : String, state : bool) -> int:
-	MasterDirectoryManager.user_data_dict[user_setting_keys[int(number)]] = state
+func user_setting_changed(number : String, value : Variant) -> int:
+	MasterDirectoryManager.user_data_dict[user_setting_keys[int(number)]] = value
 	match user_setting_keys[int(number)]:
-		"autocomplete":
-			cli.autocomplete = state
-	return OK
+		"autocomplete", "cli_style":
+			cli.set(user_setting_keys[int(number)], value)
+	return GeneralManager.err.OK
 
-func accessibility_setting_changed(number: String, value : Variant) -> int:
-	MasterDirectoryManager.user_data_dict[accessibility_keys[int(number)]] = value
-	match accessibility_keys[int(number)]:
+func accessibility_setting_changed(number: String, value : Variant) -> void:
+	MasterDirectoryManager.user_data_dict[accessibility_setting_keys[int(number)]] = value
+	match accessibility_setting_keys[int(number)]:
 		"cli_size_modifier":
 			_apply_cli_size_mod()
 		"profile_size_modifier":
 			_apply_profile_size_mod()
 		"solid_cli":
 			cli.style = int(value)
-	return OK
+	return
 
-func player_widget_changed(number : String, state : bool) -> int:
+func network_setting_changed(number : String, value : bool) -> void:
+	MasterDirectoryManager.user_data_dict[network_setting_keys[int(number)]] = value
+	return
+
+func player_widget_changed(number : String, state : bool) -> void:
 	MasterDirectoryManager.user_data_dict["player_widgets"][int(number)] = state
 	playing_screen.call("set_widgets")
-	return OK
+	return
 
 func create_select_pressed(key : String) -> void:
 	#print("key pressed in create select: " + key)

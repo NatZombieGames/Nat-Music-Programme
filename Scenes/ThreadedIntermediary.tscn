@@ -1,0 +1,15 @@
+[gd_scene load_steps=2 format=3 uid="uid://btr8vvxticf0e"]
+
+[ext_resource type="Script" uid="uid://d0m1ftirbj1bx" path="res://Scripts/ThreadedIntermediary.gd" id="1_gvppo"]
+
+[node name="ThreadedIntermediary" type="ProgressBar"]
+process_thread_group = 2
+process_thread_group_order = 0
+process_thread_messages = 0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+show_percentage = false
+script = ExtResource("1_gvppo")
