@@ -1,0 +1,43 @@
+[gd_scene load_steps=4 format=3 uid="uid://b1wc7y7tnhxnq"]
+
+[ext_resource type="Script" uid="uid://xn04edw4utl2" path="res://Scripts/Alert.gd" id="1_kmqve"]
+[ext_resource type="StyleBox" uid="uid://cxto4am1k6roo" path="res://Assets/Styleboxes/AlertStylebox.tres" id="1_vxdcg"]
+[ext_resource type="Script" uid="uid://bqkccpjb42fj0" path="res://Scripts/RichTextScript.gd" id="3_odbol"]
+
+[node name="Alert" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+size_flags_horizontal = 0
+script = ExtResource("1_kmqve")
+
+[node name="Panel" type="PanelContainer" parent="."]
+custom_minimum_size = Vector2(350, 150)
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+theme_override_styles/panel = ExtResource("1_vxdcg")
+
+[node name="Container" type="VBoxContainer" parent="Panel"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Panel/Container"]
+layout_mode = 2
+text = " Alert"
+
+[node name="Separator" type="ColorRect" parent="Panel/Container"]
+custom_minimum_size = Vector2(347, 10)
+layout_mode = 2
+size_flags_vertical = 4
+color = Color(0.235294, 0.235294, 0.235294, 1)
+
+[node name="Content" type="RichTextLabel" parent="Panel/Container"]
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+scroll_active = false
+shortcut_keys_enabled = false
+script = ExtResource("3_odbol")
+in_cli = false
+
+[connection signal="meta_clicked" from="Panel/Container/Content" to="Panel/Container/Content" method="_on_meta_clicked"]
+[connection signal="meta_hover_started" from="Panel/Container/Content" to="Panel/Container/Content" method="_on_meta_hover_started"]

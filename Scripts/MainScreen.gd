@@ -8,6 +8,7 @@ const tooltip_scene : PackedScene = preload("res://Scenes/Tooltip.tscn")
 const home_page_bar_scene : PackedScene = preload("res://Scenes/HomePageBar.tscn")
 const home_page_footer : PackedScene = preload("res://Scenes/HomePageFooter.tscn")
 const custom_button : PackedScene = preload("res://Scenes/CustomButton.tscn")
+const alert : PackedScene = preload("res://Scenes/Alert.tscn")
 @export var playing_screen : Control
 @export var cli : PanelContainer
 @export var show_saving_indicator : bool = false:
@@ -17,8 +18,6 @@ const custom_button : PackedScene = preload("res://Scenes/CustomButton.tscn")
 		while show_saving_indicator:
 			await create_tween().tween_property($Camera/AspectRatioContainer/SaveIndicator/Indicator, "modulate:a", 0.5, 0.5).from(0.75).finished
 			await create_tween().tween_property($Camera/AspectRatioContainer/SaveIndicator/Indicator, "modulate:a", 0.75, 0.5).from(0.5).finished
-	get:
-		return show_saving_indicator
 var song_upload_list : Array[Dictionary] = []
 var popup_response : int = 0
 var library_page : int = 0
@@ -35,10 +34,13 @@ var tutorial_page : int = 0:
 		%NewUserScreen/Background/Container/PageButtons/PreviousPage.disabled = tutorial_page == 0
 		%NewUserScreen/Background/Container/PageButtons/NextPage.disabled = tutorial_page == len(tutorial_pages_text)-1
 		%NewUserScreen/Background/Container/PageButtons/PageNumber.text = " Page " + str(tutorial_page + 1) + "/" + str(len(tutorial_pages_text))
+		var anim_tween : Tween = create_tween()
+		anim_tween.tween_property(%NewUserScreen/Background/Container/BodyText, "modulate:a", 0, 0.1).from(1)
+		await anim_tween.finished
 		%NewUserScreen/Background/Container/BodyText.text = "[center]\n" + tutorial_pages_text[tutorial_page] + "\n[/center]"
+		anim_tween = create_tween()
+		anim_tween.tween_property(%NewUserScreen/Background/Container/BodyText, "modulate:a", 1, 0.1).from(0)
 		return
-	get:
-		return tutorial_page
 signal popup_responded
 signal primary_initialization_finished_signal
 const user_setting_keys : PackedStringArray = ["save_on_quit", "continue_playing", "continue_playing_exact", "generate_home_screen", "autocomplete", "cli_style"]
@@ -53,14 +55,13 @@ const tutorial_pages_text : PackedStringArray = [
 	"[img]res://Assets/Tutorial Images/Image_4.png[/img]\n\nThe Profile page has many things, including Data Managment, Settings, Accessability and Keybind Managment.\nFor more information see the Profile page.", 
 	"[img=320x180]res://Assets/Tutorial Images/Image_5.png[/img]\n\nThis is the Player / Playing screen, seen in the bottom right of the screen.\n\nWhen playing a song it will appear here.\nYou can customize this screen using Widgets, which can be set inside the Profile page under Settings.", 
 	"[img=175x175]res://Assets/Tutorial Images/Image_6.png[/img]\n\nThe app also features a built-in CLI, or Command Line Interface\nwhich can be oppened using Ctrl+O or in the respective Profile page.\n\nThe CLI can be used for more granular control of the app and its data\nfor more help using it, open it and run 'help'.", 
-	"[img]res://Assets/NMP_Icon.png[/img]\n\nThat is all you need to know to get started using the NMP\n(Nat Music Programme)!\n\nNow you can get started by going to the New page and uploading your first songs!\nIf you have any feedback or suggestions or want to get the latest version; go to the [url=https://github.com/NatZombieGames/Nat-Music-Programme][i]Project's Github[/i][/url]."
+	"[img]res://Assets/NMP_Icon.png[/img]\n\nThat is all you need to know to get started using the NMP\n(Nat Music Programme)!\n\nNow you can get started by going to the New page and uploading your first songs!\nIf you have any feedback or suggestions or want to get the latest version; go to the [url=https://github.com/NatZombieGames/Nat-Music-Programme][i]Project's Github[/i][/url]\nAlso consider joining the [url=https://discord.gg/wcZGjeXPNK][i]Official NatZombieGames Discord[/i][/url] for help and discussion with other users!"
 	]
 const rich_text_font_size_types : PackedStringArray = ["bold_italics", "italics", "mono", "normal", "bold"]
 
 func _ready() -> void:
 	%LoadingScreen.visible = true
 	GeneralManager.set_mouse_busy_state.call(true)
-	%LoadingScreen/Container/ThreadedIntermediary.anim = true
 	await get_tree().process_frame
 	#
 	GeneralManager.rng_seed = int(float(Time.get_datetime_string_from_system().hash() * Time.get_date_string_from_system().hash()) / float(OS.get_name().hash()))
@@ -71,6 +72,8 @@ func _ready() -> void:
 	await get_tree().process_frame
 	if not GeneralManager.finished_loading_icons:
 		await GeneralManager.finished_loading_icons_signal
+	%LoadingScreen/Container/LoadingBar.texture = GeneralManager.load_svg_to_img("res://Assets/Icons/LoadingBar.svg", 2.0)
+	%SoftLoadingScreen/ShadedArea/Container/LoadingBar.texture = GeneralManager.load_svg_to_img("res://Assets/Icons/LoadingBar.svg", 2.0)
 	$Camera/AspectRatioContainer/SaveIndicator/Indicator.texture = GeneralManager.load_svg_to_img("res://Assets/Icons/Saving.svg", 2.0)
 	%MainContainer/New/Container/Body/Container/Container/ParentContainer/Container/ClearBtn.texture_normal = GeneralManager.get_icon_texture("Delete")
 	%MainContainer/New/Container/Body/Container/Container/ParentContainer/Container/ClearBtn.pressed.connect(Callable(self, "create_button_pressed").bind("3"))
@@ -184,9 +187,8 @@ func _ready() -> void:
 		await MasterDirectoryManager.finished_loading_keybinds_signal
 	update_keybinds_screen()
 	DisplayServer.window_set_current_screen(wrapi(MasterDirectoryManager.user_data_dict["window_screen"], 0, DisplayServer.get_screen_count()))
-	DisplayServer.window_set_size(MasterDirectoryManager.user_data_dict["window_size"])
-	get_tree().get_root().set("position", MasterDirectoryManager.user_data_dict["window_position"])
-	DisplayServer.window_set_mode(MasterDirectoryManager.user_data_dict["window_mode"])
+	DisplayServer.window_set_mode([DisplayServer.WINDOW_MODE_MAXIMIZED, DisplayServer.WINDOW_MODE_FULLSCREEN][int(MasterDirectoryManager.user_data_dict["fullscreen"])])
+	ProjectSettings.set("display/window/energy_saving/keep_screen_on", MasterDirectoryManager.user_data_dict["keep_screen_on"])
 	%PlayingScreen.fullscreen = MasterDirectoryManager.user_data_dict["player_fullscreen"]
 	%NewUserScreen.visible = MasterDirectoryManager.new_user
 	if MasterDirectoryManager.user_data_dict["generate_home_screen"]:
@@ -202,15 +204,16 @@ func _ready() -> void:
 	await get_tree().create_timer(0.05).timeout
 	await create_tween().tween_property(%LoadingScreen, "modulate", Color(1, 1, 1, 0), 0.25).from(Color(1, 1, 1, 1)).finished
 	%LoadingScreen.visible = false
-	%LoadingScreen/Container/ThreadedIntermediary.anim = false
 	GeneralManager.set_mouse_busy_state.call(false)
 	GeneralManager.cli_print_callable.call("SYS: Programme Initialization Complete")
 	%MainContainer/Library/FiltersPage.visible = false
+	if GeneralManager.version != GeneralManager.latest_version and not GeneralManager.latest_version in ["Unknown", "Unresolved"]:
+		create_alert("Your has been found to not match the latest available, go to\n[url=https://github.com/NatZombieGames/Nat-Music-Programme/releases/latest][i]The Latest Release Here[/i][/url]", "ALERT!")
 	return
 
 func _input(event : InputEvent) -> void:
-	#if event.get_class() != "InputEventMouseMotion" and event.is_echo() == false and event.is_pressed():
-	#	print(event)
+	#if event.get_class() != "InputEventMouseMotion" and not event.is_echo() and event.is_pressed():
+	#	print(get_viewport().gui_get_focus_owner())
 	if GeneralManager.is_valid_keybind.call(event) and $Camera/AspectRatioContainer/KeybindScreen.visible:
 		if GeneralManager.get_event_code(event) != KEY_DELETE:
 			#print("\n\nkeybind: " + str(MasterDirectoryManager.keybinds.keys()[active_keybind_switching_data[1]]) + "\nreplacing customevent " + str(MasterDirectoryManager.user_data_dict["keybinds"][MasterDirectoryManager.keybinds.keys()[active_keybind_switching_data[1]]][active_keybind_switching_data[0]]) + "\nwith new custom event of " + str(GeneralManager.parse_inputevent_to_customevent(event)) + "\nkeybinds before change: " + str(MasterDirectoryManager.user_data_dict["keybinds"][MasterDirectoryManager.keybinds.keys()[active_keybind_switching_data[1]]]) + ", changing index " + str(active_keybind_switching_data[0]) + "\n\n")
@@ -224,16 +227,12 @@ func _input(event : InputEvent) -> void:
 		#print("-")
 	elif $Camera/AspectRatioContainer/KeybindScreen.visible == false:
 		if Input.is_action_just_pressed("ToggleFullscreen", true):
-			if DisplayServer.window_get_mode() != DisplayServer.WINDOW_MODE_FULLSCREEN:
-				MasterDirectoryManager.user_data_dict["window_mode"] = DisplayServer.window_get_mode()
-			elif DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN and MasterDirectoryManager.user_data_dict["window_mode"] == DisplayServer.WINDOW_MODE_FULLSCREEN:
-				MasterDirectoryManager.user_data_dict["window_mode"] = DisplayServer.WINDOW_MODE_WINDOWED
-			DisplayServer.window_set_mode([DisplayServer.WINDOW_MODE_FULLSCREEN, MasterDirectoryManager.user_data_dict["window_mode"]][int(DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN)])
+			MasterDirectoryManager.user_data_dict["fullscreen"] = !MasterDirectoryManager.user_data_dict["fullscreen"]
+			DisplayServer.window_set_mode([DisplayServer.WINDOW_MODE_MAXIMIZED, DisplayServer.WINDOW_MODE_FULLSCREEN][int(MasterDirectoryManager.user_data_dict["fullscreen"])])
 		elif Input.is_action_just_pressed("Save", true):
 			MasterDirectoryManager.save_data()
 		elif Input.is_action_just_pressed("QuitAndSave", true):
 			MasterDirectoryManager.save_data()
-			await get_tree().process_frame
 			if MasterDirectoryManager.finished_saving_data == false:
 				await MasterDirectoryManager.finished_saving_data_signal
 			get_tree().quit()
@@ -1098,18 +1097,44 @@ func create_tooltip(text : String, text_size : int = 16) -> void:
 		$Camera/AspectRatioContainer/TooltipContainer.get_child(-1).set("text", text)
 	return
 
-func create_popup(title : String, response_1 : String = "Yes", response_2 : String = "No") -> int:
+func create_alert(text : String, title : String = "ALERT!", alert_size : Vector2 = Vector2(350, 150)) -> void:
+	%AlertContainer.add_child(alert.instantiate())
+	%AlertContainer.get_child(-1).text = text
+	%AlertContainer.get_child(-1).title = title
+	%AlertContainer.get_child(-1).custom_minimum_size = alert_size
+	%AlertContainer.get_child(-1).size = alert_size
+	%AlertContainer.get_child(-1).fire()
+	return
+
+func create_popup(title : String, responses : PackedStringArray = ["Yes", "No"]) -> int:
 	%PopupContainer/Popup/Container/Title.text = title
-	%PopupContainer/Popup/Container/ResponseContainer/Response1.update({"button_text": response_1})
-	%PopupContainer/Popup/Container/ResponseContainer/Response2.update({"button_text": response_2})
+	%PopupContainer/Popup/Container/ResponseContainer.get_children().map(func(btn : Control) -> Control: btn.visible = false; return btn)
+	for i : int in range(0, mini(len(responses), %PopupContainer/Popup/Container/ResponseContainer.get_child_count())):
+		%PopupContainer/Popup/Container/ResponseContainer.get_child(i).visible = true
+		%PopupContainer/Popup/Container/ResponseContainer.get_child(i).update({"button_text": responses[i]})
+	%PopupContainer.modulate.a = 0
 	%PopupContainer.visible = true
+	var anim_tween : Tween = create_tween().set_parallel()
+	anim_tween.pause()
+	anim_tween.tween_property(%PopupContainer/Popup, "modulate:a", 1, 0.2).from(0)
+	anim_tween.tween_property(%PopupContainer/Popup, "position:y", 390, 0.2).from(490)
+	anim_tween.tween_property(%PopupContainer, "modulate:a", 1, 0.2).from(0)
+	anim_tween.play()
 	await self.popup_responded
 	return popup_response
 
 func popup_response_pressed(arg : String) -> void:
 	popup_response = int(arg)
 	self.emit_signal("popup_responded")
+	var anim_tween : Tween = create_tween().set_parallel()
+	anim_tween.pause()
+	anim_tween.tween_property(%PopupContainer/Popup, "modulate:a", 0, 0.2).from(1)
+	anim_tween.tween_property(%PopupContainer/Popup, "position:y", 290, 0.2).from(390)
+	anim_tween.tween_property(%PopupContainer, "modulate:a", 0, 0.2).from(1)
+	anim_tween.play()
+	await anim_tween.finished
 	%PopupContainer.visible = false
+	%PopupContainer.modulate.a = 1
 	return
 
 func toggle_cli(_arg : String = "") -> void:
@@ -1146,10 +1171,12 @@ func _apply_profile_size_mod() -> void:
 	return
 
 func exit(_arg : String = "0") -> void:
-	if await create_popup("Do You Wish To Save Your Data Before Exiting?") == 0:
-		MasterDirectoryManager.save_data()
-		await get_tree().process_frame
-		if MasterDirectoryManager.finished_saving_data == false:
-			await MasterDirectoryManager.finished_saving_data_signal
-	get_tree().quit(0)
+	match await create_popup("Do You Wish To Save Before Quiting?", ["Yes, Save & Quit", "No, Quit Without Saving", "No, Don't Quit"]):
+		0:
+			await MasterDirectoryManager.save_data()
+			get_tree().quit(0)
+		1:
+			get_tree().quit(0)
+		2:
+			return
 	return

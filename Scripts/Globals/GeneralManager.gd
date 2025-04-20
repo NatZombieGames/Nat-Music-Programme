@@ -104,6 +104,7 @@ func attempt_repo_connection() -> bool:
 
 func close_repo_connection() -> void:
 	repo_http_client.close()
+	cli_print_callable.call("NET_ALERT: The connection to the Github API has been closed.")
 	return
 
 func get_latest_app_version() -> void:
@@ -237,7 +238,9 @@ func packed_string_shuffle(arr : PackedStringArray) -> PackedStringArray:
 	return to_return
 
 func get_icon_texture(icon_name : StringName = &"Missing") -> ImageTexture:
-	return (func(icons_name : String) -> ImageTexture: var image : ImageTexture = ImageTexture.create_from_image(icons[icons_name]); image.resource_name = icons_name; return image).call(icon_name)
+	if icon_name in icons.keys():
+		return (func(icons_name : String) -> ImageTexture: var image : ImageTexture = ImageTexture.create_from_image(icons[icons_name]); image.resource_name = icons_name; return image).call(icon_name)
+	return get_icon_texture()
 
 func get_image(path : String) -> Image:
 	if path in image_cache.keys():

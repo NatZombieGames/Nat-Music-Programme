@@ -1,10 +1,13 @@
 extends RichTextLabel
 
+@export var in_cli : bool = true
+
 func _ready() -> void:
 	if not MasterDirectoryManager.finished_loading_data:
 		await MasterDirectoryManager.finished_loading_data_signal
-	for type : String in ["bold_italics", "italics", "mono", "normal", "bold"]:
-		self.set("theme_override_font_sizes/" + type + "_font_size", 16.0 * MasterDirectoryManager.user_data_dict["cli_size_modifier"])
+	if in_cli:
+		for type : String in ["bold_italics", "italics", "mono", "normal", "bold"]:
+			self.set("theme_override_font_sizes/" + type + "_font_size", 16.0 * MasterDirectoryManager.user_data_dict["cli_size_modifier"])
 	return
 
 static func _on_meta_clicked(meta : String) -> void:

@@ -1,4 +1,4 @@
-[gd_scene load_steps=43 format=3 uid="uid://43inlmvkfr28"]
+[gd_scene load_steps=45 format=3 uid="uid://43inlmvkfr28"]
 
 [ext_resource type="PackedScene" uid="uid://di0ca61w28uio" path="res://Scenes/PlayingScreen.tscn" id="1_kfe6r"]
 [ext_resource type="Script" uid="uid://cwh22cgpk5b40" path="res://Scripts/MainScreen.gd" id="1_paqbq"]
@@ -37,7 +37,8 @@
 [ext_resource type="StyleBox" uid="uid://dvt0bb3h5ar54" path="res://Assets/Styleboxes/CustomButtonNormal.tres" id="25_vcar7"]
 [ext_resource type="StyleBox" uid="uid://dkgym2u000nvk" path="res://Assets/Styleboxes/CornerStylebox.tres" id="31_rgbuo"]
 [ext_resource type="Texture2D" uid="uid://pxjb7c6c20bu" path="res://Assets/Icons/Saving.svg" id="32_c1xsu"]
-[ext_resource type="PackedScene" uid="uid://btr8vvxticf0e" path="res://Scenes/ThreadedIntermediary.tscn" id="38_ysbdf"]
+[ext_resource type="Shader" uid="uid://cwsurkivp8sgc" path="res://Assets/TextureRotator.gdshader" id="38_fvqoq"]
+[ext_resource type="Texture2D" uid="uid://d4lcxddst4x4o" path="res://Assets/Icons/LoadingBar.svg" id="39_m45u3"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_s6y4c"]
 content_margin_left = 10.0
@@ -57,6 +58,10 @@ bg_color = Color(0.6, 0.6, 0.6, 0)
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_srsng"]
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_rluw5"]
+shader = ExtResource("38_fvqoq")
+shader_parameter/speed = 1.0
+
 [node name="MainScreen" type="Control" node_paths=PackedStringArray("playing_screen", "cli")]
 custom_minimum_size = Vector2(1920, 1080)
 layout_mode = 3
@@ -71,6 +76,7 @@ cli = NodePath("Camera/AspectRatioContainer/CommandLineInterface")
 
 [node name="Camera" type="Camera2D" parent="."]
 anchor_mode = 0
+editor_draw_limits = true
 
 [node name="AspectRatioContainer" type="AspectRatioContainer" parent="Camera"]
 custom_minimum_size = Vector2(1920, 1080)
@@ -1533,6 +1539,23 @@ self_modulate = Color(1, 1, 1, 0)
 custom_minimum_size = Vector2(5, 0)
 layout_mode = 2
 
+[node name="SocialButton" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Header/TabContainer" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("3_qykjb")]
+layout_mode = 2
+button_custom_minimum_size = Vector2i(45, 45)
+texture_icon_name = "Social"
+pressed_texture_icon_name = "Social"
+tooltip = "Social Page"
+toggle = true
+button_group = ExtResource("17_dg6yg")
+pressed_signal_sender = NodePath("../../../../../../../../..")
+pressed_signal_name = "set_profile_screen_page"
+argument = "6"
+
+[node name="Void7" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Header/TabContainer"]
+self_modulate = Color(1, 1, 1, 0)
+custom_minimum_size = Vector2(5, 0)
+layout_mode = 2
+
 [node name="Separator" type="ColorRect" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container" groups=["Separator"]]
 custom_minimum_size = Vector2(0, 10)
 layout_mode = 2
@@ -2180,6 +2203,51 @@ pressed_signal_sender = NodePath("../../../../../../../../../../../../..")
 pressed_signal_name = "network_setting_changed"
 argument = "1"
 
+[node name="Social" type="ScrollContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 8.0
+offset_bottom = 8.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Container" type="VBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Social"]
+custom_minimum_size = Vector2(1920, 0)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 50
+
+[node name="Void" type="Panel" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Social/Container"]
+self_modulate = Color(1, 1, 1, 0)
+layout_mode = 2
+
+[node name="Panel1" type="PanelContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Social/Container"]
+custom_minimum_size = Vector2(961, 226)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_styles/panel = ExtResource("18_53o1o")
+
+[node name="Container" type="VBoxContainer" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Social/Container/Panel1"]
+custom_minimum_size = Vector2(775, 0)
+layout_mode = 2
+
+[node name="Text1" type="RichTextLabel" parent="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Social/Container/Panel1/Container" groups=["ProfileLabel"]]
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+text = "[center][b]Social[/b]
+For the official GitHub for this project, go to [url=https://github.com/NatZombieGames/Nat-Music-Programme]github.com/NatZombieGames/Nat-Music-Programme[/url]
+For the Itch.io release for this project, go to [url=https://natzombiegames.itch.io/nat-music-programme]natzombiegames.itch.io/nat-music-programme[/url]
+For the NatZombieGames discord server which has channels for NMP, go to [url=https://discord.gg/wcZGjeXPNK]discord.gg/wcZGjeXPNK[/url]
+For the NatZombieGames youtube channel, go to [url=https://www.youtube.com/@NatZombieGames][i]youtube.com/@NatZombieGames[/i][/url]
+[/center]"
+fit_content = true
+scroll_active = false
+script = ExtResource("23_tcvtk")
+in_cli = false
+
 [node name="PlayerContainer" type="PanelContainer" parent="Camera/AspectRatioContainer"]
 layout_mode = 2
 size_flags_horizontal = 8
@@ -2193,6 +2261,35 @@ show_behind_parent = true
 layout_mode = 2
 size_flags_horizontal = 8
 size_flags_vertical = 8
+
+[node name="AlertContainer" type="HBoxContainer" parent="Camera/AspectRatioContainer"]
+layout_mode = 2
+mouse_filter = 2
+alignment = 2
+
+[node name="Void" type="Panel" parent="Camera/AspectRatioContainer/AlertContainer"]
+self_modulate = Color(1, 1, 1, 0)
+custom_minimum_size = Vector2(35, 0)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="LesserAlertContainer" type="VBoxContainer" parent="Camera/AspectRatioContainer/AlertContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="AlertContainer" type="VBoxContainer" parent="Camera/AspectRatioContainer/AlertContainer/LesserAlertContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+alignment = 2
+
+[node name="Void" type="Panel" parent="Camera/AspectRatioContainer/AlertContainer/LesserAlertContainer"]
+self_modulate = Color(1, 1, 1, 0)
+custom_minimum_size = Vector2(0, 35)
+layout_mode = 2
+mouse_filter = 2
 
 [node name="CommandLineInterface" parent="Camera/AspectRatioContainer" instance=ExtResource("24_khgiu")]
 unique_name_in_owner = true
@@ -2216,11 +2313,11 @@ texture = ExtResource("32_c1xsu")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="PopupNotifications" type="Control" parent="Camera/AspectRatioContainer"]
+[node name="TooltipContainer" type="Control" parent="Camera/AspectRatioContainer"]
 layout_mode = 2
 mouse_filter = 2
 
-[node name="TooltipContainer" type="Control" parent="Camera/AspectRatioContainer"]
+[node name="PopupNotifications" type="Control" parent="Camera/AspectRatioContainer"]
 layout_mode = 2
 mouse_filter = 2
 
@@ -2375,7 +2472,7 @@ custom_minimum_size = Vector2(0, 5)
 layout_mode = 2
 color = Color(0.137255, 0.137255, 0.137255, 1)
 
-[node name="ResponseContainer" type="HBoxContainer" parent="Camera/AspectRatioContainer/PopupContainer/Popup/Container"]
+[node name="ResponseContainer" type="HFlowContainer" parent="Camera/AspectRatioContainer/PopupContainer/Popup/Container"]
 layout_mode = 2
 size_flags_vertical = 3
 alignment = 1
@@ -2384,7 +2481,7 @@ alignment = 1
 layout_mode = 2
 button_custom_minimum_size = Vector2i(210, 105)
 button_text = "Yes"
-button_font_size = 32
+button_font_size = 28
 pressed_signal_sender = NodePath("../../../../../../..")
 pressed_signal_name = "popup_response_pressed"
 
@@ -2392,29 +2489,37 @@ pressed_signal_name = "popup_response_pressed"
 layout_mode = 2
 button_custom_minimum_size = Vector2i(210, 105)
 button_text = "No"
-button_font_size = 32
+button_font_size = 28
 pressed_signal_sender = NodePath("../../../../../../..")
 pressed_signal_name = "popup_response_pressed"
 argument = "1"
 
-[node name="SoftLoadingScreen" type="ColorRect" parent="Camera/AspectRatioContainer"]
+[node name="Response3" parent="Camera/AspectRatioContainer/PopupContainer/Popup/Container/ResponseContainer" node_paths=PackedStringArray("pressed_signal_sender") instance=ExtResource("5_5wduh")]
+layout_mode = 2
+button_custom_minimum_size = Vector2i(210, 105)
+button_text = "No 2"
+button_font_size = 28
+pressed_signal_sender = NodePath("../../../../../../..")
+pressed_signal_name = "popup_response_pressed"
+argument = "2"
+
+[node name="SoftLoadingScreen" type="Control" parent="Camera/AspectRatioContainer"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
-color = Color(0, 0, 0, 0)
 
 [node name="ShadedArea" type="ColorRect" parent="Camera/AspectRatioContainer/SoftLoadingScreen"]
-custom_minimum_size = Vector2(675, 70)
+custom_minimum_size = Vector2(675, 150)
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -20.0
-offset_top = -20.0
-offset_right = 20.0
-offset_bottom = 20.0
+offset_left = -337.5
+offset_top = -75.0
+offset_right = 337.5
+offset_bottom = 75.0
 grow_horizontal = 2
 grow_vertical = 2
 color = Color(0, 0, 0, 0.247059)
@@ -2426,10 +2531,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -306.0
-offset_top = -32.0
-offset_right = 306.0
-offset_bottom = 32.0
+offset_left = -324.0
+offset_top = -71.5
+offset_right = 324.0
+offset_bottom = 71.5
 grow_horizontal = 2
 grow_vertical = 2
 alignment = 1
@@ -2444,6 +2549,17 @@ theme_override_font_sizes/font_size = 30
 text = "Something Is Loading, Please Wait..."
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="LoadingBar" type="TextureRect" parent="Camera/AspectRatioContainer/SoftLoadingScreen/ShadedArea/Container"]
+process_thread_group = 2
+process_thread_group_order = 0
+process_thread_messages = 0
+material = SubResource("ShaderMaterial_rluw5")
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 2
+texture = ExtResource("39_m45u3")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="LoadingScreen" type="ColorRect" parent="Camera/AspectRatioContainer"]
 unique_name_in_owner = true
@@ -2461,6 +2577,7 @@ grow_vertical = 2
 alignment = 1
 
 [node name="Logo" type="TextureRect" parent="Camera/AspectRatioContainer/LoadingScreen/Container"]
+texture_filter = 1
 custom_minimum_size = Vector2(50, 250)
 layout_mode = 2
 texture = ExtResource("2_i2mec")
@@ -2474,18 +2591,16 @@ text = "LOADING..."
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="LoadingBar" type="ProgressBar" parent="Camera/AspectRatioContainer/LoadingScreen/Container"]
+[node name="LoadingBar" type="TextureRect" parent="Camera/AspectRatioContainer/LoadingScreen/Container"]
 process_thread_group = 2
 process_thread_group_order = 0
 process_thread_messages = 0
-visible = false
-custom_minimum_size = Vector2(0, 50)
+material = SubResource("ShaderMaterial_rluw5")
+custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
-show_percentage = false
-
-[node name="ThreadedIntermediary" parent="Camera/AspectRatioContainer/LoadingScreen/Container" instance=ExtResource("38_ysbdf")]
-custom_minimum_size = Vector2(0, 50)
-layout_mode = 2
+texture = ExtResource("39_m45u3")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="SelectImageDialog" type="FileDialog" parent="Camera/AspectRatioContainer"]
 unique_name_in_owner = true
@@ -2549,5 +2664,7 @@ file_mode = 2
 access = 2
 use_native_dialog = true
 
+[connection signal="meta_clicked" from="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Social/Container/Panel1/Container/Text1" to="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Social/Container/Panel1/Container/Text1" method="_on_meta_clicked"]
+[connection signal="meta_hover_started" from="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Social/Container/Panel1/Container/Text1" to="Camera/AspectRatioContainer/GreaterContainer/MainContainer/Profile/Container/Body/Social/Container/Panel1/Container/Text1" method="_on_meta_hover_started"]
 [connection signal="meta_clicked" from="Camera/AspectRatioContainer/NewUserScreen/Background/Container/BodyText" to="Camera/AspectRatioContainer/NewUserScreen/Background/Container/BodyText" method="_on_meta_clicked"]
 [connection signal="meta_hover_started" from="Camera/AspectRatioContainer/NewUserScreen/Background/Container/BodyText" to="Camera/AspectRatioContainer/NewUserScreen/Background/Container/BodyText" method="_on_meta_hover_started"]

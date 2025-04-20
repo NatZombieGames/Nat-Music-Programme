@@ -75,7 +75,7 @@ const special_commands : PackedStringArray = [
 	"read", "close", "exit", "hard_reload", 
 	"get_callables", "get_commands", "cache"
 	]
-const debug_commands : PackedStringArray = ["print_id_dict", "push"]
+const debug_commands : PackedStringArray = ["print_id_dict", "push", "create_popup_notification", "create_popup_box", "create_alert"]
 const callables : Dictionary[String, Array] = {
 	"MasterDirectoryManager": ["_save_data", "set_user_settings", "get_user_settings"], 
 	"GeneralManager": [
@@ -413,11 +413,12 @@ func run_command(command : String, bypass_active : bool = false) -> int:
 						to_print += "\n[color=lime_green]├[/color][color=orange]───[/color]" + str(debug_commands.find(cmd) + 1) + "[color=orange]───[/color]" + cmd
 				print_to_output(to_print.insert(to_print.rfind("├"), "└").erase(to_print.rfind("├") + 1))
 	elif ((command_chunks[0].to_lower() == "debug") and (len(command_chunks) > 1) and (command_chunks[1] in debug_commands) and (GeneralManager.is_in_debug)):
+		const arg_requirements : PackedInt32Array = [3, 4, 3, 3, 3]
+		if len(command_chunks) < arg_requirements[int(debug_commands.find(command_chunks[1]))]:
+			print_to_output("DEBUG_ERROR: Invalid amount of arguments for '" + command_chunks[1] + "', needs " + str(arg_requirements[int(debug_commands.find(command_chunks[1]))]) + " arguments.")
+			return GeneralManager.err.INSUFFICIENT_ARGUMENT_COUNT
 		match command_chunks[1]:
 			"print_id_dict":
-				if len(command_chunks) < 3:
-					print_to_output("DEBUG_ERROR: No argument given, please give an argument.")
-					return GeneralManager.err.INSUFFICIENT_ARGUMENT_COUNT
 				if not (command_chunks[2] in MasterDirectoryManager.data_types or command_chunks[2] == "user"):
 					print_to_output("DEBUG_ERROR: Not a valid argument, please give a valid argument.")
 					return GeneralManager.err.INVALID_ARGUMENT
@@ -435,13 +436,31 @@ func run_command(command : String, bypass_active : bool = false) -> int:
 							print_to_output("DEBUG_ERROR: Not a valid argument, please give a valid argument.")
 							return GeneralManager.err.INVALID_ARGUMENT
 			"push":
-				if len(command_chunks) < 4:
-					print_to_output("DEBUG_ERROR: Invalid amount of arguments for 'push', needs 3 arguments.")
-					return GeneralManager.err.INSUFFICIENT_ARGUMENT_COUNT
 				if not (command_chunks[2].to_upper() + ":") in keyword_to_text.keys():
 					print_to_output("DEBUG_ERROR: Invalid push type, please use one of the following: " + str(keyword_to_text.keys()).replace(":", "").to_lower() + ".")
 					return GeneralManager.err.INVALID_ARGUMENT
 				print_to_output(command_chunks[2].to_upper() + ": " + command.right((12 + len(command_chunks[2])) * -1))
+			"create_popup_notification":
+				if len(command_chunks) > 3 and typeof(set_arg_type_callable.call(command_chunks[3])) == TYPE_VECTOR2:
+					main_screen.call("create_popup_notif", command_chunks[2], set_arg_type_callable.call(command_chunks[3]))
+				else:
+					main_screen.call("create_popup_notif", command_chunks[2])
+			"create_popup_box":
+				match len(command_chunks):
+					3:
+						main_screen.call("create_popup", command_chunks[2])
+					4:
+						main_screen.call("create_popup", command_chunks[2], command_chunks[3])
+					_:
+						main_screen.call("create_popup", command_chunks[2], command_chunks[3], command_chunks[4])
+			"create_alert":
+				match len(command_chunks):
+					3:
+						main_screen.call("create_alert", command_chunks[2])
+					4:
+						main_screen.call("create_alert", command_chunks[2], command_chunks[3])
+					_:
+						main_screen.call("create_alert", command_chunks[2], command_chunks[3], set_arg_type_callable.call(command_chunks[4]))
 	elif command_chunks[0].to_lower() in commands:
 		if not len(command_chunks) > command_minimum_args[commands.find(command_chunks[0].to_lower())]:
 			print_to_output("ERROR: Tried to run '[u]" + command_chunks[0] + "[/u]' with too little arguments. You gave " + str(len(command_chunks)-1) + " arguments and " + str(command_minimum_args[commands.find(command_chunks[0].to_lower())]) + " were needed, please try again.")
@@ -453,7 +472,10 @@ func run_command(command : String, bypass_active : bool = false) -> int:
 						if not len(command_chunks) > 2:
 							print_to_output("ERROR: Tried to run 'call' inside 'echo' with too little arguments, please try again.")
 							return GeneralManager.err.INSUFFICIENT_ARGUMENT_COUNT
-						print_to_output(str(_run(command_chunks[2], (func(arr : PackedStringArray) -> PackedStringArray: arr.remove_at(0); arr.remove_at(0); arr.remove_at(0); return arr).call(command_chunks))))
+						if command_chunks[2] == "run_command":
+							print_to_output(str(_run(command_chunks[2], [command.right(-22)])))
+						else:
+							print_to_output(str(_run(command_chunks[2], (func(arr : PackedStringArray) -> PackedStringArray: arr.remove_at(0); arr.remove_at(0); arr.remove_at(0); return arr).call(command_chunks))))
 					"type":
 						print_to_output("[b]" + type_string(typeof(set_arg_type_callable.call(command.right(-10)))).capitalize().replace(" ", "") + "[/b]: " + str(set_arg_type_callable.call(command.right(-10))), false)
 					_:

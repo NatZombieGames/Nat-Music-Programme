@@ -1,5 +1,6 @@
 extends Node
 
+@onready var main_screen : Control = get_node("/root/MainScreen")
 @export var artist_id_dict : Dictionary[String, Dictionary] = {}
 @export var album_id_dict : Dictionary[String, Dictionary] = {}
 @export var song_id_dict : Dictionary[String, Dictionary] = {}
@@ -16,30 +17,28 @@ var data_location : String = "" # read only after ready
 signal finished_loading_data_signal
 signal finished_saving_data_signal
 signal finished_loading_keybinds_signal
-const default_user_data : Dictionary = {
+const default_user_data : Dictionary[String, Variant] = {
 "volume": 0, "player_fullscreen": false, "special_icon_scale": 2, "icon_scale": 1, 
 "song_cache_size": 3, "image_cache_size": 20, "player_widgets": [false, false, false], 
 "auto_clear": false, "clear_input": false, "shuffle": false, "command_on_startup": "", 
-"window_position": Vector2.ZERO, "window_mode": DisplayServer.WINDOW_MODE_FULLSCREEN, 
-"window_screen": 0, "window_size": Vector2(960, 540), "save_on_quit": true, 
-"continue_playing": true, "continue_playing_exact": true, 
+"window_screen": 0, "save_on_quit": true, "continue_playing": true, 
+"continue_playing_exact": true, "loop": false, "fullscreen": false, 
 "active_song_data": {"active_song_list": [], "active_song_list_id": "", "active_song_id": "", "song_progress": 0}, 
 "keybinds": {}, "sleep_when_unfocused": false, "generate_home_screen": true, 
 "library_size_modifier": 1.0, "cli_size_modifier": 1.0, "profile_size_modifier": 1.0, 
 "separate_cli_outputs": false, "cli_style": 0, "autocomplete": true, "keep_screen_on": false, 
 "disable_player_song_system_messages": false, "extra_player_control_buttons": false, "cli_get_style": 0, 
 "save_shortcuts": true, "shortcuts": {}, "check_latest_version_on_startup": true, "allow_network_requests": true, 
-"loop": false
 }
 const settable_settings : PackedStringArray = [
 "volume", "player_fullscreen", "special_icon_scale", "icon_scale", "song_cache_size", 
 "image_cache_size", "auto_clear", "clear_input", "shuffle", 
-"command_on_startup", "window_position", "window_mode", "window_screen", "window_size", 
-"save_on_quit", "continue_playing", "continue_playing_exact", "sleep_when_unfocused", 
-"generate_home_screen", "library_size_modifier", "cli_size_modifier", "profile_size_modifier", 
-"separate_cli_outputs", "cli_style", "autocomplete", "keep_screen_on", 
-"disable_player_song_system_messages", "extra_player_control_buttons", "cli_get_style", 
-"save_shortcuts", "check_latest_version_on_startup", "allow_network_requests", "loop"
+"command_on_startup", "save_on_quit", "continue_playing", "continue_playing_exact", 
+"sleep_when_unfocused", "generate_home_screen", "library_size_modifier", 
+"cli_size_modifier", "profile_size_modifier", "separate_cli_outputs", "cli_style", 
+"autocomplete", "keep_screen_on", "disable_player_song_system_messages", 
+"extra_player_control_buttons", "cli_get_style", "save_shortcuts", 
+"check_latest_version_on_startup", "allow_network_requests", "loop", "fullscreen", 
 ]
 const id_chars : PackedStringArray = [
 "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", 
@@ -68,11 +67,7 @@ func _ready() -> void:
 func _notification(notif : int) -> void:
 	if notif == Node.NOTIFICATION_WM_CLOSE_REQUEST and user_data_dict["save_on_quit"] == true:
 		#print("received quit notification and save on quit is true; saving data.")
-		save_data()
-		await get_tree().process_frame
-		if finished_saving_data == false:
-			await self.finished_saving_data_signal
-		await get_tree().process_frame
+		await save_data()
 	return
 
 func create_entry(type : use_type, data : Dictionary = get_data_template(type)) -> int:
@@ -103,21 +98,18 @@ func save_data(save_location : String = "NMP_Data.dat") -> int:
 	save_location = OS.get_executable_path().get_base_dir() + "/" + save_location
 	#print("\n!! Saving Data In " + save_location + " !!")
 	GeneralManager.set_mouse_busy_state.call(true)
-	get_node("/root/MainScreen").show_saving_indicator = true
+	main_screen.show_saving_indicator = true
 	await get_tree().process_frame
 	var data : ConfigFile = ConfigFile.new()
-	user_data_dict["window_position"] = DisplayServer.window_get_position()
-	user_data_dict["window_mode"] = DisplayServer.window_get_mode()
 	user_data_dict["window_screen"] = DisplayServer.window_get_current_screen()
-	user_data_dict["window_size"] = DisplayServer.window_get_size()
 	user_data_dict["player_fullscreen"] = not get_node("/root/MainScreen/Camera").enabled
 	user_data_dict["shortcuts"] = {}
 	if user_data_dict["save_shortcuts"]:
-		user_data_dict["shortcuts"] = get_node("/root/MainScreen").cli.shortcuts
+		user_data_dict["shortcuts"] = main_screen.cli.shortcuts
 	for item : String in data_types:
 		data.set_value("data", item + "_id_dict", self.get(item + "_id_dict"))
 	for item : String in user_data_dict["active_song_data"].keys():
-		user_data_dict["active_song_data"][item] = get_node("/root/MainScreen").playing_screen.get(item)
+		user_data_dict["active_song_data"][item] = main_screen.playing_screen.get(item)
 	for keybind : String in user_data_dict["keybinds"].keys():
 		if not keybind in keybinds:
 			user_data_dict["keybinds"].erase(keybind)
@@ -125,10 +117,10 @@ func save_data(save_location : String = "NMP_Data.dat") -> int:
 	if (not FileAccess.file_exists(save_location)) or (data.encode_to_text() != FileAccess.open(save_location, FileAccess.READ).get_as_text()):
 		data.save(save_location)
 	GeneralManager.set_mouse_busy_state.call(false)
-	get_node("/root/MainScreen").show_saving_indicator = false
+	main_screen.show_saving_indicator = false
 	await get_tree().process_frame
 	GeneralManager.cli_print_callable.call("SYS: Saved Data Succesfully To '[u]" + save_location.get_file() + "[/u]' In '[url=" + save_location.get_base_dir() + "]" + save_location.get_base_dir() + "[/url]'.")
-	get_node("/root/MainScreen").call("create_popup_notif", "Saved Data Succesfully To '[u]" + save_location.get_file() + "[/u]' In '[u]" + save_location.get_base_dir() + "[/u]'.")
+	main_screen.call("create_popup_notif", "Saved Data Succesfully To '[u]" + save_location.get_file() + "[/u]' In '[u]" + save_location.get_base_dir() + "[/u]'.")
 	finished_saving_data = true
 	self.emit_signal("finished_saving_data_signal")
 	#print("!! Saved Data Succesfully To '" + save_location + "' !!\n")
@@ -185,29 +177,25 @@ func set_user_settings(setting : StringName, value : Variant) -> int:
 		match setting:
 			"player_fullscreen":
 				if get_node("/root/MainScreen/Camera").enabled == !value:
-					get_node("/root/MainScreen").playing_screen.fullscreen_callable.call()
+					main_screen.playing_screen.fullscreen_callable.call()
 			"player_widgets":
-				get_node("/root/MainScreen").playing_screen.call("set_widgets")
-			"window_position":
-				DisplayServer.window_set_position(value)
-			"window_mode":
-				DisplayServer.window_set_mode(value)
+				main_screen.playing_screen.call("set_widgets")
+			"fullscreen":
+				DisplayServer.window_set_mode([MasterDirectoryManager.user_data_dict["window_mode"], DisplayServer.WINDOW_MODE_FULLSCREEN][int(value)])
 			"window_screen":
 				DisplayServer.window_set_current_screen(value)
-			"window_size":
-				DisplayServer.window_set_size(value)
 			"volume", "shuffle", "extra_player_control_buttons", "disable_player_song_system_messages", "loop":
-				get_node("/root/MainScreen").playing_screen.set(setting, value)
+				main_screen.playing_screen.set(setting, value)
 			"auto_clear", "clear_input", "autocomplete", "cli_style", "cli_get_style", "save_shortcuts":
-				get_node("/root/MainScreen").cli.set(setting, value)
+				main_screen.cli.set(setting, value)
 			"special_icon_scale", "icon_scale", "song_cache_size", "image_cache_size":
 				if value < 1:
 					user_data_dict[setting] = 1
 					GeneralManager.cli_print_callable.call("User Settings: Tried to set [u]" + setting + "[/u] to [u]" + str(value) + "[/u], which is lower than 1, setting was set to 1 instead.")
 			"cli_size_modifier":
-				get_node("/root/MainScreen")._apply_cli_size_mod()
+				main_screen._apply_cli_size_mod()
 			"profile_size_modifier":
-				get_node("/root/MainScreen")._apply_profile_size_mod()
+				main_screen._apply_profile_size_mod()
 			"keep_screen_on":
 				ProjectSettings.set("display/window/energy_saving/keep_screen_on", value)
 		return GeneralManager.err.OK
